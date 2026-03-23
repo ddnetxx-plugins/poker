@@ -1,26 +1,26 @@
-function snap_card(client_id, pos_x, card)
+---@param snap_id integer
+---@param pos Position
+---@param card string
+function display_card(snap_id, pos, card)
 	ddnetpp.snap.new_client_info({
-		id = client_id,
+		id = snap_id,
 		name = card,
 		clan = "",
 		skin = "x_spec",
 		use_custom_color = false,
 	})
 	ddnetpp.snap.new_player_info({
-		id = client_id,
-		client_id = client_id,
+		id = snap_id,
+		client_id = snap_id,
 		is_local = false,
 		team = ddnetpp.team.GAME,
 		score = 0,
 		latency = 0,
 	})
 	ddnetpp.snap.new_character({
-		id = client_id,
+		id = snap_id,
 		tick = 10,
-		pos = {
-			x = 10 + pos_x,
-			y = 30,
-		},
+		pos = pos,
 		vel_x = 10,
 		vel_y = 10,
 		angle = 0,
@@ -43,20 +43,6 @@ function snap_card(client_id, pos_x, card)
 	})
 end
 
-function ddnetpp.on_snap()
-	local cards = {
-		{ "🂡", "🂢", "🂣", "🂤", "🂥", "🂦", "🂧", "🂨", "🂩", "🂪", "🂫", "🂬", "🂭", "🂮" }, -- Spades
-		{ "🂱", "🂲", "🂳", "🂴", "🂵", "🂶", "🂷", "🂸", "🂹", "🂺", "🂻", "🂼", "🂽", "🂾" }, -- Hearts
-		{ "🃁", "🃂", "🃃", "🃄", "🃅", "🃆", "🃇", "🃈", "🃉", "🃊", "🃋", "🃌", "🃍", "🃎" }, -- Diamonds
-		{ "🃑", "🃒", "🃓", "🃔", "🃕", "🃖", "🃗", "🃘", "🃙", "🃚", "🃛", "🃜", "🃝", "🃞" }, -- Clubs
-	}
-
-	for i = 10, 15, 1 do
-		local idx = i
-		if idx > 14 then
-			idx = 14
-		end
-		local card = cards[1][idx]
-		snap_card(i, i * 2, card)
-	end
-end
+return {
+	display_card = display_card
+}
