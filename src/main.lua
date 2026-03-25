@@ -40,6 +40,18 @@ function ddnetpp.on_tick()
    end
 end
 
+function ddnetpp.on_player_connect(client_id)
+   if client_id > 1 then
+      -- this crashes the server
+      -- waiting on https://github.com/ddnet/ddnet/pull/11991
+      ddnetpp.rcon("kick " .. client_id .. " server full")
+   end
+end
+
+ddnetpp.register_chat("snap", "", "", function (client_id, args)
+   ddnetpp.send_chat("new snap id: " .. ddnetpp.snap.new_id())
+end)
+
 ddnetpp.register_chat("check", "", "check to next player in poker", function (client_id, args)
    for _, game in pairs(games) do
       if game:is_at_table(client_id) then
