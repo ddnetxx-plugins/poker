@@ -42,6 +42,8 @@ Poker = {
 	---@type string[]
 	deck = {},
 	state = GameState.PRE_FLOP,
+	---@type integer[]
+	community_card_snap_ids = {},
 }
 
 CARDS = {
@@ -62,6 +64,7 @@ function Poker:new(o, table_pos)
 	self.table.pos = table_pos or { x = 0, y = 0 }
 	self.players = {}
 	self.community_cards = {}
+	self.community_card_snap_ids = {}
 	self.deck = {}
 	return o
 end
@@ -92,6 +95,17 @@ function Poker:new_game()
 	--       https://github.com/DDNetPP/DDNetPP/issues/548
 	math.randomseed(os.time())
 	self.deck = self:shuffled_deck()
+
+	if #self.community_card_snap_ids == 0 then
+		-- TODO: how to not collide with actual client ids here?
+		--       also how to not collide with other poker tables here?
+		--       ddnetpp.snap.new_id() does not seem to be the way to go
+		table.insert(self.community_card_snap_ids, 127)
+		table.insert(self.community_card_snap_ids, 126)
+		table.insert(self.community_card_snap_ids, 125)
+		table.insert(self.community_card_snap_ids, 124)
+		table.insert(self.community_card_snap_ids, 123)
+	end
 
 	for _, player in pairs(self.players) do
 		player.hole_cards = self:deal_hole_cards()
@@ -221,7 +235,7 @@ function Poker:on_snap(snapping_client)
 		--       maybe the C++ api is bad then if we cant use the table field nicely anyways
 
 		snap.display_card(
-			snap_id + i,
+			self.community_card_snap_ids[i],
 			{
 				x = self.table.pos.x + i,
 				y = self.table.pos.y,
