@@ -2,7 +2,9 @@
 PokerPlayer = {
 	client_id = 0,
 	---@type string[]
-	hole_cards = {}
+	hole_cards = {},
+	---@type PlayerAction|nil
+	action = nil
 }
 
 function PokerPlayer:new(o, client_id)
@@ -11,5 +13,6 @@ function PokerPlayer:new(o, client_id)
 	self.__index = self
 	self.client_id = client_id
 	self.hole_cards = {}
+	self.action = nil
 	return o
 end

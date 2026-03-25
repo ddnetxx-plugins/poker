@@ -10,6 +10,22 @@ require(script_path() .. "player")
 -- there can be multiple instances if you want to play
 -- multiple games at once
 
+GameState = {
+	PRE_FLOP = 1,
+	FLOP = 2,
+	TURN = 3,
+	RIVER = 4,
+}
+
+---@class PlayerAction
+---@field action string
+---|"'check'"
+---|"'bet'"
+---|"'call'"
+---|"'raise'"
+---|"'fold'"
+---@field amount? integer # Absolute amount in chip value
+
 ---@class Poker
 Poker = {
 	table = {
@@ -24,6 +40,7 @@ Poker = {
 	community_cards = {},
 	---@type string[]
 	deck = {},
+	state = GameState.PRE_FLOP,
 }
 
 CARDS = {
@@ -65,7 +82,7 @@ function Poker:shuffled_deck()
 end
 
 function Poker:new_game()
-	ddnetpp.log_info("starting new game..")
+	self.state = GameState.PRE_FLOP
 
 	-- TODO: this is really bad and can be cracked easily -.-
 	--       should use something like https://github.com/luau-project/lua-cryptorandom
@@ -76,8 +93,8 @@ function Poker:new_game()
 	self.deck = self:shuffled_deck()
 
 	for _, player in pairs(self.players) do
-		ddnetpp.log_info("player " .. player.client_id .. " got hole cards")
 		player.hole_cards = self:deal_hole_cards()
+		player.action = nil
 	end
 end
 
@@ -94,6 +111,70 @@ function Poker:flop()
 	table.insert(self.community_cards, table.remove(self.deck, 1))
 	table.insert(self.community_cards, table.remove(self.deck, 1))
 	table.insert(self.community_cards, table.remove(self.deck, 1))
+end
+
+function Poker:turn()
+	table.insert(self.community_cards, table.remove(self.deck, 1))
+end
+
+function Poker:river()
+	table.insert(self.community_cards, table.remove(self.deck, 1))
+end
+
+---TODO: think about premoves and how to queue and show them
+---
+---@param client_id integer
+---@param action PlayerAction
+function Poker:player_action(client_id, action)
+	-- TODO: can the player be nil here? do we need to check that? Or is that on the callsite?
+	local player = self.players[client_id]
+	if action.action == "check" then
+		player.action = action
+	elseif action.action == "bet" then
+		player.action = action
+	elseif action.action == "call" then
+		player.action = action
+	elseif action.action == "raise" then
+		player.action = action
+	elseif action.action == "fold" then
+		player.action = action
+	else
+		assert(false, "Invalid betting action")
+	end
+
+	self:check_next_state()
+end
+
+function Poker:next_state()
+	for _, player in pairs(self.players) do
+		player.action = nil
+	end
+
+	if self.state == GameState.PRE_FLOP then
+		self:flop()
+	elseif self.state == GameState.FLOP then
+		self:turn()
+	elseif self.state == GameState.TURN then
+		self:river()
+	elseif self.state == GameState.RIVER then
+		-- TODO: what to do here? xd
+	end
+end
+
+---@return PokerPlayer|nil
+function Poker:next_to_act()
+	for _, player in pairs(self.players) do
+		if player.action == nil then
+			return player
+		end
+	end
+	return nil
+end
+
+function Poker:check_next_state()
+	if self:next_to_act() == nil then
+		self:next_state()
+	end
 end
 
 function Poker:on_snap(snapping_client)
@@ -131,6 +212,15 @@ function Poker:on_snap(snapping_client)
 				card)
 		end
 	end
+end
+
+---@param client_id integer
+---@return boolean
+function Poker:is_at_table(client_id)
+	if self.players[client_id] == nil then
+		return false
+	end
+	return true
 end
 
 ---@param client_id integer
