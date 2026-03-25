@@ -22,8 +22,8 @@ function ddnetpp.on_init()
 
    game:new_game()
 
-   game:player_action(1, { action = "check" })
-   game:player_action(0, { action = "check" })
+   -- game:player_action(1, { action = "check" })
+   -- game:player_action(0, { action = "check" })
 
    table.insert(games, game)
 end
@@ -31,6 +31,12 @@ end
 function ddnetpp.on_snap(snapping_client)
    for _, game in pairs(games) do
       game:on_snap(snapping_client)
+   end
+end
+
+function ddnetpp.on_tick()
+   for _, game in pairs(games) do
+      game:on_tick()
    end
 end
 

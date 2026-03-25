@@ -25,6 +25,7 @@ GameState = {
 ---|"'raise'"
 ---|"'fold'"
 ---@field amount? integer # Absolute amount in chip value
+---@field announced? boolean # True if this action was already announced to other players, can stay false|nil longer for pre moves
 
 ---@class Poker
 Poker = {
@@ -177,6 +178,36 @@ function Poker:check_next_state()
 	end
 end
 
+---@param message string # Gets sent to all players of the current game
+function Poker:send_chat(message)
+	-- TODO: there is probably a faster way to only iterate the keys
+	for cid, _ in pairs(self.players) do
+		ddnetpp.send_chat_target(cid, message)
+	end
+end
+
+function Poker:print_betting_actions()
+	for _, player in pairs(self.players) do
+		if player.action == nil then
+			-- print("waiting for " .. player.client_id)
+			-- stop here to not leak pre moves
+			return
+		end
+
+		if not player.action.announced then
+			-- TODO: also do some laser text above their had
+			--       so external spectators who do not receive the chat message know what is happening too
+			--       or send the chat message also to close by players
+			self:send_chat("someone did something xd")
+			player.action.announced = true
+		end
+	end
+end
+
+function Poker:on_tick()
+	self:print_betting_actions()
+end
+
 function Poker:on_snap(snapping_client)
 	-- TODO: only snap to participants
 	--       or maybe keep snapping to all? so others can watch
@@ -196,6 +227,20 @@ function Poker:on_snap(snapping_client)
 				y = self.table.pos.y,
 			},
 			card)
+	end
+
+	local next_to_act = self:next_to_act()
+	if next_to_act ~= nil then
+		local chr_next = ddnetpp.get_character(next_to_act.client_id)
+		if chr_next then
+			ddnetpp.snap.new_laser({
+				id = snap_id,
+				pos = {
+					x = chr_next:pos().x,
+					y = chr_next:pos().y - 2,
+				}
+			})
+		end
 	end
 
 	local poker_player = self.players[snapping_client]

@@ -4,7 +4,7 @@ PokerPlayer = {
 	---@type string[]
 	hole_cards = {},
 	---@type PlayerAction|nil
-	action = nil
+	action = nil,
 }
 
 function PokerPlayer:new(o, client_id)
