@@ -27,10 +27,10 @@ Poker = {
 }
 
 CARDS = {
-	{ "🂡", "🂢", "🂣", "🂤", "🂥", "🂦", "🂧", "🂨", "🂩", "🂪", "🂫", "🂬", "🂭", "🂮" }, -- Spades
-	{ "🂱", "🂲", "🂳", "🂴", "🂵", "🂶", "🂷", "🂸", "🂹", "🂺", "🂻", "🂼", "🂽", "🂾" }, -- Hearts
-	{ "🃁", "🃂", "🃃", "🃄", "🃅", "🃆", "🃇", "🃈", "🃉", "🃊", "🃋", "🃌", "🃍", "🃎" }, -- Diamonds
-	{ "🃑", "🃒", "🃓", "🃔", "🃕", "🃖", "🃗", "🃘", "🃙", "🃚", "🃛", "🃜", "🃝", "🃞" }, -- Clubs
+	"🂡", "🂢", "🂣", "🂤", "🂥", "🂦", "🂧", "🂨", "🂩", "🂪", "🂫", "🂬", "🂭", "🂮", -- Spades
+	"🂱", "🂲", "🂳", "🂴", "🂵", "🂶", "🂷", "🂸", "🂹", "🂺", "🂻", "🂼", "🂽", "🂾", -- Hearts
+	"🃁", "🃂", "🃃", "🃄", "🃅", "🃆", "🃇", "🃈", "🃉", "🃊", "🃋", "🃌", "🃍", "🃎", -- Diamonds
+	"🃑", "🃒", "🃓", "🃔", "🃕", "🃖", "🃗", "🃘", "🃙", "🃚", "🃛", "🃜", "🃝", "🃞", -- Clubs
 }
 
 ---@param o Poker|nil
@@ -48,8 +48,33 @@ function Poker:new(o, table_pos)
 	return o
 end
 
+---@param array table
+---@return table
+function shuffle(array)
+   local shuffled_array = {}
+   for i = #array, 1, -1 do
+      local j = math.random(i)
+      array[i], array[j] = array[j], array[i]
+      table.insert(shuffled_array, array[i])
+   end
+   return shuffled_array
+end
+
+function Poker:shuffled_deck()
+	return shuffle(CARDS)
+end
+
 function Poker:new_game()
 	ddnetpp.log_info("starting new game..")
+
+	-- TODO: this is really bad and can be cracked easily -.-
+	--       should use something like https://github.com/luau-project/lua-cryptorandom
+	--       or at least a admin configurable seed
+	--       maybe we can also ask the server for a random number
+	--       https://github.com/DDNetPP/DDNetPP/issues/548
+	math.randomseed(os.time())
+	self.deck = self:shuffled_deck()
+
 	for _, player in pairs(self.players) do
 		ddnetpp.log_info("player " .. player.client_id .. " got hole cards")
 		player.hole_cards = self:deal_hole_cards()
@@ -58,17 +83,17 @@ end
 
 ---@return string[] hole_cards # Table with two cards at index 1 and 2
 function Poker:deal_hole_cards()
-	-- haters would say this is rigged
-	return {
-		"🃄", "🃝",
-	}
+	local cards = {}
+	table.insert(cards, table.remove(self.deck, 1))
+	table.insert(cards, table.remove(self.deck, 1))
+	return cards
 end
 
 function Poker:flop()
 	-- TODO: assert that flop as not happened yet
-	table.insert(self.community_cards, CARDS[1][1])
-	table.insert(self.community_cards, CARDS[1][1])
-	table.insert(self.community_cards, CARDS[1][1])
+	table.insert(self.community_cards, table.remove(self.deck, 1))
+	table.insert(self.community_cards, table.remove(self.deck, 1))
+	table.insert(self.community_cards, table.remove(self.deck, 1))
 end
 
 function Poker:on_snap(snapping_client)

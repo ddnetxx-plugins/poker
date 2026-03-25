@@ -10,9 +10,6 @@ function PokerPlayer:new(o, client_id)
 	setmetatable(o, self)
 	self.__index = self
 	self.client_id = client_id
-	-- haters would say this is rigged
-	self.hole_cards = {
-		"🃁", "🃁"
-	}
+	self.hole_cards = {}
 	return o
 end
