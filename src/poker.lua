@@ -138,6 +138,16 @@ end
 function Poker:player_action(client_id, action)
 	-- TODO: can the player be nil here? do we need to check that? Or is that on the callsite?
 	local player = self.players[client_id]
+
+	if player.action ~= nil then
+		-- Premoves can still be changed
+		-- as soon as it was announced it can not be changed anymore
+		if player.action.announced then
+			ddnetpp.send_chat_target(client_id, "wait until next round")
+			return
+		end
+	end
+
 	if action.action == "check" then
 		player.action = action
 	elseif action.action == "bet" then
@@ -152,6 +162,7 @@ function Poker:player_action(client_id, action)
 		assert(false, "Invalid betting action")
 	end
 
+	self:print_betting_actions()
 	self:check_next_state()
 end
 
@@ -186,6 +197,8 @@ end
 
 function Poker:check_next_state()
 	if self:next_to_act() == nil then
+		-- TODO: remove
+		self:send_chat("next round!")
 		self:next_state()
 	end
 end
@@ -206,11 +219,25 @@ function Poker:print_betting_actions()
 			return
 		end
 
-		if not player.action.announced then
+		if player.action.announced == false or player.action.announced == nil then
 			-- TODO: also do some laser text above their had
 			--       so external spectators who do not receive the chat message know what is happening too
 			--       or send the chat message also to close by players
-			self:send_chat("someone did something xd")
+
+			local chr = ddnetpp.get_character(player.client_id)
+			if chr then
+				local text_pos = chr:pos()
+				text_pos.x = text_pos.x - 8
+				text_pos.y = text_pos.y - 8
+				ddnetpp.laser_text(text_pos, player.action.action)
+			end
+
+			local tw_player = ddnetpp.get_player(player.client_id)
+			if tw_player then
+				self:send_chat(
+					"'" .. tw_player:name() .. "' did a " .. player.action.action
+				)
+			end
 			player.action.announced = true
 		end
 	end
@@ -283,5 +310,11 @@ end
 
 ---@param client_id integer
 function Poker:join_table(client_id)
-	self.players[client_id] = PokerPlayer:new(nil, client_id)
+	ddnetpp.log_info("player joined cid=" .. client_id)
+	-- self.players[client_id] = PokerPlayer:new(nil, client_id)
+	self.players[client_id] = {
+		client_id = client_id,
+		action = nil,
+		cards = {}
+	}
 end
