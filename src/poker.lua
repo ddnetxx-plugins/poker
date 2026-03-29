@@ -47,10 +47,10 @@ Poker = {
 }
 
 CARDS = {
-	"🂡", "🂢", "🂣", "🂤", "🂥", "🂦", "🂧", "🂨", "🂩", "🂪", "🂫", "🂬", "🂭", "🂮", -- Spades
-	"🂱", "🂲", "🂳", "🂴", "🂵", "🂶", "🂷", "🂸", "🂹", "🂺", "🂻", "🂼", "🂽", "🂾", -- Hearts
-	"🃁", "🃂", "🃃", "🃄", "🃅", "🃆", "🃇", "🃈", "🃉", "🃊", "🃋", "🃌", "🃍", "🃎", -- Diamonds
-	"🃑", "🃒", "🃓", "🃔", "🃕", "🃖", "🃗", "🃘", "🃙", "🃚", "🃛", "🃜", "🃝", "🃞", -- Clubs
+	"🂢", "🂣", "🂤", "🂥", "🂦", "🂧", "🂨", "🂩", "🂪", "🂫", "🂭", "🂮", "🂡", -- Spades
+	"🂲", "🂳", "🂴", "🂵", "🂶", "🂷", "🂸", "🂹", "🂺", "🂻", "🂽", "🂾", "🂱", -- Hearts
+	"🃂", "🃃", "🃄", "🃅", "🃆", "🃇", "🃈", "🃉", "🃊", "🃋", "🃍", "🃎", "🃁", -- Diamonds
+	"🃒", "🃓", "🃔", "🃕", "🃖", "🃗", "🃘", "🃙", "🃚", "🃛", "🃝", "🃞", "🃑", -- Clubs
 }
 
 ---@param o Poker|nil
@@ -88,12 +88,7 @@ end
 function Poker:new_game()
 	self.state = GameState.PRE_FLOP
 
-	-- TODO: this is really bad and can be cracked easily -.-
-	--       should use something like https://github.com/luau-project/lua-cryptorandom
-	--       or at least a admin configurable seed
-	--       maybe we can also ask the server for a random number
-	--       https://github.com/DDNetPP/DDNetPP/issues/548
-	math.randomseed(os.time())
+	math.randomseed(ddnetpp.secure_rand_below(666999))
 	self.deck = self:shuffled_deck()
 
 	if #self.community_card_snap_ids == 0 then
