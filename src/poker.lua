@@ -167,10 +167,13 @@ function Poker:next_state()
 
 	if self.state == GameState.PRE_FLOP then
 		self:flop()
+		self.state = GameState.FLOP
 	elseif self.state == GameState.FLOP then
 		self:turn()
+		self.state = GameState.TURN
 	elseif self.state == GameState.TURN then
 		self:river()
+		self.state = GameState.RIVER
 	elseif self.state == GameState.RIVER then
 		-- TODO: what to do here? xd
 	end
@@ -234,8 +237,9 @@ function Poker:on_snap(snapping_client)
 		--       i wanted to do local pos = self.table.pos and then increment the x
 		--       maybe the C++ api is bad then if we cant use the table field nicely anyways
 
+		local snap_id = self.community_card_snap_ids[i]
 		snap.display_card(
-			self.community_card_snap_ids[i],
+			snap_id,
 			{
 				x = self.table.pos.x + i,
 				y = self.table.pos.y,

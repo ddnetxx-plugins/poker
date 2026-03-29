@@ -13,7 +13,7 @@ function ddnetpp.on_init()
       nil,
       {
          x = 33,
-         y = 33,
+         y = 3,
       }
    )
 

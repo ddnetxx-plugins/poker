@@ -11,6 +11,7 @@ function display_card(snap_id, pos, card)
 		id = snap_id,
 		client_id = snap_id,
 		is_local = false,
+		team = 1
 	})
 	ddnetpp.snap.new_character({
 		id = snap_id,
