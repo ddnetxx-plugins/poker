@@ -7,12 +7,12 @@ PokerPlayer = {
 	action = nil,
 }
 
-function PokerPlayer:new(o, client_id)
-	o = o or {}
+function PokerPlayer:new(client_id)
+	local o = {}
 	setmetatable(o, self)
-	self.__index = self
-	self.client_id = client_id
-	self.hole_cards = {}
-	self.action = nil
+	o.__index = self
+	o.client_id = client_id
+	o.hole_cards = {}
+	o.action = nil
 	return o
 end

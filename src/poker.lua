@@ -229,7 +229,11 @@ function Poker:print_betting_actions()
 				local text_pos = chr:pos()
 				text_pos.x = text_pos.x - 8
 				text_pos.y = text_pos.y - 8
-				ddnetpp.laser_text(text_pos, player.action.action)
+
+				-- FIXME: the next to act laser conflicts with this so clients get a snap crc error
+				--        we need to allocate a proper snap id for that first
+
+				-- ddnetpp.laser_text(text_pos, player.action.action)
 			end
 
 			local tw_player = ddnetpp.get_player(player.client_id)
@@ -310,11 +314,8 @@ end
 
 ---@param client_id integer
 function Poker:join_table(client_id)
-	ddnetpp.log_info("player joined cid=" .. client_id)
-	-- self.players[client_id] = PokerPlayer:new(nil, client_id)
-	self.players[client_id] = {
-		client_id = client_id,
-		action = nil,
-		cards = {}
-	}
+	self.players[client_id] = PokerPlayer:new(client_id)
+	self:send_chat(
+		"'" .. ddnetpp.server.client_name(client_id) .. "' joined the table"
+	)
 end
