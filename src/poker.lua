@@ -65,6 +65,7 @@ function Poker:new(o, table_pos)
 	self.players = {}
 	self.community_cards = {}
 	self.community_card_snap_ids = {}
+	self.next_to_act_snap_id = 0
 	self.deck = {}
 	return o
 end
@@ -92,20 +93,38 @@ function Poker:new_game()
 	self.deck = self:shuffled_deck()
 
 	if #self.community_card_snap_ids == 0 then
-		-- TODO: how to not collide with actual client ids here?
-		--       also how to not collide with other poker tables here?
-		--       ddnetpp.snap.new_id() does not seem to be the way to go
+		-- TODO: this is bad, if the server is already full and these ids
+		--       are already used then the poker plugin will crash which is okayish
+		--       better than crashing the server
+		--       and another limitation is we can not support multiple tables
+		--       the fix would be finding free ids and proper error handling
+		--       if there are none left
 		table.insert(self.community_card_snap_ids, 127)
 		table.insert(self.community_card_snap_ids, 126)
 		table.insert(self.community_card_snap_ids, 125)
 		table.insert(self.community_card_snap_ids, 124)
 		table.insert(self.community_card_snap_ids, 123)
+		ddnetpp.server.occupy_client_id(127)
+		ddnetpp.server.occupy_client_id(126)
+		ddnetpp.server.occupy_client_id(125)
+		ddnetpp.server.occupy_client_id(124)
+		ddnetpp.server.occupy_client_id(123)
 	end
+	self.next_to_act_snap_id = ddnetpp.snap.new_id()
 
 	for _, player in pairs(self.players) do
 		player.hole_cards = self:deal_hole_cards()
 		player.action = nil
 	end
+end
+
+function Poker:end_game()
+	ddnetpp.server.free_occupied_client_id(127)
+	ddnetpp.server.free_occupied_client_id(126)
+	ddnetpp.server.free_occupied_client_id(125)
+	ddnetpp.server.free_occupied_client_id(124)
+	ddnetpp.server.free_occupied_client_id(123)
+	ddnetpp.snap.free_id(self.next_to_act_snap_id)
 end
 
 ---@return string[] hole_cards # Table with two cards at index 1 and 2
@@ -255,9 +274,6 @@ function Poker:on_snap(snapping_client)
 	-- TODO: only snap to participants
 	--       or maybe keep snapping to all? so others can watch
 
-	-- TODO: use proper ids
-	local snap_id = 10
-
 	for i, card in pairs(self.community_cards) do
 		-- TODO: omg lua is so troll it moves the reference of a table with = operator
 		--       i wanted to do local pos = self.table.pos and then increment the x
@@ -278,7 +294,7 @@ function Poker:on_snap(snapping_client)
 		local chr_next = ddnetpp.get_character(next_to_act.client_id)
 		if chr_next then
 			ddnetpp.snap.new_laser({
-				id = snap_id,
+				id = self.next_to_act_snap_id,
 				pos = {
 					x = chr_next:pos().x,
 					y = chr_next:pos().y - 2,
@@ -286,6 +302,10 @@ function Poker:on_snap(snapping_client)
 			})
 		end
 	end
+
+	-- TODO: we need to allocate 2 client ids for every poker player
+	--       to be able to reveal cards at the end of the round
+	local snap_id = 200
 
 	local poker_player = self.players[snapping_client]
 	local chr = ddnetpp.get_character(snapping_client)
