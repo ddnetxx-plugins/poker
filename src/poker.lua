@@ -334,8 +334,18 @@ end
 
 ---@param client_id integer
 function Poker:join_table(client_id)
-	self.players[client_id] = PokerPlayer:new(client_id)
+	local player = PokerPlayer:new(client_id)
+	self.players[client_id] = player
 	self:send_chat(
 		"'" .. ddnetpp.server.client_name(client_id) .. "' joined the table"
 	)
+end
+
+---@param client_id integer
+function Poker:leave_table(client_id)
+	local player = self.players[client_id]
+	self:send_chat(
+		"'" .. ddnetpp.server.client_name(client_id) .. "' left the table"
+	)
+	self.players[client_id] = nil
 end
