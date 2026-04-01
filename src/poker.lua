@@ -11,6 +11,8 @@ require(script_path() .. "player")
 -- multiple games at once
 
 GameState = {
+	END = -1,
+	ERROR = 0,
 	PRE_FLOP = 1,
 	FLOP = 2,
 	TURN = 3,
@@ -86,6 +88,16 @@ function Poker:shuffled_deck()
 	return shuffle(CARDS)
 end
 
+---@return integer|nil client_id
+function Poker:find_and_occupy_free_client_id()
+	for i = 127, 0, -1 do
+		if ddnetpp.server.occupy_client_id(i) then
+			return i
+		end
+	end
+	return nil
+end
+
 function Poker:new_game()
 	self.state = GameState.PRE_FLOP
 
@@ -93,22 +105,15 @@ function Poker:new_game()
 	self.deck = self:shuffled_deck()
 
 	if #self.community_card_snap_ids == 0 then
-		-- TODO: this is bad, if the server is already full and these ids
-		--       are already used then the poker plugin will crash which is okayish
-		--       better than crashing the server
-		--       and another limitation is we can not support multiple tables
-		--       the fix would be finding free ids and proper error handling
-		--       if there are none left
-		table.insert(self.community_card_snap_ids, 127)
-		table.insert(self.community_card_snap_ids, 126)
-		table.insert(self.community_card_snap_ids, 125)
-		table.insert(self.community_card_snap_ids, 124)
-		table.insert(self.community_card_snap_ids, 123)
-		ddnetpp.server.occupy_client_id(127)
-		ddnetpp.server.occupy_client_id(126)
-		ddnetpp.server.occupy_client_id(125)
-		ddnetpp.server.occupy_client_id(124)
-		ddnetpp.server.occupy_client_id(123)
+		for _ = 1, 5, 1 do
+			local free_id = self:find_and_occupy_free_client_id()
+			if free_id == nil then
+				ddnetpp.send_chat("failed to start poker game, server is full")
+				self.state = GameState.ERROR
+				return
+			end
+			table.insert(self.community_card_snap_ids, free_id)
+		end
 	end
 	self.next_to_act_snap_id = ddnetpp.snap.new_id()
 
@@ -119,12 +124,14 @@ function Poker:new_game()
 end
 
 function Poker:end_game()
-	ddnetpp.server.free_occupied_client_id(127)
-	ddnetpp.server.free_occupied_client_id(126)
-	ddnetpp.server.free_occupied_client_id(125)
-	ddnetpp.server.free_occupied_client_id(124)
-	ddnetpp.server.free_occupied_client_id(123)
+	self.state = GameState.END
+	for _, occupied_id in pairs(self.community_card_snap_ids) do
+		ddnetpp.server.free_occupied_client_id(occupied_id)
+	end
 	ddnetpp.snap.free_id(self.next_to_act_snap_id)
+	for cid, _ in pairs(self.players) do
+		self:leave_table(cid)
+	end
 end
 
 ---@return string[] hole_cards # Table with two cards at index 1 and 2
@@ -267,6 +274,12 @@ function Poker:print_betting_actions()
 end
 
 function Poker:on_tick()
+	if self.state == GameState.ERROR then
+		return
+	end
+	if self.state == GameState.END then
+		return
+	end
 	self:print_betting_actions()
 end
 
@@ -334,6 +347,9 @@ end
 
 ---@param client_id integer
 function Poker:join_table(client_id)
+	if self.state == GameState.ERROR then
+		return
+	end
 	local player = PokerPlayer:new(client_id)
 	self.players[client_id] = player
 	self:send_chat(
@@ -344,8 +360,10 @@ end
 ---@param client_id integer
 function Poker:leave_table(client_id)
 	local player = self.players[client_id]
-	self:send_chat(
-		"'" .. ddnetpp.server.client_name(client_id) .. "' left the table"
-	)
+	if self.state ~= GameState.END then
+		self:send_chat(
+			"'" .. ddnetpp.server.client_name(client_id) .. "' left the table"
+		)
+	end
 	self.players[client_id] = nil
 end
