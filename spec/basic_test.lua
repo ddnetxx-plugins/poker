@@ -25,7 +25,10 @@ game:on_tick()
 -- preflop
 assert_eq(0, #game.community_cards)
 
+-- premove check
+assert_eq(1, game:next_to_act().client_id)
 game:player_action(0, { action = "check" })
+assert_eq(1, game:next_to_act().client_id)
 
 -- still preflop
 assert_eq(0, #game.community_cards)
