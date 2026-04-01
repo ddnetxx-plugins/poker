@@ -2,9 +2,6 @@ local assert_eq = require("simple.assert").assert_eq
 require("../src/poker")
 ddnetpp = require("spec.mock.ddnetpp")
 
-local got = 2
-assert_eq(2, got)
-
 local game = Poker:new(
 	nil,
 	{
@@ -23,5 +20,15 @@ for i = 0, 127, 1 do
 end
 game:on_tick()
 
+-- preflop
+assert_eq(0, #game.community_cards)
+
 game:player_action(0, { action = "check" })
+
+-- still preflop
+assert_eq(0, #game.community_cards)
+
 game:player_action(1, { action = "check" })
+
+-- flop
+assert_eq(3, #game.community_cards)
