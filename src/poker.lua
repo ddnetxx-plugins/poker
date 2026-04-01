@@ -255,11 +255,7 @@ function Poker:print_betting_actions()
 				local text_pos = chr:pos()
 				text_pos.x = text_pos.x - 8
 				text_pos.y = text_pos.y - 8
-
-				-- FIXME: the next to act laser conflicts with this so clients get a snap crc error
-				--        we need to allocate a proper snap id for that first
-
-				-- ddnetpp.laser_text(text_pos, player.action.action)
+				ddnetpp.laser_text(text_pos, player.action.action)
 			end
 
 			local tw_player = ddnetpp.get_player(player.client_id)
@@ -316,10 +312,6 @@ function Poker:on_snap(snapping_client)
 		end
 	end
 
-	-- TODO: we need to allocate 2 client ids for every poker player
-	--       to be able to reveal cards at the end of the round
-	local snap_id = 200
-
 	local poker_player = self.players[snapping_client]
 	local chr = ddnetpp.get_character(snapping_client)
 	if poker_player ~= nil and chr ~= nil then
@@ -329,7 +321,7 @@ function Poker:on_snap(snapping_client)
 		for i, card in pairs(poker_player.hole_cards) do
 			pos.x = pos.x + 0.9
 			snap.display_card(
-				snap_id + i + 4,
+				poker_player.hole_card_snap_ids[i],
 				pos,
 				card)
 		end
@@ -351,6 +343,21 @@ function Poker:join_table(client_id)
 		return
 	end
 	local player = PokerPlayer:new(client_id)
+
+	for _ = 1, 2, 1 do
+		local snap_id = nil
+		snap_id = self:find_and_occupy_free_client_id()
+		if snap_id == nil then
+			ddnetpp.send_chat_target(client_id, "failed to join poker table, server is full")
+			for _, allocated_id in pairs(player.hole_card_snap_ids) do
+				ddnetpp.log_info("table join failed, freeing cid=" .. allocated_id .. " of the partially allocated hole card ids")
+				ddnetpp.server.free_occupied_client_id(allocated_id)
+			end
+			return
+		end
+		table.insert(player.hole_card_snap_ids, snap_id)
+	end
+
 	self.players[client_id] = player
 	self:send_chat(
 		"'" .. ddnetpp.server.client_name(client_id) .. "' joined the table"
@@ -360,6 +367,9 @@ end
 ---@param client_id integer
 function Poker:leave_table(client_id)
 	local player = self.players[client_id]
+	for _, snap_id in pairs(player.hole_card_snap_ids) do
+		ddnetpp.server.free_occupied_client_id(snap_id)
+	end
 	if self.state ~= GameState.END then
 		self:send_chat(
 			"'" .. ddnetpp.server.client_name(client_id) .. "' left the table"
