@@ -2,6 +2,8 @@ local assert_eq = require("simple.assert").assert_eq
 require("../src/poker")
 ddnetpp = require("spec.mock.ddnetpp")
 
+ddnetpp.chat.silent = true
+
 local game = Poker:new(
 	nil,
 	{
@@ -29,6 +31,8 @@ game:player_action(0, { action = "check" })
 assert_eq(0, #game.community_cards)
 
 game:player_action(1, { action = "check" })
+assert_eq("'mock0' did a check", ddnetpp.get_chat_line(1, -2))
+assert_eq("next round!", ddnetpp.get_chat_line(1, -1))
 
 -- flop
 assert_eq(3, #game.community_cards)
