@@ -19,6 +19,23 @@ GameState = {
 	RIVER = 4,
 }
 
+local function gamestate_to_str(state)
+	if state == GameState.END then
+		return "END"
+	elseif state == GameState.ERROR then
+		return "ERROR"
+	elseif state == GameState.PRE_FLOP then
+		return "PRE_FLOP"
+	elseif state == GameState.FLOP then
+		return "FLOP"
+	elseif state == GameState.TURN then
+		return "TURN"
+	elseif state == GameState.RIVER then
+		return "RIVER"
+	end
+	return "(unknown)"
+end
+
 ---@class PlayerAction
 ---@field action string
 ---|"'check'"
@@ -70,6 +87,25 @@ function Poker:new(o, table_pos)
 	self.next_to_act_snap_id = 0
 	self.deck = {}
 	return o
+end
+
+---The full game state as a big multi line string
+---this is just for debugging
+---@return string gamestate
+function Poker:state_to_str()
+	local state = "gamestate: " .. gamestate_to_str(self.state)
+
+	for cid, player in pairs(self.players) do
+		local btn = ""
+		if player.is_button then
+			btn = " (button)"
+		end
+		state = state .. "\n" ..
+			"player '" .. ddnetpp.server.client_name(cid) .. "'" .. btn .. "\n" ..
+			"  idk xd"
+	end
+
+	return state
 end
 
 ---@param array table
@@ -337,6 +373,22 @@ function Poker:is_at_table(client_id)
 	return true
 end
 
+---We need a count helper because #self.players does not work as expected
+---Because it is not a proper lua array starting at index 1
+---it is a hash with the client id as key
+---
+---I currently have no internet so I came up with this loop.
+---TODO: there has to be a better way for getting the amount of keys
+---      set in a lua table i just cant lookup stuff right now :D
+---@return integer amount
+function Poker:num_players()
+	local num = 0
+	for _ in pairs(self.players) do
+		num = num + 1
+	end
+	return num
+end
+
 ---@param client_id integer
 function Poker:join_table(client_id)
 	if self.state == GameState.ERROR then
@@ -356,6 +408,11 @@ function Poker:join_table(client_id)
 			return
 		end
 		table.insert(player.hole_card_snap_ids, snap_id)
+	end
+
+	-- first player to join the table will get the button
+	if self:num_players() == 0 then
+		player.is_button = true
 	end
 
 	self.players[client_id] = player

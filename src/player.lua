@@ -7,6 +7,7 @@ PokerPlayer = {
 	hole_card_snap_ids = {},
 	---@type PlayerAction|nil
 	action = nil,
+	is_button = false,
 }
 
 function PokerPlayer:new(client_id)
@@ -17,5 +18,6 @@ function PokerPlayer:new(client_id)
 	o.hole_cards = {}
 	o.hole_card_snap_ids = {}
 	o.action = nil
+	o.is_button = false
 	return o
 end

@@ -1,4 +1,5 @@
-local assert_eq = require("simple.assert").assert_eq
+-- local assert_eq = require("simple.assert").assert_eq
+local assert_eq = require("spec.simple_assert").assert_eq
 require("../src/poker")
 ddnetpp = require("spec.mock.ddnetpp")
 
@@ -39,3 +40,19 @@ assert_eq("next round!", ddnetpp.get_chat_line(1, -1))
 
 -- flop
 assert_eq(3, #game.community_cards)
+
+-- this time we check in the correct order
+assert_eq(1, game:next_to_act().client_id)
+game:player_action(1, { action = "check" })
+
+assert_eq(0, game:next_to_act().client_id)
+game:player_action(0, { action = "check" })
+
+-- turn
+assert_eq(4, #game.community_cards)
+
+assert_eq(1, game:next_to_act().client_id)
+game:player_action(1, { action = "check" })
+
+assert_eq(0, game:next_to_act().client_id)
+game:player_action(0, { action = "check" })

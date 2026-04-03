@@ -13,7 +13,7 @@ function ddnetpp.on_init()
       nil,
       {
          x = 33,
-         y = 30,
+         y = 3,
       }
    )
 
@@ -40,8 +40,8 @@ function ddnetpp.on_tick()
    end
 end
 
-ddnetpp.register_chat("snap", "", "", function (client_id, args)
-   ddnetpp.send_chat("new snap id: " .. ddnetpp.snap.new_id())
+ddnetpp.register_chat("state", "", "", function (client_id, args)
+   ddnetpp.send_motd_target(client_id, games[1]:state_to_str())
 end)
 
 ddnetpp.register_chat("check", "", "check to next player in poker", function (client_id, args)
