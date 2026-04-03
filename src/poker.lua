@@ -19,6 +19,12 @@ GameState = {
 	RIVER = 4,
 }
 
+ButtonOffset = {
+	SMALL_BLIND = 1,
+	BIG_BLIND = 2,
+	UTG = 3,
+}
+
 local function gamestate_to_str(state)
 	if state == GameState.END then
 		return "END"
@@ -273,16 +279,42 @@ end
 
 ---@return PokerPlayer|nil
 function Poker:next_to_act()
-	for _, player in pairs(self.players) do
-		local skip = false
-		if #player.hole_cards == 0 then
-			skip = true
-		end
-		if player.action ~= nil then
-			skip = true
-		end
-		if not skip then
-			return player
+	local after_button = false
+	local button_offset = 0
+
+	-- loop twice because we need to skip to the
+	-- button first and then process all players behind it
+	for _ = 1, 2, 1 do
+		for _, player in pairs(self.players) do
+			local skip = false
+			if #player.hole_cards == 0 then
+				skip = true
+			end
+			if player.action ~= nil then
+				skip = true
+			end
+			if after_button then
+				button_offset = button_offset + 1
+				if button_offset == ButtonOffset.SMALL_BLIND then
+					-- TODO: this is pretty bad because the small blind
+					--       can be first to act in heads up
+					--       and also has to act if all others acted already
+					--       this entire method needs some cleanup
+					--       maybe we need to keep the prev player
+					--       or should not support premoves for now
+					skip = true
+				elseif button_offset == ButtonOffset.BIG_BLIND then
+					skip = true
+				end
+			else
+				skip = true
+			end
+			if player.is_button then
+				after_button = true
+			end
+			if not skip then
+				return player
+			end
 		end
 	end
 	return nil
