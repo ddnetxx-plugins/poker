@@ -134,11 +134,40 @@ function Poker:find_and_occupy_free_client_id()
 	return nil
 end
 
-function Poker:new_game()
+function Poker:new_round()
 	self.state = GameState.PRE_FLOP
+	self.deck = self:shuffled_deck()
+
+	local prev_had_button = false
+
+	for _, player in pairs(self.players) do
+		player.hole_cards = self:deal_hole_cards()
+		player.action = nil
+
+		if prev_had_button then
+			player.is_button = true
+			prev_had_button = false
+		elseif player.is_button then
+			player.is_button = false
+			prev_had_button = true
+		end
+	end
+
+	-- if the last player had the button we need to loop again to
+	-- overflow the button to the first player
+	if prev_had_button then
+		for _, player in pairs(self.players) do
+			player.is_button = true
+			prev_had_button = false
+			break
+		end
+	end
+end
+
+function Poker:new_game()
+	self:new_round()
 
 	math.randomseed(ddnetpp.secure_rand_below(666999))
-	self.deck = self:shuffled_deck()
 
 	if #self.community_card_snap_ids == 0 then
 		for _ = 1, 5, 1 do
@@ -152,11 +181,6 @@ function Poker:new_game()
 		end
 	end
 	self.next_to_act_snap_id = ddnetpp.snap.new_id()
-
-	for _, player in pairs(self.players) do
-		player.hole_cards = self:deal_hole_cards()
-		player.action = nil
-	end
 end
 
 function Poker:end_game()
@@ -179,7 +203,7 @@ function Poker:deal_hole_cards()
 end
 
 function Poker:flop()
-	-- TODO: assert that flop as not happened yet
+	-- TODO: assert that flop has not happened yet
 	table.insert(self.community_cards, table.remove(self.deck, 1))
 	table.insert(self.community_cards, table.remove(self.deck, 1))
 	table.insert(self.community_cards, table.remove(self.deck, 1))
@@ -243,14 +267,21 @@ function Poker:next_state()
 		self:river()
 		self.state = GameState.RIVER
 	elseif self.state == GameState.RIVER then
-		-- TODO: what to do here? xd
+		self:new_round()
 	end
 end
 
 ---@return PokerPlayer|nil
 function Poker:next_to_act()
 	for _, player in pairs(self.players) do
-		if player.action == nil then
+		local skip = false
+		if #player.hole_cards == 0 then
+			skip = true
+		end
+		if player.action ~= nil then
+			skip = true
+		end
+		if not skip then
 			return player
 		end
 	end

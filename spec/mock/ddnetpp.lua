@@ -1,4 +1,5 @@
 local ddnetpp = {
+	verbosity = 1,
 	chat = {
 		silent = false,
 		---@type string[]
@@ -91,7 +92,9 @@ function ddnetpp.secure_rand_below(max)
 	return math.random(max)
 end
 function ddnetpp.laser_text(pos, text, ticks)
-	print("[laser_text] " .. text)
+	if ddnetpp.verbosity > 0 then
+		print("[laser_text] " .. text)
+	end
 end
 
 local next_snap_id = 0
