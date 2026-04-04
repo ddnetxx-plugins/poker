@@ -215,6 +215,7 @@ end
 
 function Poker:new_round()
 	self.state = GameState.PRE_FLOP
+	self.community_cards = {}
 	self.deck = self:shuffled_deck()
 	self.pot = 0
 
@@ -604,6 +605,28 @@ function Poker:print_betting_actions()
 	end
 end
 
+function Poker:render_broadcast_hud()
+	local players_w_cards = 0
+	for _, player in pairs(self.players) do
+		if #player.hole_cards > 0 then
+			players_w_cards = players_w_cards + 1
+		end
+	end
+
+	-- TODO: "players with cards" sounds cring xd
+	--       im sure there is a term for it
+	--       i did not want to say just "players"
+	--       maybe "players table:"
+	--       and   "players in hand:"
+	--       idk
+	local hud =
+		"pot: " .. self.pot .. "\n" ..
+		"players with cards: " .. players_w_cards
+	for client_id, _ in pairs(self.players) do
+		ddnetpp.send_broadcast_target(client_id, hud)
+	end
+end
+
 function Poker:on_tick()
 	if self.state == GameState.ERROR then
 		return
@@ -612,6 +635,9 @@ function Poker:on_tick()
 		return
 	end
 	self:print_betting_actions()
+	if ddnetpp.server.tick() % 10 == 0 then
+		self:render_broadcast_hud()
+	end
 end
 
 function Poker:on_snap(snapping_client)
