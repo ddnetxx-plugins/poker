@@ -3,27 +3,9 @@ function script_path()
    return str:match("(.*/)") or "./"
 end
 
+require(script_path() .. "enums")
 local snap = require(script_path() .. "snap")
 require(script_path() .. "player")
-
--- The main class representing an entire game state
--- there can be multiple instances if you want to play
--- multiple games at once
-
-GameState = {
-	END = -1,
-	ERROR = 0,
-	PRE_FLOP = 1,
-	FLOP = 2,
-	TURN = 3,
-	RIVER = 4,
-}
-
-ButtonOffset = {
-	SMALL_BLIND = 1,
-	BIG_BLIND = 2,
-	UTG = 3,
-}
 
 local function gamestate_to_str(state)
 	if state == GameState.END then
@@ -52,6 +34,9 @@ end
 ---@field amount? integer # Absolute amount in chip value
 ---@field announced? boolean # True if this action was already announced to other players, can stay false|nil longer for pre moves
 
+-- The main class representing an entire game state
+-- there can be multiple instances if you want to play
+-- multiple games at once
 ---@class Poker
 Poker = {
 	table = {
@@ -140,16 +125,9 @@ function Poker:find_and_occupy_free_client_id()
 	return nil
 end
 
-function Poker:new_round()
-	self.state = GameState.PRE_FLOP
-	self.deck = self:shuffled_deck()
-
+function Poker:move_button()
 	local prev_had_button = false
-
 	for _, player in pairs(self.players) do
-		player.hole_cards = self:deal_hole_cards()
-		player.action = nil
-
 		if prev_had_button then
 			player.is_button = true
 			prev_had_button = false
@@ -158,7 +136,6 @@ function Poker:new_round()
 			prev_had_button = true
 		end
 	end
-
 	-- if the last player had the button we need to loop again to
 	-- overflow the button to the first player
 	if prev_had_button then
@@ -168,6 +145,21 @@ function Poker:new_round()
 			break
 		end
 	end
+end
+
+function Poker:new_round()
+	self.state = GameState.PRE_FLOP
+	self.deck = self:shuffled_deck()
+
+	for _, player in pairs(self.players) do
+		player.hole_cards = self:deal_hole_cards()
+		player.action = nil
+	end
+
+	self:move_button()
+
+
+
 end
 
 function Poker:new_game()
