@@ -358,37 +358,22 @@ function Poker:compute_next_to_act()
 
 	local num_players = self:num_players()
 
-
 	if num_players == 2 then
 		-- TODO: i feel like this code can be deleted
 		if self.next_to_act_offset == ButtonOffset.BUTTON then
-
-			print("btn finished his turn ..")
-
 			local next_player = self:get_player_by_position(ButtonOffset.SMALL_BLIND)
 			assert(next_player ~= nil, "no player after button?")
 			if next_player.action == nil then
-
-				print("sb didnt do anything yet -> his turn")
-
 				-- if button raised its the sb turn again
 				self.next_to_act_offset = ButtonOffset.SMALL_BLIND
 			else
-				print("all done")
 				self.next_to_act_offset = nil
 			end
 			return
 		elseif self.next_to_act_offset == ButtonOffset.SMALL_BLIND then
-			print("sb finished his turn ...")
-
 			local next_player = self:get_player_by_position(ButtonOffset.BUTTON)
 			assert(next_player ~= nil, "no player after big blind?")
 			if next_player.action == nil then
-
-				print("btn/bb did not do anything yet -> his turn")
-
-
-
 				-- if someone raised which cleared
 				-- the utg action we continue after the big blind
 				self.next_to_act_offset = ButtonOffset.BUTTON
@@ -442,8 +427,6 @@ function Poker:compute_next_to_act()
 			assert(false, "not implemented")
 		end
 	end
-
-	print("ah we are not preflop anymore xd")
 
 	-- increment the offset and then recurse
 	if self.next_to_act_offset == ButtonOffset.BUTTON then
