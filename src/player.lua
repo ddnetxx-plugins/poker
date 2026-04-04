@@ -8,7 +8,10 @@ PokerPlayer = {
 	---@type PlayerAction|nil
 	action = nil,
 	is_button = false,
-	button_offset = ButtonOffset.SMALL_BLIND,
+	position = {
+		name = "small blind",
+		offset = ButtonOffset.SMALL_BLIND,
+	},
 }
 
 function PokerPlayer:new(client_id)
@@ -20,6 +23,9 @@ function PokerPlayer:new(client_id)
 	o.hole_card_snap_ids = {}
 	o.action = nil
 	o.is_button = false
-	o.button_offset = ButtonOffset.SMALL_BLIND
+	o.position = {
+		name = "small blind",
+		offset = ButtonOffset.SMALL_BLIND,
+	}
 	return o
 end

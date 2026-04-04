@@ -7,11 +7,9 @@ ddnetpp.chat.silent = true
 ddnetpp.verbosity = 0
 
 local game = Poker:new(nil, { x = 33, y = 30 })
-game:join_table(0)
-game:join_table(1)
+game:join_table(0) -- sb
+game:join_table(1) -- btn
 game:new_game()
-
-game:on_tick()
 
 -- first player that joins will get the button
 -- but it moves on the start of the first round
@@ -19,8 +17,12 @@ game:on_tick()
 assert_eq(false, game.players[0].is_button)
 assert_eq(true, game.players[1].is_button)
 
+assert_eq(ButtonOffset.SMALL_BLIND, game.next_to_act_offset)
 game:player_action(0, { action = "check" })
+assert_eq(ButtonOffset.BUTTON, game.next_to_act_offset)
+
 game:player_action(1, { action = "check" })
+assert_eq(ButtonOffset.SMALL_BLIND, game.next_to_act_offset)
 
 -- after one round of betting the button should
 -- NOT have moved yet
@@ -28,6 +30,7 @@ assert_eq(GameState.FLOP, game.state)
 assert_eq(false, game.players[0].is_button)
 assert_eq(true, game.players[1].is_button)
 
+assert_eq(GameState.FLOP, game.state)
 game:player_action(0, { action = "check" })
 game:player_action(1, { action = "check" })
 assert_eq(GameState.TURN, game.state)

@@ -1,4 +1,5 @@
 ButtonOffset = {
+	BUTTON = 0,
 	SMALL_BLIND = 1,
 	BIG_BLIND = 2,
 	UTG = 3,

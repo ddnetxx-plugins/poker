@@ -147,6 +147,53 @@ function Poker:move_button()
 	end
 end
 
+function Poker:init_player_positions()
+	local after_button = false
+	local offset = 0
+	for _, player in pairs(self.players) do
+		if player.is_button == true then
+			after_button = true
+			player.position = {
+				name = "button",
+				offset = 0,
+			}
+		elseif after_button then
+			offset = offset + 1
+			player.position.name = "todo"
+			player.position.offset = offset
+		end
+	end
+	for _, player in pairs(self.players) do
+		if player.is_button == true then
+			break
+		end
+		offset = offset + 1
+		player.position.name = "todo"
+		player.position.offset = offset
+	end
+end
+
+---@param num_players integer
+function Poker:place_blinds(num_players)
+	for _, player in pairs(self.players) do
+		if player.position.offset == ButtonOffset.SMALL_BLIND then
+			-- TODO: place small blind here
+		else
+			local is_big_blind = false
+			if player.position.offset == ButtonOffset.BIG_BLIND then
+				is_big_blind = true
+			end
+			if num_players == 2 and player.position.offset == ButtonOffset.BUTTON then
+				is_big_blind = true
+			end
+
+			if is_big_blind then
+				-- TODO: place big blind here
+			end
+		end
+	end
+end
+
 function Poker:new_round()
 	self.state = GameState.PRE_FLOP
 	self.deck = self:shuffled_deck()
@@ -157,9 +204,18 @@ function Poker:new_round()
 	end
 
 	self:move_button()
+	self:init_player_positions()
 
+	local num_players = self:num_players()
+	self:place_blinds(num_players)
 
-
+	if num_players == 2 then
+		self.next_to_act_offset = ButtonOffset.SMALL_BLIND
+	elseif num_players == 3 then
+		self.next_to_act_offset = ButtonOffset.BUTTON
+	else
+		self.next_to_act_offset = ButtonOffset.UTG
+	end
 end
 
 function Poker:new_game()
@@ -232,6 +288,12 @@ function Poker:player_action(client_id, action)
 		end
 	end
 
+	-- TODO: if someone raises
+	--       clear other player actions so they get a turn again
+	--       and create a new array prev_actions to store the history
+	--       in that case. So we can properly display things such as
+	--       3 bet and so on
+
 	if action.action == "check" then
 		player.action = action
 	elseif action.action == "bet" then
@@ -247,6 +309,9 @@ function Poker:player_action(client_id, action)
 	end
 
 	self:print_betting_actions()
+	if self.next_to_act_offset == player.position.offset then
+		self:compute_next_to_act()
+	end
 	self:check_next_state()
 end
 
@@ -254,6 +319,8 @@ function Poker:next_state()
 	for _, player in pairs(self.players) do
 		player.action = nil
 	end
+
+	self.next_to_act_offset = ButtonOffset.SMALL_BLIND
 
 	if self.state == GameState.PRE_FLOP then
 		self:flop()
@@ -269,47 +336,139 @@ function Poker:next_state()
 	end
 end
 
+---@param offset integer
 ---@return PokerPlayer|nil
-function Poker:next_to_act()
-	local after_button = false
-	local button_offset = 0
-
-	-- loop twice because we need to skip to the
-	-- button first and then process all players behind it
-	for _ = 1, 2, 1 do
-		for _, player in pairs(self.players) do
-			local skip = false
-			if #player.hole_cards == 0 then
-				skip = true
-			end
-			if player.action ~= nil then
-				skip = true
-			end
-			if after_button then
-				button_offset = button_offset + 1
-				if button_offset == ButtonOffset.SMALL_BLIND then
-					-- TODO: this is pretty bad because the small blind
-					--       can be first to act in heads up
-					--       and also has to act if all others acted already
-					--       this entire method needs some cleanup
-					--       maybe we need to keep the prev player
-					--       or should not support premoves for now
-					skip = true
-				elseif button_offset == ButtonOffset.BIG_BLIND then
-					skip = true
-				end
-			else
-				skip = true
-			end
-			if player.is_button then
-				after_button = true
-			end
-			if not skip then
-				return player
-			end
+function Poker:get_player_by_position(offset)
+	for _, player in pairs(self.players) do
+		if player.position.offset == offset then
+			return player
 		end
 	end
 	return nil
+end
+
+function Poker:compute_next_to_act()
+	local prev = self:next_to_act()
+	assert(prev ~= nil, "tried to compute next to act but betting round was already over")
+
+	-- still waiting for same player
+	if prev.action == nil then
+		return
+	end
+
+	local num_players = self:num_players()
+
+
+	if num_players == 2 then
+		-- TODO: i feel like this code can be deleted
+		if self.next_to_act_offset == ButtonOffset.BUTTON then
+
+			print("btn finished his turn ..")
+
+			local next_player = self:get_player_by_position(ButtonOffset.SMALL_BLIND)
+			assert(next_player ~= nil, "no player after button?")
+			if next_player.action == nil then
+
+				print("sb didnt do anything yet -> his turn")
+
+				-- if button raised its the sb turn again
+				self.next_to_act_offset = ButtonOffset.SMALL_BLIND
+			else
+				print("all done")
+				self.next_to_act_offset = nil
+			end
+			return
+		elseif self.next_to_act_offset == ButtonOffset.SMALL_BLIND then
+			print("sb finished his turn ...")
+
+			local next_player = self:get_player_by_position(ButtonOffset.BUTTON)
+			assert(next_player ~= nil, "no player after big blind?")
+			if next_player.action == nil then
+
+				print("btn/bb did not do anything yet -> his turn")
+
+
+
+				-- if someone raised which cleared
+				-- the utg action we continue after the big blind
+				self.next_to_act_offset = ButtonOffset.BUTTON
+			else
+				self.next_to_act_offset = nil
+			end
+			return
+		end
+		assert(false, "should be unreachable w 2 players")
+	end
+
+
+	-- special case for the blinds
+	if self.state == GameState.PRE_FLOP then
+		if num_players > 3 then
+			if self.next_to_act_offset == ButtonOffset.BUTTON then
+				self.next_to_act_offset = ButtonOffset.SMALL_BLIND
+			elseif self.next_to_act_offset == ButtonOffset.SMALL_BLIND then
+				self.next_to_act_offset = ButtonOffset.BIG_BLIND
+			elseif self.next_to_act_offset == ButtonOffset.BIG_BLIND then
+				local next_player = self:get_player_by_position(ButtonOffset.UTG)
+				assert(next_player ~= nil, "no player after big blind?")
+				if next_player.action == nil then
+					-- if someone raised which cleared
+					-- the utg action we continue after the big blind
+					self.next_to_act_offset = ButtonOffset.UTG
+				else
+					self.next_to_act_offset = nil
+				end
+				return
+			end
+		elseif num_players == 3 then
+			-- TODO: i feel like this code can be deleted or merged with above
+			--       or solved with recursion
+			if self.next_to_act_offset == ButtonOffset.BUTTON then
+				self.next_to_act_offset = ButtonOffset.SMALL_BLIND
+			elseif self.next_to_act_offset == ButtonOffset.SMALL_BLIND then
+				self.next_to_act_offset = ButtonOffset.BIG_BLIND
+			elseif self.next_to_act_offset == ButtonOffset.BIG_BLIND then
+				local next_player = self:get_player_by_position(ButtonOffset.BUTTON)
+				assert(next_player ~= nil, "no player after big blind?")
+				if next_player.action == nil then
+					-- if someone raised which cleared
+					-- the utg action we continue after the big blind
+					self.next_to_act_offset = ButtonOffset.BUTTON
+				else
+					self.next_to_act_offset = nil
+				end
+				return
+			end
+			assert(false, "not implemented")
+		end
+	end
+
+	print("ah we are not preflop anymore xd")
+
+	-- increment the offset and then recurse
+	if self.next_to_act_offset == ButtonOffset.BUTTON then
+		self.next_to_act_offset = nil
+		return
+	end
+
+	self.next_to_act_offset = self.next_to_act_offset + 1
+
+	if self.next_to_act_offset == num_players - 1 then
+		self.next_to_act_offset = ButtonOffset.BUTTON
+	end
+
+	self:compute_next_to_act()
+end
+
+---@return PokerPlayer|nil
+function Poker:next_to_act()
+	if self.next_to_act_offset == nil then
+		return nil
+	end
+
+	local next_player = self:get_player_by_position(self.next_to_act_offset)
+	assert(next_player ~= nil, "failed to find next to act at button_offset=" .. self.next_to_act_offset)
+	return next_player
 end
 
 function Poker:check_next_state()
