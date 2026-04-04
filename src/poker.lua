@@ -409,6 +409,33 @@ function Poker:compute_next_to_act()
 		assert(false, "not implemented")
 	end
 
+	-- special case for the blinds
+	if self.state == GameState.PRE_FLOP then
+		if num_players > 3 then
+			print("WE ARE HERE")
+			if self.next_to_act_offset == ButtonOffset.BUTTON then
+				self.next_to_act_offset = ButtonOffset.SMALL_BLIND
+				self:compute_next_to_act()
+				return
+			elseif self.next_to_act_offset == ButtonOffset.SMALL_BLIND then
+				self.next_to_act_offset = ButtonOffset.BIG_BLIND
+				self:compute_next_to_act()
+				return
+			elseif self.next_to_act_offset == ButtonOffset.BIG_BLIND then
+				local next_player = self:get_player_by_position(ButtonOffset.UTG)
+				assert(next_player ~= nil, "no player after big blind?")
+				if next_player.action == nil then
+					-- if someone raised which cleared
+					-- the utg action we continue after the big blind
+					self.next_to_act_offset = ButtonOffset.UTG
+				else
+					self.next_to_act_offset = nil
+				end
+				return
+			end
+		end
+	end
+
 	-- increment the offset and then recurse
 	if self.next_to_act_offset == ButtonOffset.BUTTON then
 		self.next_to_act_offset = nil
@@ -416,6 +443,9 @@ function Poker:compute_next_to_act()
 	end
 
 	self.next_to_act_offset = self.next_to_act_offset + 1
+
+	print("num players: " .. num_players)
+	print("old offset: " .. self.next_to_act_offset)
 
 	if self.next_to_act_offset == num_players then
 		self.next_to_act_offset = ButtonOffset.BUTTON
