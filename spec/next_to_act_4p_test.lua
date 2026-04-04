@@ -36,5 +36,73 @@ game:player_action(3, { action = "check" })
 -- flop
 assert_eq(GameState.FLOP, game.state)
 assert_eq(ButtonOffset.SMALL_BLIND, game.players[2].position.offset)
--- assert_eq(2, game:next_to_act().client_id) -- WTF WHY DOES THIS FAIL????
+
+assert_eq(2, game:next_to_act().client_id)
 game:player_action(2, { action = "check" })
+
+assert_eq(3, game:next_to_act().client_id)
+game:player_action(3, { action = "check" })
+
+assert_eq(0, game:next_to_act().client_id)
+game:player_action(0, { action = "check" })
+
+assert_eq(1, game:next_to_act().client_id)
+game:player_action(1, { action = "check" })
+
+-- turn
+assert_eq(GameState.TURN, game.state)
+
+assert_eq(2, game:next_to_act().client_id)
+game:player_action(2, { action = "check" })
+
+assert_eq(3, game:next_to_act().client_id)
+game:player_action(3, { action = "check" })
+
+assert_eq(0, game:next_to_act().client_id)
+game:player_action(0, { action = "check" })
+
+assert_eq(1, game:next_to_act().client_id)
+game:player_action(1, { action = "check" })
+
+-- river
+assert_eq(GameState.RIVER, game.state)
+
+assert_eq(2, game:next_to_act().client_id)
+game:player_action(2, { action = "check" })
+
+assert_eq(3, game:next_to_act().client_id)
+game:player_action(3, { action = "check" })
+
+assert_eq(0, game:next_to_act().client_id)
+game:player_action(0, { action = "check" })
+
+assert_eq(1, game:next_to_act().client_id)
+game:player_action(1, { action = "check" })
+
+-- pre flop (button moved)
+-- before:
+-- cid=0 utg
+-- cid=1 btn
+-- cid=2 sb
+-- cid=3 bb
+--
+-- after:
+-- cid=0 bb
+-- cid=1 utg
+-- cid=2 btn
+-- cid=3 sb
+
+assert_eq(true, game.players[2].is_button)
+
+-- utg first to act
+assert_eq(1, game:next_to_act().client_id)
+game:player_action(1, { action = "check" })
+
+assert_eq(2, game:next_to_act().client_id)
+game:player_action(2, { action = "check" })
+
+assert_eq(3, game:next_to_act().client_id)
+game:player_action(3, { action = "check" })
+
+assert_eq(0, game:next_to_act().client_id)
+game:player_action(0, { action = "check" })

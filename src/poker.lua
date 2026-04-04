@@ -412,7 +412,6 @@ function Poker:compute_next_to_act()
 	-- special case for the blinds
 	if self.state == GameState.PRE_FLOP then
 		if num_players > 3 then
-			print("WE ARE HERE")
 			if self.next_to_act_offset == ButtonOffset.BUTTON then
 				self.next_to_act_offset = ButtonOffset.SMALL_BLIND
 				self:compute_next_to_act()
@@ -443,9 +442,6 @@ function Poker:compute_next_to_act()
 	end
 
 	self.next_to_act_offset = self.next_to_act_offset + 1
-
-	print("num players: " .. num_players)
-	print("old offset: " .. self.next_to_act_offset)
 
 	if self.next_to_act_offset == num_players then
 		self.next_to_act_offset = ButtonOffset.BUTTON
