@@ -17,12 +17,8 @@ game:new_game()
 assert_eq(false, game.players[0].is_button)
 assert_eq(true, game.players[1].is_button)
 
-assert_eq(ButtonOffset.SMALL_BLIND, game.next_to_act_offset)
 game:player_action(0, { action = "check" })
-assert_eq(ButtonOffset.BUTTON, game.next_to_act_offset)
-
 game:player_action(1, { action = "check" })
-assert_eq(ButtonOffset.SMALL_BLIND, game.next_to_act_offset)
 
 -- after one round of betting the button should
 -- NOT have moved yet

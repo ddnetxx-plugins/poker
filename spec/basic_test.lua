@@ -13,8 +13,8 @@ local game = Poker:new(
 	}
 )
 
-game:join_table(0)
-game:join_table(1)
+game:join_table(0) -- sb  <- first to act
+game:join_table(1) -- btn/bb
 
 game:new_game()
 
@@ -27,14 +27,14 @@ game:on_tick()
 assert_eq(0, #game.community_cards)
 
 -- premove check
-assert_eq(1, game:next_to_act().client_id)
-game:player_action(0, { action = "check" })
-assert_eq(1, game:next_to_act().client_id)
+assert_eq(0, game:next_to_act().client_id)
+game:player_action(1, { action = "check" })
+assert_eq(0, game:next_to_act().client_id)
 
 -- still preflop
 assert_eq(0, #game.community_cards)
 
-game:player_action(1, { action = "check" })
+game:player_action(0, { action = "check" })
 assert_eq("'mock0' did a check", ddnetpp.get_chat_line(1, -2))
 assert_eq("next round!", ddnetpp.get_chat_line(1, -1))
 
@@ -42,17 +42,17 @@ assert_eq("next round!", ddnetpp.get_chat_line(1, -1))
 assert_eq(3, #game.community_cards)
 
 -- this time we check in the correct order
-assert_eq(1, game:next_to_act().client_id)
-game:player_action(1, { action = "check" })
-
 assert_eq(0, game:next_to_act().client_id)
 game:player_action(0, { action = "check" })
+
+assert_eq(1, game:next_to_act().client_id)
+game:player_action(1, { action = "check" })
 
 -- turn
 assert_eq(4, #game.community_cards)
 
-assert_eq(1, game:next_to_act().client_id)
-game:player_action(1, { action = "check" })
-
 assert_eq(0, game:next_to_act().client_id)
 game:player_action(0, { action = "check" })
+
+assert_eq(1, game:next_to_act().client_id)
+game:player_action(1, { action = "check" })
