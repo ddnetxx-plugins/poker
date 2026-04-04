@@ -574,6 +574,22 @@ function Poker:send_chat(message)
 end
 
 function Poker:print_betting_actions()
+	-- TODO: this loop is tricky
+	--       a helper for that would be nice
+	--       it makes no sense to loop players based
+	--       on join table order and return
+	--       on first player that did not act yet
+	--       we need to iterate based on on the position
+	--       of the button
+	--       which is different preflop
+	--       i am pretty sure there is a way in lua to implement iterators
+	--       so we can do something like this
+	--       for _, player in self:players_in_position_order() do
+	--         ..
+	--       end
+	--       once annoucements of bettings are fixed
+	--       we also need to unit test them!
+
 	for _, player in pairs(self.players) do
 		if player.action == nil then
 			-- print("waiting for " .. player.client_id)
