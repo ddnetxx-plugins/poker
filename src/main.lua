@@ -40,6 +40,7 @@ function ddnetpp.on_tick()
    end
 end
 
+-- TODO: remove this debug command, or turn into a rcon command with a better name
 ddnetpp.register_chat("state", "", "", function (client_id, args)
    ddnetpp.send_motd_target(client_id, games[1]:state_to_str())
 end)
@@ -48,6 +49,18 @@ ddnetpp.register_chat("check", "", "check to next player in poker", function (cl
    for _, game in pairs(games) do
       if game:is_at_table(client_id) then
          game:player_action(client_id, { action = "check" })
+
+          -- no multi table support yet -.-
+         return
+      end
+   end
+   ddnetpp.log_info("chatresp", "You are not any poker table")
+end)
+
+ddnetpp.register_chat("raise", "i[amount]", "raise in poker", function (client_id, args)
+   for _, game in pairs(games) do
+      if game:is_at_table(client_id) then
+         game:player_action(client_id, { action = "raise", amount = args.amount })
 
           -- no multi table support yet -.-
          return

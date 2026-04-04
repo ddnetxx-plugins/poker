@@ -621,9 +621,17 @@ function Poker:render_broadcast_hud()
 	--       idk
 	local hud =
 		"pot: " .. self.pot .. "\n" ..
-		"players with cards: " .. players_w_cards
-	for client_id, _ in pairs(self.players) do
-		ddnetpp.send_broadcast_target(client_id, hud)
+		"players with cards: " .. players_w_cards .. "\n"
+	local align_left =
+		"                                                   " ..
+		"                                                   " ..
+		"                                                   "
+	for client_id, player in pairs(self.players) do
+		local player_hud = "your chips: " .. player.chips
+		ddnetpp.send_broadcast_target(
+			client_id,
+			hud .. player_hud .. align_left
+		)
 	end
 end
 
