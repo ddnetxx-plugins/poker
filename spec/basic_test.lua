@@ -4,6 +4,7 @@ require("../src/poker")
 ddnetpp = require("spec.mock.ddnetpp")
 
 ddnetpp.chat.silent = true
+ddnetpp.verbosity = 0
 
 local game = Poker:new(
 	nil,
