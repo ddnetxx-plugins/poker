@@ -54,6 +54,7 @@ Poker = {
 	},
 	pot = 0,
 	start_stack = 50000,
+	---The key is the seat number
 	---@type PokerPlayer[]
 	players = {},
 	---@type string[]
@@ -133,6 +134,17 @@ function Poker:find_free_seat()
 	for _, seat in pairs(self.table.seats) do
 		if seat.client_id == nil then
 			return seat
+		end
+	end
+	return nil
+end
+
+---@param client_id integer
+---@return PokerPlayer|nil
+function Poker:find_player(client_id)
+	for _, player in pairs(self.players) do
+		if client_id == player.client_id then
+			return player
 		end
 	end
 	return nil
@@ -348,7 +360,7 @@ end
 ---@param action PlayerAction
 function Poker:player_action(client_id, action)
 	-- TODO: can the player be nil here? do we need to check that? Or is that on the callsite?
-	local player = self.players[client_id]
+	local player = self:find_player(client_id)
 
 	if player.action ~= nil then
 		-- Premoves can still be changed
@@ -737,7 +749,7 @@ function Poker:on_snap(snapping_client)
 		end
 	end
 
-	local poker_player = self.players[snapping_client]
+	local poker_player = self:find_player(snapping_client)
 	local chr = ddnetpp.get_character(snapping_client)
 	if poker_player ~= nil and chr ~= nil then
 		local pos = chr:pos()
@@ -756,7 +768,7 @@ end
 ---@param client_id integer
 ---@return boolean
 function Poker:is_at_table(client_id)
-	if self.players[client_id] == nil then
+	if self:find_player(client_id) == nil then
 		return false
 	end
 	return true
@@ -812,7 +824,7 @@ function Poker:join_table(client_id)
 		player.is_button = true
 	end
 
-	self.players[client_id] = player
+	self.players[seat.number] = player
 	self:send_chat(
 		"'" .. ddnetpp.server.client_name(client_id) .. "' joined the table"
 	)
@@ -820,7 +832,11 @@ end
 
 ---@param client_id integer
 function Poker:leave_table(client_id)
-	local player = self.players[client_id]
+	local player = self:find_player(client_id)
+	if player == nil then
+		ddnetpp.log_error("player not at the table tried to leave it!")
+		return
+	end
 	for _, snap_id in pairs(player.hole_card_snap_ids) do
 		ddnetpp.server.free_occupied_client_id(snap_id)
 	end
@@ -829,5 +845,5 @@ function Poker:leave_table(client_id)
 			"'" .. ddnetpp.server.client_name(client_id) .. "' left the table"
 		)
 	end
-	self.players[client_id] = nil
+	self.players[player.seat] = nil
 end

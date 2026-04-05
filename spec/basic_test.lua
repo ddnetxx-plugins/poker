@@ -24,6 +24,9 @@ for i = 0, 127, 1 do
 end
 game:on_tick()
 
+assert_eq(ButtonOffset.SMALL_BLIND, game:find_player(0).position.offset)
+assert_eq(ButtonOffset.BUTTON, game:find_player(1).position.offset)
+
 -- preflop
 assert_eq(0, #game.community_cards)
 
@@ -36,7 +39,8 @@ assert_eq(0, game:next_to_act().client_id)
 assert_eq(0, #game.community_cards)
 
 game:player_action(0, { action = "check" })
-assert_eq("'mock0' did a check", ddnetpp.get_chat_line(1, -2))
+assert_eq("'mock0' did a check", ddnetpp.get_chat_line(1, -3))
+assert_eq("'mock1' did a check", ddnetpp.get_chat_line(1, -2))
 assert_eq("next round!", ddnetpp.get_chat_line(1, -1))
 
 -- flop
