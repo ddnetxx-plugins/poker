@@ -455,8 +455,6 @@ function Poker:next_state()
 		player.prev_actions = {}
 	end
 
-	self.next_to_act_offset = self:first_offset_to_act()
-
 	if self.state == GameState.PRE_FLOP then
 		self:flop()
 		self.state = GameState.FLOP
@@ -471,7 +469,10 @@ function Poker:next_state()
 		--       and kick ALL IN losers out of the table here
 
 		self:new_round()
+		return
 	end
+
+	self.next_to_act_offset = self:first_offset_to_act()
 end
 
 ---@param offset integer
