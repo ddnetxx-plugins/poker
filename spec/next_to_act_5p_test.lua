@@ -40,6 +40,8 @@ game:player_action(3, { action = "check" })
 
 -- flop
 assert_eq(GameState.FLOP, game.state)
+assert_eq(ButtonOffset.SMALL_BLIND, game:find_player(2).position.offset)
+assert_eq(ButtonOffset.UTG, game:find_player(4).position.offset)
 
 assert_eq(2, game:next_to_act().client_id)
 game:player_action(2, { action = "check" })
