@@ -1,2 +1,2 @@
 test:
-	lua ./spec/*_test.lua
+	find ./spec/ -name "*_test.lua" | xargs lua
