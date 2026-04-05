@@ -1,4 +1,4 @@
-function script_path()
+local function script_path()
    local str = debug.getinfo(2, "S").source:sub(2)
    return str:match("(.*/)") or "./"
 end
@@ -146,9 +146,9 @@ function Poker:state_to_str()
 		"gamestate: " .. gamestate_to_str(self.state) .. "\n" ..
 		"pot: " .. self.pot
 
-	for cid, player in pairs(self.players) do
+	for _, player in pairs(self.players) do
 		state = state .. "\n" ..
-			"player '" .. ddnetpp.server.client_name(cid) .. "' " .. player.position.name .. "\n" ..
+			"player '" .. ddnetpp.server.client_name(player.client_id) .. "' " .. player.position.name .. "\n" ..
 			"  idk xd"
 	end
 
@@ -307,8 +307,8 @@ function Poker:end_game()
 		ddnetpp.server.free_occupied_client_id(occupied_id)
 	end
 	ddnetpp.snap.free_id(self.next_to_act_snap_id)
-	for cid, _ in pairs(self.players) do
-		self:leave_table(cid)
+	for _, player in pairs(self.players) do
+		self:leave_table(player.client_id)
 	end
 end
 
@@ -682,10 +682,10 @@ function Poker:render_broadcast_hud()
 		"                                                   " ..
 		"                                                   " ..
 		"                                                   "
-	for client_id, player in pairs(self.players) do
+	for _, player in pairs(self.players) do
 		local player_hud = "your chips: " .. player.chips
 		ddnetpp.send_broadcast_target(
-			client_id,
+			player.client_id,
 			hud .. player_hud .. align_left
 		)
 	end
