@@ -8,15 +8,35 @@ local ddnetpp = {
 		-- and value is an array of direct messages
 		lines_cid = {},
 	},
+	broadcast = {
+		silent = true,
+		---@type string[]
+		lines = {},
+		-- key is the client id
+		-- and value is an array of direct messages
+		lines_cid = {},
+	},
 	server = {},
 	snap = {},
 	weapon = {
 		NONE = -1
-	}
+	},
+	ticks_passed = 0
 }
 
 function ddnetpp.get_chat_line(client_id, offset)
 	local lines = ddnetpp.chat.lines_cid[client_id]
+	if lines == nil then
+		return nil
+	end
+	if offset >= 0 then
+		return lines[offset]
+	end
+	return lines[#lines+offset+1]
+end
+
+function ddnetpp.get_broadcast_line(client_id, offset)
+	local lines = ddnetpp.broadcast.lines_cid[client_id]
 	if lines == nil then
 		return nil
 	end
@@ -35,6 +55,10 @@ function ddnetpp.server.client_name(client_id)
 	return "mock" .. client_id
 end
 
+function ddnetpp.server.tick()
+	return ddnetpp.ticks_passed
+end
+
 
 function ddnetpp.send_chat(message)
 	if ddnetpp.chat.silent == false then
@@ -51,6 +75,16 @@ function ddnetpp.send_chat_target(client_id, message)
 		ddnetpp.chat.lines_cid[client_id] = {}
 	end
 	table.insert(ddnetpp.chat.lines_cid[client_id], message)
+end
+
+function ddnetpp.send_broadcast_target(client_id, message)
+	if ddnetpp.broadcast.silent == false then
+		print("[to cid=" .. client_id .. "][broadcast] " .. message)
+	end
+	if ddnetpp.broadcast.lines_cid[client_id] == nil then
+		ddnetpp.broadcast.lines_cid[client_id] = {}
+	end
+	table.insert(ddnetpp.broadcast.lines_cid[client_id], message)
 end
 
 Player = {}
