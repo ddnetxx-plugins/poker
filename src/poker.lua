@@ -280,14 +280,7 @@ function Poker:new_round()
 
 	local num_players = self:num_players()
 	self:place_blinds(num_players)
-
-	if num_players == 2 then
-		self.next_to_act_offset = ButtonOffset.SMALL_BLIND
-	elseif num_players == 3 then
-		self.next_to_act_offset = ButtonOffset.BUTTON
-	else
-		self.next_to_act_offset = ButtonOffset.UTG
-	end
+	self.next_to_act_offset = self:first_offset_to_act()
 end
 
 function Poker:new_game()
@@ -462,7 +455,7 @@ function Poker:next_state()
 		player.prev_actions = {}
 	end
 
-	self.next_to_act_offset = ButtonOffset.SMALL_BLIND
+	self.next_to_act_offset = self:first_offset_to_act()
 
 	if self.state == GameState.PRE_FLOP then
 		self:flop()
@@ -622,27 +615,64 @@ function Poker:send_chat(message)
 	end
 end
 
+---Find the first position that has to act at the beginning of this round.
+---This is NOT the next player to act in the middle of the round.
+---So pre flop that will be UTG if there are enough players
+---and post flop this will be sb
+---@return integer button_offset
+function Poker:first_offset_to_act()
+	if self.state == GameState.PRE_FLOP then
+		local num_players = self:num_players()
+		if num_players == 2 then
+			return ButtonOffset.SMALL_BLIND
+		elseif num_players == 3 then
+			return ButtonOffset.BUTTON
+		end
+		return ButtonOffset.UTG
+	end
+
+	-- post flop is simple
+	return ButtonOffset.SMALL_BLIND
+end
+
+---TODO: would it be useful to skip players here?
+---      players that went all in or folded for example
+---      not sure yet
+---
+---Sorts players by the position relative to the button
+---The returned array will have the first player to act
+---as first element and the second as second.
+---So pre flop the returned array will start with utg,utg+1,..
+---and post flop it will start with sb,bb,..
+---@return PokerPlayer[] players
 function Poker:sort_players_by_position()
+	---@type PokerPlayer[]
+	local players = {}
+
+	local found_first = false
+	local first_offset = self:first_offset_to_act()
+
+	for _, player in pairs(self.players) do
+		if player.position.offset == first_offset then
+			found_first = true
+		end
+		if found_first then
+			table.insert(players, player)
+		end
+	end
+
+	for _, player in pairs(self.players) do
+		if player.position.offset == first_offset then
+			break
+		end
+		table.insert(players, player)
+	end
+
+	return players
 end
 
 function Poker:print_betting_actions()
-	-- TODO: this loop is tricky
-	--       a helper for that would be nice
-	--       it makes no sense to loop players based
-	--       on join table order and return
-	--       on first player that did not act yet
-	--       we need to iterate based on on the position
-	--       of the button
-	--       which is different preflop
-	--       i am pretty sure there is a way in lua to implement iterators
-	--       so we can do something like this
-	--       for _, player in self:players_in_position_order() do
-	--         ..
-	--       end
-	--       once annoucements of bettings are fixed
-	--       we also need to unit test them!
-
-	for _, player in pairs(self.players) do
+	for _, player in pairs(self:sort_players_by_position()) do
 		if player.action == nil then
 			-- print("waiting for " .. player.client_id)
 			-- stop here to not leak pre moves
