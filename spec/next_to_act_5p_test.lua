@@ -6,7 +6,7 @@ ddnetpp = require("spec.mock.ddnetpp")
 ddnetpp.chat.silent = true
 ddnetpp.verbosity = 0
 
-local game = Poker:new(nil, { x = 33, y = 30 })
+local game = Poker:new(nil, { x = 33, y = 30 }, 5)
 game:join_table(0) -- co
 game:join_table(1) -- btn
 game:join_table(2) -- sb
@@ -14,11 +14,11 @@ game:join_table(3) -- bb
 game:join_table(4) -- utg
 game:new_game()
 
-assert_eq(ButtonOffset.UTG+1, game.players[0].position.offset)
-assert_eq(ButtonOffset.BUTTON, game.players[1].position.offset)
-assert_eq(ButtonOffset.SMALL_BLIND, game.players[2].position.offset)
-assert_eq(ButtonOffset.BIG_BLIND, game.players[3].position.offset)
-assert_eq(ButtonOffset.UTG, game.players[4].position.offset)
+assert_eq(ButtonOffset.UTG+1, game:find_player(0).position.offset)
+assert_eq(ButtonOffset.BUTTON, game:find_player(1).position.offset)
+assert_eq(ButtonOffset.SMALL_BLIND, game:find_player(2).position.offset)
+assert_eq(ButtonOffset.BIG_BLIND, game:find_player(3).position.offset)
+assert_eq(ButtonOffset.UTG, game:find_player(4).position.offset)
 
 assert_eq(game.next_to_act_offset, ButtonOffset.UTG)
 
