@@ -34,6 +34,11 @@ end
 ---@field amount? integer # Absolute amount in chip value
 ---@field announced? boolean # True if this action was already announced to other players, can stay false|nil longer for pre moves
 
+---@class Seat
+---@field number integer # Seats are numbered starting from 1, this is their unique identifier
+---@field pos Position # Relative position to the table center
+---@field client_id integer|nil # The player sitting on the seat
+
 -- The main class representing an entire game state
 -- there can be multiple instances if you want to play
 -- multiple games at once
@@ -43,7 +48,9 @@ Poker = {
 		pos = {
 			x = 0,
 			y = 0,
-		}
+		},
+		---@type Seat[]
+		seats = {}
 	},
 	pot = 0,
 	start_stack = 50000,
@@ -65,15 +72,35 @@ CARDS = {
 	"🃒", "🃓", "🃔", "🃕", "🃖", "🃗", "🃘", "🃙", "🃚", "🃛", "🃝", "🃞", "🃑", -- Clubs
 }
 
+---@param amount integer
+---@return Seat[] seats
+local function build_seats(amount)
+	---@type Seat[]
+	local seats = {}
+	for i = 1, amount do
+		local seat = {
+			number = i,
+			pos = {
+				x = -(amount / 2) + i * 2,
+				y = 3
+			},
+			client_id = nil
+		}
+		table.insert(seats, seat)
+	end
+	return seats
+end
+
 ---@param o Poker|nil
 ---@param table_pos Position
 ---@return any
-function Poker:new(o, table_pos)
+function Poker:new(o, table_pos, num_seats)
 	o = o or {}
 	setmetatable(o, self)
 	self.__index = self
 	self.table = {}
 	self.table.pos = table_pos or { x = 0, y = 0 }
+	self.table.seats = build_seats(num_seats or 4)
 	self.players = {}
 	self.community_cards = {}
 	self.community_card_snap_ids = {}
@@ -99,6 +126,16 @@ function Poker:new(o, table_pos)
 	-- to figure out how much players still have to play to continue playing
 	self.pot_per_player = 0
 	return o
+end
+
+---@return Seat|nil seat # First free seat at the table or nil if the table is full
+function Poker:find_free_seat()
+	for _, seat in pairs(self.table.seats) do
+		if seat.client_id == nil then
+			return seat
+		end
+	end
+	return nil
 end
 
 ---The full game state as a big multi line string
@@ -573,6 +610,9 @@ function Poker:send_chat(message)
 	end
 end
 
+function Poker:sort_players_by_position()
+end
+
 function Poker:print_betting_actions()
 	-- TODO: this loop is tricky
 	--       a helper for that would be nice
@@ -744,6 +784,14 @@ function Poker:join_table(client_id)
 		return
 	end
 	local player = PokerPlayer:new(client_id)
+
+	local seat = self:find_free_seat()
+	if seat == nil then
+		ddnetpp.send_chat_target(client_id, "This poker table is already full")
+		return
+	end
+	seat.client_id = client_id
+	player.seat = seat.number
 
 	for _ = 1, 2, 1 do
 		local snap_id = nil

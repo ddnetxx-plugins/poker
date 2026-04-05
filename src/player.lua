@@ -18,6 +18,8 @@ PokerPlayer = {
 		name = "small blind",
 		offset = ButtonOffset.SMALL_BLIND,
 	},
+	-- seat number at the table
+	seat = nil
 }
 
 function PokerPlayer:new(client_id)
@@ -34,5 +36,6 @@ function PokerPlayer:new(client_id)
 		name = "small blind",
 		offset = ButtonOffset.SMALL_BLIND,
 	}
+	o.seat = nil
 	return o
 end
