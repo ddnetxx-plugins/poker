@@ -29,10 +29,8 @@ function str_to_card(card_str)
 	end
 	assert(idx ~= nil, "card '" .. card_str .. "' not found")
 
-	local y = math.floor(idx / 13) + 1
-	local x = math.floor(idx % 13) + 1
-	print("y: " .. y)
-	print("x: " .. x)
+	local y = math.floor((idx-1) / 13) + 1
+	local x = math.floor((idx-1) % 13) + 2
 
 	---@type Suite[]
 	local suites = {
