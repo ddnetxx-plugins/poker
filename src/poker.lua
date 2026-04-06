@@ -649,12 +649,14 @@ function Poker:send_chat(message)
 	end
 end
 
----Find the first position that has to act at the beginning of this round.
----This is NOT the next player to act in the middle of the round.
----So pre flop that will be UTG if there are enough players
----and post flop this will be sb
+---TODO: wtf it this method and method name???
+---
+---This method will also return players that are
+---already all in or folded use with caution
+---If you want the first actual player that has to
+---act this round use first_offset_to_act()
 ---@return integer button_offset
-function Poker:first_offset_to_act()
+function Poker:_first_offset_to_act_stupid()
 	if self.state == GameState.PRE_FLOP then
 		local num_players = self:num_players()
 		if num_players == 2 then
@@ -667,6 +669,35 @@ function Poker:first_offset_to_act()
 
 	-- post flop is simple
 	return ButtonOffset.SMALL_BLIND
+end
+
+---Find the first position that has to act at the beginning of this round.
+---This is NOT the next player to act in the middle of the round.
+---So pre flop that will be UTG if there are enough players
+---and post flop this will be sb
+---@return integer button_offset
+function Poker:first_offset_to_act()
+	local found_first = false
+	local first = self:_first_offset_to_act_stupid()
+	for pos, player in pairs(self:sort_players_by_position()) do
+		if pos == first then
+			found_first = true
+		end
+		if found_first and #player.hole_cards > 0 and player.chips > 0 then
+			return pos
+		end
+	end
+	for pos, player in pairs(self:sort_players_by_position()) do
+		if pos == first then
+			break
+		end
+		if #player.hole_cards > 0 and player.chips > 0 then
+			return pos
+		end
+	end
+
+	assert(false, "failed to find first to act, no players with cards or chips left")
+	return -1
 end
 
 ---TODO: would it be useful to skip players here?
@@ -684,7 +715,7 @@ function Poker:sort_players_by_position()
 	local players = {}
 
 	local found_first = false
-	local first_offset = self:first_offset_to_act()
+	local first_offset = self:_first_offset_to_act_stupid()
 
 	for _, player in pairs(self.players) do
 		if player.position.offset == first_offset then
@@ -846,11 +877,25 @@ end
 ---I currently have no internet so I came up with this loop.
 ---TODO: there has to be a better way for getting the amount of keys
 ---      set in a lua table i just cant lookup stuff right now :D
+---
 ---@return integer amount
 function Poker:num_players()
 	local num = 0
 	for _ in pairs(self.players) do
 		num = num + 1
+	end
+	return num
+end
+
+---TODO: horrible name xd lookup what the proper term for this is
+---
+---@return integer num_players_with_cards
+function Poker:num_players_in_hand()
+	local num = 0
+	for _, player in pairs(self.players) do
+		if #player.hole_cards > 0 then
+			num = num + 1
+		end
 	end
 	return num
 end
