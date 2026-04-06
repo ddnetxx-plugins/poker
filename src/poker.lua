@@ -297,6 +297,10 @@ function Poker:new_round()
 end
 
 function Poker:new_game()
+	for _, player in pairs(self.players) do
+		player.chips = self.start_stack
+	end
+
 	self:new_round()
 
 	math.randomseed(ddnetpp.secure_rand_below(666999))
@@ -313,10 +317,6 @@ function Poker:new_game()
 		end
 	end
 	self.next_to_act_snap_id = ddnetpp.snap.new_id()
-
-	for _, player in pairs(self.players) do
-		player.chips = self.start_stack
-	end
 end
 
 function Poker:end_game()
@@ -679,12 +679,21 @@ end
 function Poker:first_offset_to_act()
 	local found_first = false
 	local first = self:_first_offset_to_act_stupid()
+
+	print("first candidate: " .. first)
+
 	for pos, player in pairs(self:sort_players_by_position()) do
 		if pos == first then
 			found_first = true
 		end
-		if found_first and #player.hole_cards > 0 and player.chips > 0 then
-			return pos
+		if found_first then
+			if #player.hole_cards > 0 and player.chips > 0 then
+				return pos
+			else
+				print(" skipping cid=" .. player.client_id .. " (no chips or cards)")
+			end
+		else
+			print(" skipping cid=" .. player.client_id .. " (seeking first)")
 		end
 	end
 	for pos, player in pairs(self:sort_players_by_position()) do
@@ -693,6 +702,10 @@ function Poker:first_offset_to_act()
 		end
 		if #player.hole_cards > 0 and player.chips > 0 then
 			return pos
+		else
+			print(" skipping cid=" .. player.client_id .. " (2nd loop) (no chips or cards)")
+			print("   chips: " .. player.chips)
+			print("   cards: " .. #player.hole_cards)
 		end
 	end
 
