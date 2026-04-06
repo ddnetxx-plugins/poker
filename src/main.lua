@@ -40,6 +40,14 @@ function ddnetpp.on_tick()
    end
 end
 
+function ddnetpp.on_player_disconnect(client_id)
+   for _, game in pairs(games) do
+      if game:is_at_table(client_id) then
+         game:leave_table(client_id)
+      end
+   end
+end
+
 -- TODO: remove this debug command, or turn into a rcon command with a better name
 ddnetpp.register_chat("state", "", "", function (client_id, args)
    ddnetpp.send_motd_target(client_id, games[1]:state_to_str())
