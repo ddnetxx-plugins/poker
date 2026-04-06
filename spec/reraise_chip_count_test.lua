@@ -31,6 +31,7 @@ assert_eq("You do not have that many chips!", ddnetpp.get_chat_line(1, -1))
 
 game:player_action(1, { action = "raise", amount = 2 })
 assert_eq("'mock1' did a raise", ddnetpp.get_chat_line(1, -1))
+assert_eq(3, game:find_player(1).chips)
 
 -- fold the blinds
 game:player_action(2, { action = "fold" })
@@ -39,10 +40,19 @@ game:player_action(3, { action = "fold" })
 -- now utg is facing the reraise of the btn
 assert_eq(0, game:next_to_act().client_id)
 game:player_action(0, { action = "call" })
+assert_eq(24, game.pot)
 
 -- two players at the flop: utg and btn
 assert_eq(GameState.FLOP, game.state)
 assert_eq(2, game:num_players_in_hand())
 
 -- utg should be first to act
-assert_eq(0, game:next_to_act().client_id)  -- FIXME: this test fails! we get "2" (sb) instead of utg but sb already folded
+assert_eq(0, game:next_to_act().client_id)
+
+game:player_action(0, { action = "check" })
+game:player_action(1, { action = "raise", amount = 1 })
+game:player_action(0, { action = "fold" })
+
+assert_eq(1, game:num_players_in_hand())
+
+-- TODO: give the winner the chips and check the count

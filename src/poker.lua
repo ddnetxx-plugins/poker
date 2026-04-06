@@ -433,9 +433,9 @@ function Poker:player_action(client_id, action)
 			return
 		end
 
-		player.chips = player.chips - action.amount
-		player.chips_paid_into_pot = player.chips_paid_into_pot + action.amount
-		self.pot = self.pot + action.amount
+		player.chips = player.chips - (action.amount + diff)
+		player.chips_paid_into_pot = player.chips_paid_into_pot + (action.amount + diff)
+		self.pot = self.pot + (action.amount + diff)
 		self.pot_per_player = self.pot_per_player + action.amount
 
 		-- we have to call print_betting_actions()
