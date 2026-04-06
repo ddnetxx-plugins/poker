@@ -1,0 +1,54 @@
+local __CARDS = {
+	"🂢", "🂣", "🂤", "🂥", "🂦", "🂧", "🂨", "🂩", "🂪", "🂫", "🂭", "🂮", "🂡", -- Spades
+	"🂲", "🂳", "🂴", "🂵", "🂶", "🂷", "🂸", "🂹", "🂺", "🂻", "🂽", "🂾", "🂱", -- Hearts
+	"🃂", "🃃", "🃄", "🃅", "🃆", "🃇", "🃈", "🃉", "🃊", "🃋", "🃍", "🃎", "🃁", -- Diamonds
+	"🃒", "🃓", "🃔", "🃕", "🃖", "🃗", "🃘", "🃙", "🃚", "🃛", "🃝", "🃞", "🃑", -- Clubs
+}
+
+-- TODO: is it suite or suitee? xd
+
+---@class Card
+---@field suite string
+---|"'spades'"
+---|"'hearts'"
+---|"'diamonds'"
+---|"'clubs'"
+---@field rank integer # 2-14 inclusive 2=2 A=14
+
+---@param card_str string # Something like "🃔" only one card at a time
+---@return Card
+function str_to_card(card_str)
+	local idx = nil
+	for i, card in pairs(__CARDS) do
+		if card == card_str then
+			idx = i
+			break
+		end
+	end
+	assert(idx ~= nil, "card '" .. card_str .. "' not found")
+
+	print(idx)
+end
+
+---@param card Card
+---@return string card_str # Something like "🃔"
+function card_to_str(card)
+	local y = 0
+	if card.suite == 'spades' then
+		y = 0
+	elseif card.suite == 'hearts' then
+		y = 1
+	elseif card.suite == 'diamonds' then
+		y = 2
+	elseif card.suite == 'clubs' then
+		y = 3
+	else
+		assert(false, "unknown suite '" .. card.suite .. "'")
+	end
+
+	local idx = 13 * y + card.rank - 1
+	return __CARDS[idx]
+end
+
+-- print(str_to_card("🂢"))
+-- print(str_to_card("🂡"))
