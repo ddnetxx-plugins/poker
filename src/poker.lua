@@ -680,8 +680,6 @@ function Poker:first_offset_to_act()
 	local found_first = false
 	local first = self:_first_offset_to_act_stupid()
 
-	print("first candidate: " .. first)
-
 	for pos, player in pairs(self:sort_players_by_position()) do
 		if pos == first then
 			found_first = true
@@ -689,11 +687,7 @@ function Poker:first_offset_to_act()
 		if found_first then
 			if #player.hole_cards > 0 and player.chips > 0 then
 				return pos
-			else
-				print(" skipping cid=" .. player.client_id .. " (no chips or cards)")
 			end
-		else
-			print(" skipping cid=" .. player.client_id .. " (seeking first)")
 		end
 	end
 	for pos, player in pairs(self:sort_players_by_position()) do
@@ -702,10 +696,6 @@ function Poker:first_offset_to_act()
 		end
 		if #player.hole_cards > 0 and player.chips > 0 then
 			return pos
-		else
-			print(" skipping cid=" .. player.client_id .. " (2nd loop) (no chips or cards)")
-			print("   chips: " .. player.chips)
-			print("   cards: " .. #player.hole_cards)
 		end
 	end
 
