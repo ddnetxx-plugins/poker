@@ -719,7 +719,8 @@ function Poker:first_offset_to_act()
 	local found_first = false
 	local first = self:_first_offset_to_act_stupid()
 
-	for pos, player in pairs(self:sort_players_by_position()) do
+	for _, player in pairs(self:sort_players_by_position()) do
+		local pos = player.position.offset
 		if pos == first then
 			found_first = true
 		end
