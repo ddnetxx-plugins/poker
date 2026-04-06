@@ -476,10 +476,51 @@ function Poker:player_action(client_id, action)
 	end
 
 	self:print_betting_actions()
-	if self.next_to_act_offset == player.position.offset then
-		self:compute_next_to_act()
+	if not self:check_win_by_fold() then
+		if self.next_to_act_offset == player.position.offset then
+			self:compute_next_to_act()
+		end
+		self:check_next_state()
 	end
-	self:check_next_state()
+end
+
+---@return PokerPlayer[] winners
+function Poker:find_winners()
+	local winners = {}
+	if self:num_players_with_cards() == 1 then
+		for _, player in pairs(self.players) do
+			if #player.hole_cards > 0 then
+				table.insert(winners, player)
+			end
+		end
+	else
+		assert(false, "winning on showdown is not implemented yet xd")
+	end
+	return winners
+end
+
+function Poker:round_winners_and_losers()
+	-- TODO: kick ALL IN losers out of the table here
+
+	local winners = self:find_winners()
+	if #winners > 1 then
+		assert(false, "split pot is not implemented yet. there are " ..  #winners .. " winnners")
+	elseif #winners < 1 then
+		assert(false, "nobody won???")
+	end
+
+	local winner = winners[1]
+	winner.chips = winner.chips + self.pot
+end
+
+---@return boolean won # True if someone won the game
+function Poker:check_win_by_fold()
+	if self:num_players_with_cards() == 1 then
+		self:round_winners_and_losers()
+		self:new_round()
+		return true
+	end
+	return false
 end
 
 function Poker:next_state()
@@ -498,9 +539,7 @@ function Poker:next_state()
 		self:river()
 		self.state = GameState.RIVER
 	elseif self.state == GameState.RIVER then
-		-- TODO: pick winner(s) and give them the pot
-		--       and kick ALL IN losers out of the table here
-
+		self:round_winners_and_losers()
 		self:new_round()
 		return
 	end
@@ -890,10 +929,8 @@ function Poker:num_players()
 	return num
 end
 
----TODO: horrible name xd lookup what the proper term for this is
----
 ---@return integer num_players_with_cards
-function Poker:num_players_in_hand()
+function Poker:num_players_with_cards()
 	local num = 0
 	for _, player in pairs(self.players) do
 		if #player.hole_cards > 0 then
