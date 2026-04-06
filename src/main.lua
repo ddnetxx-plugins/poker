@@ -3,7 +3,8 @@ local function script_path()
    return str:match("(.*/)") or "./"
 end
 
-local poker = require(script_path() .. "poker")
+require(script_path() .. "hand_ranks")
+require(script_path() .. "poker")
 
 ---@type Poker[]
 local games = {}
