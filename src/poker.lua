@@ -491,10 +491,24 @@ function Poker:find_winners()
 		for _, player in pairs(self.players) do
 			if #player.hole_cards > 0 then
 				table.insert(winners, player)
+				break
 			end
 		end
 	else
-		assert(false, "winning on showdown is not implemented yet xd")
+
+
+		-- FIXME: IMPLEMENT A REAL SHOWDOWN
+
+		for _, player in pairs(self.players) do
+			if #player.hole_cards > 0 then
+				table.insert(winners, player)
+				break
+			end
+		end
+
+
+
+		-- assert(false, "winning on showdown is not implemented yet xd")
 	end
 	return winners
 end
