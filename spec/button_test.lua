@@ -14,8 +14,8 @@ game:new_game()
 -- first player that joins will get the button
 -- but it moves on the start of the first round
 -- so the actual first button is the second joiner
-assert_eq(false, game.players[0].is_button)
-assert_eq(true, game.players[1].is_button)
+assert_eq(false, game:find_player(0).is_button)
+assert_eq(true, game:find_player(1).is_button)
 
 game:player_action(0, { action = "check" })
 game:player_action(1, { action = "check" })
@@ -23,8 +23,8 @@ game:player_action(1, { action = "check" })
 -- after one round of betting the button should
 -- NOT have moved yet
 assert_eq(GameState.FLOP, game.state)
-assert_eq(false, game.players[0].is_button)
-assert_eq(true, game.players[1].is_button)
+assert_eq(false, game:find_player(0).is_button)
+assert_eq(true, game:find_player(1).is_button)
 
 assert_eq(GameState.FLOP, game.state)
 game:player_action(0, { action = "check" })
@@ -37,8 +37,8 @@ game:player_action(1, { action = "check" })
 -- also on the river the button should not have moved
 -- NOT have moved yet
 assert_eq(GameState.RIVER, game.state)
-assert_eq(false, game.players[0].is_button)
-assert_eq(true, game.players[1].is_button)
+assert_eq(false, game:find_player(0).is_button)
+assert_eq(true, game:find_player(1).is_button)
 
 game:player_action(0, { action = "check" })
 game:player_action(1, { action = "check" })
@@ -47,8 +47,8 @@ game:player_action(1, { action = "check" })
 -- we are pre flop in the next round
 -- NOW we expect the button to have moved to the next player
 assert_eq(GameState.PRE_FLOP, game.state)
-assert_eq(true, game.players[0].is_button)
-assert_eq(false, game.players[1].is_button)
+assert_eq(true, game:find_player(0).is_button)
+assert_eq(false, game:find_player(1).is_button)
 
 game:player_action(0, { action = "check" })
 game:player_action(1, { action = "check" })
@@ -64,5 +64,5 @@ game:player_action(1, { action = "check" })
 
 -- another button move
 assert_eq(GameState.PRE_FLOP, game.state)
-assert_eq(false, game.players[0].is_button)
-assert_eq(true, game.players[1].is_button)
+assert_eq(false, game:find_player(0).is_button)
+assert_eq(true, game:find_player(1).is_button)

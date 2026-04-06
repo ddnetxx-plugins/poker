@@ -70,8 +70,8 @@ game:player_action(1, { action = "check" })
 -- cid=1 bb
 -- cid=2 btn
 assert_eq(GameState.PRE_FLOP, game.state)
-assert_eq(true, game.players[2].is_button)
-assert_eq(ButtonOffset.SMALL_BLIND, game.players[0].position.offset)
+assert_eq(true, game:find_player(2).is_button)
+assert_eq(ButtonOffset.SMALL_BLIND, game:find_player(0).position.offset)
 
 -- button first to act pre flop
 assert_eq(2, game:next_to_act().client_id)

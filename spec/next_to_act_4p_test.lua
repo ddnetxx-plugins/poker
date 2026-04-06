@@ -92,7 +92,7 @@ game:player_action(1, { action = "check" })
 -- cid=2 btn
 -- cid=3 sb
 
-assert_eq(true, game.players[2].is_button)
+assert_eq(true, game:find_player(2).is_button)
 
 -- utg first to act
 assert_eq(1, game:next_to_act().client_id)
