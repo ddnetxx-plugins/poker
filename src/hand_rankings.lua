@@ -81,7 +81,7 @@ end
 ---@return boolean found # True if card is in cards
 local function card_in_list(card, cards)
 	for _, c in pairs(cards) do
-		if c.rank == card.rank and c.suite == card.suite then
+		if c.rank == card.rank and c.suit == card.suit then
 			return true
 		end
 	end
@@ -103,7 +103,7 @@ local function build_hand_string(winning_cards, all_cards)
 		end
 	end
 
-	-- FIXME: sort remaining cards by suite!!!
+	-- FIXME: sort remaining cards by suit!!!
 
 	local score = 0
 	local idx = 0

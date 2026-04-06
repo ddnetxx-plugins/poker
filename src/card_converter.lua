@@ -5,16 +5,14 @@ local __CARDS = {
 	"🃒", "🃓", "🃔", "🃕", "🃖", "🃗", "🃘", "🃙", "🃚", "🃛", "🃝", "🃞", "🃑", -- Clubs
 }
 
--- TODO: is it suite or suitee? xd
-
----@alias Suite string
+---@alias Suit string
 ---|"'spades'"
 ---|"'hearts'"
 ---|"'diamonds'"
 ---|"'clubs'"
 
 ---@class Card
----@field suite Suite
+---@field suit Suit
 ---@field rank integer # 2-14 inclusive 2=2 A=14
 
 ---@param card_str string # Something like "🃔" only one card at a time
@@ -32,8 +30,8 @@ function str_to_card(card_str)
 	local y = math.floor((idx-1) / 13) + 1
 	local x = math.floor((idx-1) % 13) + 2
 
-	---@type Suite[]
-	local suites = {
+	---@type Suit[]
+	local suits = {
 		"spades",
 		"hearts",
 		"diamonds",
@@ -41,7 +39,7 @@ function str_to_card(card_str)
 	}
 
 	return {
-		suite = suites[y],
+		suit = suits[y],
 		rank = x
 	}
 end
@@ -50,16 +48,16 @@ end
 ---@return string card_str # Something like "🃔"
 function card_to_str(card)
 	local y = 0
-	if card.suite == 'spades' then
+	if card.suit == 'spades' then
 		y = 0
-	elseif card.suite == 'hearts' then
+	elseif card.suit == 'hearts' then
 		y = 1
-	elseif card.suite == 'diamonds' then
+	elseif card.suit == 'diamonds' then
 		y = 2
-	elseif card.suite == 'clubs' then
+	elseif card.suit == 'clubs' then
 		y = 3
 	else
-		assert(false, "unknown suite '" .. card.suite .. "'")
+		assert(false, "unknown suit '" .. card.suit .. "'")
 	end
 
 	local idx = 13 * y + card.rank - 1
