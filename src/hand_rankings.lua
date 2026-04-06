@@ -110,7 +110,8 @@ local function find_high_card(cards)
 	return {
 		name = "high card",
 		description = "MADE UP HAND OMG XD",
-		cards = "🂢🃂🂲🃑🃞"
+		cards = "🂢🃂🂲🃑🃞",
+		score = 0
 	}
 end
 

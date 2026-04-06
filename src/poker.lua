@@ -4,6 +4,8 @@ local function script_path()
 end
 
 require(script_path() .. "enums")
+require(script_path() .. "card_converter")
+require(script_path() .. "hand_rankings")
 local snap = require(script_path() .. "snap")
 require(script_path() .. "player")
 
@@ -497,11 +499,19 @@ function Poker:find_winners()
 	else
 		-- FIXME: IMPLEMENT A REAL SHOWDOWN
 
+		local best_player = nil
 		for _, player in pairs(self.players) do
 			if #player.hole_cards > 0 then
 				player.hand = find_best_hand(player.hole_cards, self.community_cards)
+				if best_player == nil then
+					best_player = player
+				end
 			end
 		end
+		table.insert(winners, best_player)
+
+		-- TODO: insert multiple players if they all have the same top score
+
 
 		-- assert(false, "winning on showdown is not implemented yet xd")
 	end
