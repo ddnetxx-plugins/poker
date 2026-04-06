@@ -29,8 +29,9 @@ local HAND_RANKS = {
 }
 
 ---@param hand_rank HandRank
+---@param cards Card[] # The winning cards
 ---@return integer score
-local function hand_rank_to_score(hand_rank)
+local function hand_rank_to_score(hand_rank, cards)
 	local idx = nil
 	for i, rank in pairs(HAND_RANKS) do
 		if hand_rank == rank then
@@ -40,7 +41,18 @@ local function hand_rank_to_score(hand_rank)
 	end
 	assert(idx ~= nil, "unknown hand rank '" .. hand_rank .. "'")
 	-- high card has a score of 0
-	return (idx - 1) * 1000
+	local score = (idx - 1) * 100000
+	local bonus = 0
+	if hand_rank == "high card" or hand_rank == "pair" then
+		bonus = cards[1].rank * 100
+	else
+		-- the bonus is used to compare two hands of the same rank
+		-- so for example which pair is higher a pair of sevens or a pair of nines
+		-- it DOES NOT look at the kicker yet that value is computed somewhere else
+
+		assert(false, "computing bonus score for hand '" .. hand_rank .. "' is not implemented")
+	end
+	return score + bonus
 end
 
 ---@param rank integer # 2-14
@@ -101,6 +113,24 @@ local function build_hand_string(winning_cards, all_cards)
 		score = score + remaning_cards[idx].rank
 	end
 
+	-- FIXME: the remaining score is computed wrong
+	--        first and second kicker are not of equal value!!
+	--        if two players have the same pair and 2 different kicker
+	--        we can not just add the 3 remaining cards including the 2 different kickers
+	--        lets imagine this the board is 3365T
+	--        and player A has: QJ
+	--        and player B has: A2
+	--        player B won because the ace is higher than the queen
+	--        we can not just add all the ranks together
+	--        because QJ is 11+12=23
+	--        and A2 is only 14+2=16
+	--        this might need an entire compare kicker mehtod?
+	--        or can we smh put this in absolute scores without comparing?
+	--        by giving the highest kicker a multiplier
+	--        but how high is the multiplier? if there are two high cards
+	--        on showdown we have 4 kickers?????? is that even a term?
+	--        4 kickers???? xd
+
 	return score, best_cards
 end
 
@@ -150,7 +180,7 @@ local function find_pair(cards)
 		description = "pair of " .. rank_to_name_plural(top_pair[1].rank),
 		cards = hand_str
 	}
-	hand.score = hand_rank_to_score(hand.name) + remaining_score
+	hand.score = hand_rank_to_score(hand.name, top_pair) + remaining_score
 	return hand
 end
 

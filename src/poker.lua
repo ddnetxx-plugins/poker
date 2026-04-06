@@ -486,10 +486,18 @@ function Poker:player_action(client_id, action)
 	end
 end
 
----@return PokerPlayer[] winners
+---@alias WinType string
+---|"'showdown'"
+---|"'fold'"
+
+---@return WinType win_type # What caused the win
+---@return PokerPlayer[] winners # Who won, can be multiple if there is a split pot
 function Poker:find_winners()
 	local winners = {}
+	---@type WinType
+	local win_type = "showdown"
 	if self:num_players_with_cards() == 1 then
+		win_type = "fold"
 		for _, player in pairs(self.players) do
 			if #player.hole_cards > 0 then
 				table.insert(winners, player)
@@ -515,13 +523,13 @@ function Poker:find_winners()
 
 		-- assert(false, "winning on showdown is not implemented yet xd")
 	end
-	return winners
+	return win_type, winners
 end
 
 function Poker:round_winners_and_losers()
 	-- TODO: kick ALL IN losers out of the table here
 
-	local winners = self:find_winners()
+	local win_type, winners = self:find_winners()
 	if #winners > 1 then
 		assert(false, "split pot is not implemented yet. there are " ..  #winners .. " winnners")
 	elseif #winners < 1 then
@@ -530,6 +538,18 @@ function Poker:round_winners_and_losers()
 
 	local winner = winners[1]
 	winner.chips = winner.chips + self.pot
+
+	ddnetpp.send_chat_target(winner.client_id, "You won the entire pot with " .. self.pot .. " chips in it!")
+
+	if win_type == "showdown" then
+		self:send_chat(
+			"'" .. ddnetpp.server.client_name(winner.client_id) .. "' won with best hand " .. winner.hand.name .. " (" .. winner.hand.description .. ")"
+		)
+	else
+		self:send_chat(
+			"'" .. ddnetpp.server.client_name(winner.client_id) .. "' won because everyone folded"
+		)
+	end
 end
 
 ---@return boolean won # True if someone won the game
