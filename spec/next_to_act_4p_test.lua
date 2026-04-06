@@ -13,10 +13,10 @@ game:join_table(2) -- sb
 game:join_table(3) -- bb
 game:new_game()
 
-assert_eq(ButtonOffset.UTG, game.players[0].position.offset)
-assert_eq(ButtonOffset.BUTTON, game.players[1].position.offset)
-assert_eq(ButtonOffset.SMALL_BLIND, game.players[2].position.offset)
-assert_eq(ButtonOffset.BIG_BLIND, game.players[3].position.offset)
+assert_eq(ButtonOffset.UTG, game:find_player(0).position.offset)
+assert_eq(ButtonOffset.BUTTON, game:find_player(1).position.offset)
+assert_eq(ButtonOffset.SMALL_BLIND, game:find_player(2).position.offset)
+assert_eq(ButtonOffset.BIG_BLIND, game:find_player(3).position.offset)
 
 assert_eq(game.next_to_act_offset, ButtonOffset.UTG)
 
@@ -35,7 +35,7 @@ game:player_action(3, { action = "check" })
 
 -- flop
 assert_eq(GameState.FLOP, game.state)
-assert_eq(ButtonOffset.SMALL_BLIND, game.players[2].position.offset)
+assert_eq(ButtonOffset.SMALL_BLIND, game:find_player(2).position.offset)
 
 assert_eq(2, game:next_to_act().client_id)
 game:player_action(2, { action = "check" })
