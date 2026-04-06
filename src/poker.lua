@@ -159,9 +159,22 @@ function Poker:state_to_str()
 		"pot: " .. self.pot
 
 	for _, player in pairs(self.players) do
+
+		local current_action = "(still has to act)"
+		if player.action then
+			current_action = player.action.action
+		end
+
+		local prev_actions = ""
+		for _, action in pairs(player.prev_actions) do
+			prev_actions = prev_actions ..
+				"  " .. action.action .. "\n"
+		end
+
 		state = state .. "\n" ..
 			"player '" .. ddnetpp.server.client_name(player.client_id) .. "' " .. player.position.name .. "\n" ..
-			"  idk xd"
+			" action: " .. current_action .. "\n" ..
+			" prev actions:\n" .. prev_actions
 	end
 
 	return state
@@ -403,6 +416,11 @@ function Poker:player_action(client_id, action)
 
 		player.action = action
 	elseif action.action == "raise" or action.action == "bet" then
+		-- if facing a bet and raising by x
+		-- the amount we actually put in to the pot is prev_bet+x
+		-- not just x
+		-- so raise amount is on top of the call amount
+
 		if action.amount + diff > player.chips then
 			-- TODO: offer a /allin command here
 			ddnetpp.send_chat_target(client_id, "You do not have that many chips!")
@@ -419,6 +437,21 @@ function Poker:player_action(client_id, action)
 		player.chips_paid_into_pot = player.chips_paid_into_pot + action.amount
 		self.pot = self.pot + action.amount
 		self.pot_per_player = self.pot_per_player + action.amount
+
+		-- we have to call print_betting_actions()
+		-- here even tho it is called at the very end of the method too
+		-- that is because clear_all_actions_on_raise_or_bet()
+		-- messes with the player that has to act next
+		-- so the raise might not be printed
+		-- because the printer thinks we premoved
+		--
+		-- also we have to assign the action twice
+		-- because we need the printer to know about it
+		-- and also reset it after all actions got cleared
+		-- this is a huge mess
+		-- please clean this up after the tests are stable enough
+		player.action = action
+		self:print_betting_actions()
 
 		-- TODO: should raise and bet ever be split?
 		--       i think it does the exact same thing
@@ -676,6 +709,7 @@ function Poker:print_betting_actions()
 	for _, player in pairs(self:sort_players_by_position()) do
 		if player.action == nil then
 			-- print("waiting for " .. player.client_id)
+			-- print(self:state_to_str())
 			-- stop here to not leak pre moves
 			return
 		end

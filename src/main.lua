@@ -65,6 +65,25 @@ ddnetpp.register_chat("check", "", "check to next player in poker", function (cl
    ddnetpp.log_info("chatresp", "You are not any poker table")
 end)
 
+-- TODO: what does the raise amount mean? Is that relative or absolute?
+--       if someone raised to 10 and i want to reraise to 15
+--       do i use the chat command /raise 5
+--       or the chat command       /raise 15
+--       ????
+--       how is it in online poker usually?
+--       i am currently offline omg xd
+--       since i never played online poker
+--       i would use the physical approach where raise takes as argument
+--       how many chips you would grab with your hand
+--       so doing /raise 5 would throw an error because its not even
+--       enough to call
+--       but then the word raise is a bit misleading
+--       maybe a command like /grab_chips would be clearer then :D
+--       ok maybe we can add that later
+--       lets for now make a raise take the amount on top of a call as arg
+--       would also be cool to be able to say "half pot" as amount :D
+--       or "10bb" for 10 big blinds in general some word to chip amount
+--       helper function would be really cool
 ddnetpp.register_chat("raise", "i[amount]", "raise in poker", function (client_id, args)
    for _, game in pairs(games) do
       if game:is_at_table(client_id) then
