@@ -1,4 +1,4 @@
-function script_path()
+local function script_path()
    local str = debug.getinfo(2, "S").source:sub(2)
    return str:match("(.*/)") or "./"
 end
@@ -74,5 +74,5 @@ ddnetpp.register_chat("raise", "i[amount]", "raise in poker", function (client_i
          return
       end
    end
-   ddnetpp.log_info("chatresp", "You are not any poker table")
+   ddnetpp.log_info("chatresp", "You are not at any poker table")
 end)
