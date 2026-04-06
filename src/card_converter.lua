@@ -7,12 +7,14 @@ local __CARDS = {
 
 -- TODO: is it suite or suitee? xd
 
----@class Card
----@field suite string
+---@alias Suite string
 ---|"'spades'"
 ---|"'hearts'"
 ---|"'diamonds'"
 ---|"'clubs'"
+
+---@class Card
+---@field suite Suite
 ---@field rank integer # 2-14 inclusive 2=2 A=14
 
 ---@param card_str string # Something like "🃔" only one card at a time
@@ -27,7 +29,23 @@ function str_to_card(card_str)
 	end
 	assert(idx ~= nil, "card '" .. card_str .. "' not found")
 
-	print(idx)
+	local y = math.floor(idx / 13) + 1
+	local x = math.floor(idx % 13) + 1
+	print("y: " .. y)
+	print("x: " .. x)
+
+	---@type Suite[]
+	local suites = {
+		"spades",
+		"hearts",
+		"diamonds",
+		"clubs"
+	}
+
+	return {
+		suite = suites[y],
+		rank = x
+	}
 end
 
 ---@param card Card
@@ -49,6 +67,3 @@ function card_to_str(card)
 	local idx = 13 * y + card.rank - 1
 	return __CARDS[idx]
 end
-
--- print(str_to_card("🂢"))
--- print(str_to_card("🂡"))

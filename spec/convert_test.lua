@@ -9,3 +9,13 @@ assert_eq(card_to_str({ suite = "diamonds", rank = 4 }), "🃄")
 assert_eq(card_to_str({ suite = "clubs", rank = 4 }), "🃔")
 assert_eq(card_to_str({ suite = "clubs", rank = 14 }), "🃑")
 assert_eq(card_to_str({ suite = "clubs", rank = 2 }), "🃒")
+
+assert_eq(str_to_card("🃒").rank, 2)
+assert_eq(str_to_card("🃒").suite, "clubs")
+
+assert_eq(str_to_card("🃔").rank, 4)
+assert_eq(str_to_card("🃔").suite, "clubs")
+
+assert_eq(str_to_card("🃑").rank, 14)
+assert_eq(str_to_card("🃑").suite, "clubs")
+
