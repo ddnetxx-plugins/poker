@@ -13,6 +13,35 @@
 ---@field name HandRank
 ---@field description string # More detailed version of name. Like "aces full of sevens", "spade flush 7 high", "straight king high"
 ---@field cards string # The 5 cards used to build the hand something like "🂢🃂🂲🃑🃞", the amount is ALWAYS 5 no matter the hand
+---@field score integer # The higher the better, can be used to compare hands
+
+---@type HandRank[]
+local HAND_RANKS = {
+	"high card",
+	"pair",
+	"two pair",
+	"three of a kind",
+	"straight",
+	"flush",
+	"full house",
+	"four of a kind",
+	"straight flush",
+}
+
+---@param hand_rank HandRank
+---@return integer score
+local function hand_rank_to_score(hand_rank)
+	local idx = nil
+	for i, rank in pairs(HAND_RANKS) do
+		if hand_rank == rank then
+			idx = i
+			break
+		end
+	end
+	assert(idx ~= nil, "unknown hand rank '" .. hand_rank .. "'")
+	-- high card has a score of 0
+	return (idx - 1) * 1000
+end
 
 ---@param rank integer # 2-14
 ---@return string name # For example rank=7 is "sevens"
@@ -49,6 +78,7 @@ end
 
 ---@param winning_cards Card[] # 1-5 cards that formed the best hand
 ---@param all_cards Card[] # 7 cards consisting of 5 community and 2 hole cards
+---@return integer score # The score gained by the remaining cards, not the full hand!
 ---@return string five_best_cards
 local function build_hand_string(winning_cards, all_cards)
 	local remaning_cards = {}
@@ -63,13 +93,15 @@ local function build_hand_string(winning_cards, all_cards)
 
 	-- FIXME: sort remaining cards by suite!!!
 
+	local score = 0
 	local idx = 0
 	for _ = #winning_cards, 5 do
 		idx = idx + 1
 		best_cards = best_cards .. card_to_str(remaning_cards[idx])
+		score = score + remaning_cards[idx].rank
 	end
 
-	return best_cards
+	return score, best_cards
 end
 
 ---@param cards Card[] # 7 cards consisting of 5 community and 2 hole cards
@@ -110,11 +142,14 @@ local function find_pair(cards)
 	if top_pair == nil then
 		return nil
 	end
+
+	local remaining_score, hand_str = build_hand_string(top_pair, cards)
 	local hand = {
 		name = "pair",
 		description = "pair of " .. rank_to_name_plural(top_pair[1].rank),
-		cards = build_hand_string(top_pair, cards)
+		cards = hand_str
 	}
+	hand.score = hand_rank_to_score(hand.name) + remaining_score
 	return hand
 end
 

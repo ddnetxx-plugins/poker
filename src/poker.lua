@@ -495,18 +495,13 @@ function Poker:find_winners()
 			end
 		end
 	else
-
-
 		-- FIXME: IMPLEMENT A REAL SHOWDOWN
 
 		for _, player in pairs(self.players) do
 			if #player.hole_cards > 0 then
-				table.insert(winners, player)
-				break
+				player.hand = find_best_hand(player.hole_cards, self.community_cards)
 			end
 		end
-
-
 
 		-- assert(false, "winning on showdown is not implemented yet xd")
 	end

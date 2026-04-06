@@ -15,4 +15,5 @@ local hand = find_best_hand(
 assert_eq("pair", hand.name)
 assert_eq("🂧🂷🂢🃊🃛🃑", hand.cards)
 assert_eq("pair of sevens", hand.description)
+assert_eq(1037, hand.score)
 

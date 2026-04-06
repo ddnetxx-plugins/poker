@@ -19,7 +19,9 @@ PokerPlayer = {
 		offset = ButtonOffset.SMALL_BLIND,
 	},
 	-- seat number at the table
-	seat = nil
+	seat = nil,
+	---@type PokerHand|nil # The best hand this player has
+	hand = nil,
 }
 
 function PokerPlayer:new(client_id)
@@ -37,5 +39,6 @@ function PokerPlayer:new(client_id)
 		offset = ButtonOffset.SMALL_BLIND,
 	}
 	o.seat = nil
+	o.hand = nil
 	return o
 end
