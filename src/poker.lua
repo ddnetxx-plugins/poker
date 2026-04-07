@@ -973,6 +973,37 @@ function Poker:num_players_with_cards()
 	return num
 end
 
+---Not to be confused by sort_players_by_position()
+---The seat order can only change if a new player joins
+---the table or someone leaves the table
+---The position changes every time the button moves.
+function Poker:sort_players_by_seat()
+end
+
+---Removes player from the self.players array
+---without creating a gap in the keys
+---so it stays a proper lua array
+---@param client_id integer
+---@return PokerPlayer|nil removed_player # Removed player or nil if not found
+function Poker:delete_player(client_id)
+	for i = 1, #self.players do
+		local player = self.players[i]
+		if player.client_id == client_id then
+			table.remove(self.players, i)
+			self:sort_players_by_seat()
+			return player
+		end
+	end
+	return nil
+end
+
+---Add new player to the game
+---@param player PokerPlayer
+function Poker:add_player(player)
+	table.insert(self.players, player)
+	self:sort_players_by_seat()
+end
+
 ---@param client_id integer
 function Poker:join_table(client_id)
 	if self.state == GameState.ERROR then
@@ -1007,26 +1038,10 @@ function Poker:join_table(client_id)
 		player.is_button = true
 	end
 
-	self.players[seat.number] = player
+	self:add_player(player)
 	self:send_chat(
 		"'" .. ddnetpp.server.client_name(client_id) .. "' joined the table"
 	)
-end
-
----Removes player from the self.players array
----without creating a gap in the keys
----so it stays a proper lua array
----@param client_id integer
----@return PokerPlayer|nil removed_player # Removed player or nil if not found
-function Poker:delete_player(client_id)
-	for i = 1, #self.players do
-		local player = self.players[i]
-		if player.client_id == client_id then
-			table.remove(self.players, i)
-			return player
-		end
-	end
-	return nil
 end
 
 ---@param client_id integer
