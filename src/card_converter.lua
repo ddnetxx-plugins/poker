@@ -23,22 +23,33 @@ function str_to_card(card_str)
 	}
 end
 
+---Which suit is the strongest
+---source https://www.mypokercoaching.com/poker-suit-rankings/
+---
+---Spades=4
+---Hearts=3
+---Diamonds=2
+---Clubs=1
+---@param suit Suit
+---@return integer rank # The higher the better
+function suit_to_rank(suit)
+	if suit == "spades" then
+		return 4
+	elseif suit == "hearts" then
+		return 3
+	elseif suit == "diamonds" then
+		return 2
+	elseif suit == "clubs" then
+		return 1
+	end
+	assert(false, "unknown suit '" .. suit .. "'")
+	return 0
+end
+
 ---@param card Card
 ---@return string card_str # Something like "🃔"
 function card_to_str(card)
-	local y = 0
-	if card.suit == 'spades' then
-		y = 0
-	elseif card.suit == 'hearts' then
-		y = 1
-	elseif card.suit == 'diamonds' then
-		y = 2
-	elseif card.suit == 'clubs' then
-		y = 3
-	else
-		assert(false, "unknown suit '" .. card.suit .. "'")
-	end
-
+	local y = 4 - suit_to_rank(card.suit)
 	local idx = 13 * y + card.rank - 1
 	return CARDS[idx]
 end

@@ -105,19 +105,21 @@ local function build_hand_string(winning_cards, all_cards)
 
 	-- only pick the best remaining cards
 	table.sort(remaining_cards, function(a, b)
-	    return a.rank> b.rank
+		if a.rank == b.rank then
+			-- also sort by suit for maximum consistency
+			-- not that it affects the score
+			-- but if we would want to offer a option
+			-- for the suit ranking this could be done here too
+			-- according to https://www.mypokercoaching.com/poker-suit-rankings/
+			-- there is a order from strongest to weakest:
+			-- - spades
+			-- - hearts
+			-- - diamonds
+			-- - clubs
+			return suit_to_rank(a.suit) > suit_to_rank(b.suit)
+		end
+		return a.rank > b.rank
 	end)
-
-	-- also sort by suit for maximum consistency
-	-- not that it affects the score
-	-- but if we would want to offer a option
-	-- for the suit ranking this could be done here too
-	-- according to https://www.mypokercoaching.com/poker-suit-rankings/
-	-- there is a order from strongest to weakest:
-	-- - spades
-	-- - hearts
-	-- - diamonds
-	-- - clubs
 
 	local score = 0
 	local idx = 0
