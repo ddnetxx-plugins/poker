@@ -108,6 +108,17 @@ local function build_hand_string(winning_cards, all_cards)
 	    return a.rank> b.rank
 	end)
 
+	-- also sort by suit for maximum consistency
+	-- not that it affects the score
+	-- but if we would want to offer a option
+	-- for the suit ranking this could be done here too
+	-- according to https://www.mypokercoaching.com/poker-suit-rankings/
+	-- there is a order from strongest to weakest:
+	-- - spades
+	-- - hearts
+	-- - diamonds
+	-- - clubs
+
 	local score = 0
 	local idx = 0
 	local kicker_bonus = 5

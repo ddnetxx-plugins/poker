@@ -1,16 +1,3 @@
-local __CARDS = {
-	"🂢", "🂣", "🂤", "🂥", "🂦", "🂧", "🂨", "🂩", "🂪", "🂫", "🂭", "🂮", "🂡", -- Spades
-	"🂲", "🂳", "🂴", "🂵", "🂶", "🂷", "🂸", "🂹", "🂺", "🂻", "🂽", "🂾", "🂱", -- Hearts
-	"🃂", "🃃", "🃄", "🃅", "🃆", "🃇", "🃈", "🃉", "🃊", "🃋", "🃍", "🃎", "🃁", -- Diamonds
-	"🃒", "🃓", "🃔", "🃕", "🃖", "🃗", "🃘", "🃙", "🃚", "🃛", "🃝", "🃞", "🃑", -- Clubs
-}
-
----@alias Suit string
----|"'spades'"
----|"'hearts'"
----|"'diamonds'"
----|"'clubs'"
-
 ---@class Card
 ---@field suit Suit
 ---@field rank integer # 2-14 inclusive 2=2 A=14
@@ -19,7 +6,7 @@ local __CARDS = {
 ---@return Card
 function str_to_card(card_str)
 	local idx = nil
-	for i, card in pairs(__CARDS) do
+	for i, card in pairs(CARDS) do
 		if card == card_str then
 			idx = i
 			break
@@ -30,16 +17,8 @@ function str_to_card(card_str)
 	local y = math.floor((idx-1) / 13) + 1
 	local x = math.floor((idx-1) % 13) + 2
 
-	---@type Suit[]
-	local suits = {
-		"spades",
-		"hearts",
-		"diamonds",
-		"clubs"
-	}
-
 	return {
-		suit = suits[y],
+		suit = SUITS[y],
 		rank = x
 	}
 end
@@ -61,5 +40,5 @@ function card_to_str(card)
 	end
 
 	local idx = 13 * y + card.rank - 1
-	return __CARDS[idx]
+	return CARDS[idx]
 end

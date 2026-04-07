@@ -1,5 +1,6 @@
 -- local assert_eq = require("simple.assert").assert_eq
 local assert_eq = require("spec.simple_assert").assert_eq
+require("../src/globals")
 require("../src/card_converter")
 
 assert_eq("🃑", card_to_str({ suit = "clubs", rank = 14 }))

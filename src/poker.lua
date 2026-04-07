@@ -3,7 +3,7 @@ local function script_path()
    return str:match("(.*/)") or "./"
 end
 
-require(script_path() .. "enums")
+require(script_path() .. "globals")
 require(script_path() .. "card_converter")
 require(script_path() .. "hand_rankings")
 local snap = require(script_path() .. "snap")
@@ -66,13 +66,6 @@ Poker = {
 	state = GameState.PRE_FLOP,
 	---@type integer[]
 	community_card_snap_ids = {},
-}
-
-CARDS = {
-	"🂢", "🂣", "🂤", "🂥", "🂦", "🂧", "🂨", "🂩", "🂪", "🂫", "🂭", "🂮", "🂡", -- Spades
-	"🂲", "🂳", "🂴", "🂵", "🂶", "🂷", "🂸", "🂹", "🂺", "🂻", "🂽", "🂾", "🂱", -- Hearts
-	"🃂", "🃃", "🃄", "🃅", "🃆", "🃇", "🃈", "🃉", "🃊", "🃋", "🃍", "🃎", "🃁", -- Diamonds
-	"🃒", "🃓", "🃔", "🃕", "🃖", "🃗", "🃘", "🃙", "🃚", "🃛", "🃝", "🃞", "🃑", -- Clubs
 }
 
 ---@param amount integer
