@@ -126,7 +126,7 @@ end
 
 ---@return Seat|nil seat # First free seat at the table or nil if the table is full
 function Poker:find_free_seat()
-	for _, seat in pairs(self.table.seats) do
+	for _, seat in ipairs(self.table.seats) do
 		if seat.client_id == nil then
 			return seat
 		end
@@ -161,7 +161,7 @@ function Poker:state_to_str()
 		end
 
 		local prev_actions = ""
-		for _, action in pairs(player.prev_actions) do
+		for _, action in ipairs(player.prev_actions) do
 			prev_actions = prev_actions ..
 				"  " .. action.action .. "\n"
 		end
@@ -316,7 +316,7 @@ end
 
 function Poker:end_game()
 	self.state = GameState.END
-	for _, occupied_id in pairs(self.community_card_snap_ids) do
+	for _, occupied_id in ipairs(self.community_card_snap_ids) do
 		ddnetpp.server.free_occupied_client_id(occupied_id)
 	end
 	ddnetpp.snap.free_id(self.next_to_act_snap_id)
@@ -751,7 +751,7 @@ function Poker:first_offset_to_act()
 	local found_first = false
 	local first = self:_first_offset_to_act_stupid()
 
-	for _, player in pairs(self:sort_players_by_position()) do
+	for _, player in ipairs(self:sort_players_by_position()) do
 		local pos = player.position.offset
 		if pos == first then
 			found_first = true
@@ -762,7 +762,7 @@ function Poker:first_offset_to_act()
 			end
 		end
 	end
-	for pos, player in pairs(self:sort_players_by_position()) do
+	for pos, player in ipairs(self:sort_players_by_position()) do
 		if pos == first then
 			break
 		end
@@ -812,7 +812,7 @@ function Poker:sort_players_by_position()
 end
 
 function Poker:print_betting_actions()
-	for _, player in pairs(self:sort_players_by_position()) do
+	for _, player in ipairs(self:sort_players_by_position()) do
 		if player.action == nil then
 			-- print("waiting for " .. player.client_id)
 			-- print(self:state_to_str())
@@ -891,7 +891,7 @@ function Poker:on_snap(snapping_client)
 	-- TODO: only snap to participants
 	--       or maybe keep snapping to all? so others can watch
 
-	for i, card in pairs(self.community_cards) do
+	for i, card in ipairs(self.community_cards) do
 		-- TODO: omg lua is so troll it moves the reference of a table with = operator
 		--       i wanted to do local pos = self.table.pos and then increment the x
 		--       maybe the C++ api is bad then if we cant use the table field nicely anyways
@@ -926,7 +926,7 @@ function Poker:on_snap(snapping_client)
 		local pos = chr:pos()
 		pos.x = pos.x - 1.5
 		pos.y = pos.y - 2
-		for i, card in pairs(poker_player.hole_cards) do
+		for i, card in ipairs(poker_player.hole_cards) do
 			pos.x = pos.x + 0.9
 			snap.display_card(
 				poker_player.hole_card_snap_ids[i],
@@ -993,7 +993,7 @@ function Poker:join_table(client_id)
 		snap_id = self:find_and_occupy_free_client_id()
 		if snap_id == nil then
 			ddnetpp.send_chat_target(client_id, "failed to join poker table, server is full")
-			for _, allocated_id in pairs(player.hole_card_snap_ids) do
+			for _, allocated_id in ipairs(player.hole_card_snap_ids) do
 				ddnetpp.log_info("table join failed, freeing cid=" .. allocated_id .. " of the partially allocated hole card ids")
 				ddnetpp.server.free_occupied_client_id(allocated_id)
 			end
@@ -1020,7 +1020,7 @@ function Poker:leave_table(client_id)
 		ddnetpp.log_error("player not at the table tried to leave it!")
 		return
 	end
-	for _, snap_id in pairs(player.hole_card_snap_ids) do
+	for _, snap_id in ipairs(player.hole_card_snap_ids) do
 		ddnetpp.server.free_occupied_client_id(snap_id)
 	end
 	if self.state ~= GameState.END then
