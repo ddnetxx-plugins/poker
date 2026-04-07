@@ -33,7 +33,7 @@ local HAND_RANKS = {
 ---@return integer score
 local function hand_rank_to_score(hand_rank, cards)
 	local idx = nil
-	for i, rank in pairs(HAND_RANKS) do
+	for i, rank in ipairs(HAND_RANKS) do
 		if hand_rank == rank then
 			idx = i
 			break
@@ -80,7 +80,7 @@ end
 ---@param cards Card[] # Cards to search in
 ---@return boolean found # True if card is in cards
 local function card_in_list(card, cards)
-	for _, c in pairs(cards) do
+	for _, c in ipairs(cards) do
 		if c.rank == card.rank and c.suit == card.suit then
 			return true
 		end
@@ -95,7 +95,7 @@ end
 local function build_hand_string(winning_cards, all_cards)
 	local remaining_cards = {}
 	local best_cards = ""
-	for _, card in pairs(all_cards) do
+	for _, card in ipairs(all_cards) do
 		if card_in_list(card, winning_cards) then
 			best_cards = best_cards .. card_to_str(card)
 		else
@@ -169,7 +169,7 @@ local function find_pair(cards)
 	-- the key is the hand rank
 	-- and the value is the array of cards with that rank
 	local buckets = {}
-	for _, card in pairs(cards) do
+	for _, card in ipairs(cards) do
 		if buckets[card.rank] == nil then
 			buckets[card.rank] = {}
 		end
@@ -212,10 +212,10 @@ end
 function find_best_hand(hole_cards, community_cards)
 	---@type Card[]
 	local cards = {}
-	for _, card in pairs(hole_cards) do
+	for _, card in ipairs(hole_cards) do
 		table.insert(cards, str_to_card(card))
 	end
-	for _, card in pairs(community_cards) do
+	for _, card in ipairs(community_cards) do
 		table.insert(cards, str_to_card(card))
 	end
 
