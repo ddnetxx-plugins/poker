@@ -41,10 +41,10 @@ local function hand_rank_to_score(hand_rank, cards)
 	end
 	assert(idx ~= nil, "unknown hand rank '" .. hand_rank .. "'")
 	-- high card has a score of 0
-	local score = (idx - 1) * 100000
+	local score = (idx - 1) * 100000000
 	local bonus = 0
 	if hand_rank == "high card" or hand_rank == "pair" then
-		bonus = cards[1].rank * 100
+		bonus = cards[1].rank * 100000
 	else
 		-- the bonus is used to compare two hands of the same rank
 		-- so for example which pair is higher a pair of sevens or a pair of nines
@@ -110,29 +110,31 @@ local function build_hand_string(winning_cards, all_cards)
 
 	local score = 0
 	local idx = 0
+	local kicker_bonus = 5
 	for _ = #winning_cards, 5 do
 		idx = idx + 1
 		best_cards = best_cards .. card_to_str(remaining_cards[idx])
-		score = score + remaining_cards[idx].rank
+		kicker_bonus = kicker_bonus - 1
+		local kicker_score = remaining_cards[idx].rank * (kicker_bonus * 100)
+		score = score + kicker_score
 	end
 
-	-- FIXME: the remaining score is computed wrong
-	--        first and second kicker are not of equal value!!
-	--        if two players have the same pair and 2 different kicker
-	--        we can not just add the 3 remaining cards including the 2 different kickers
-	--        lets imagine this the board is 3365T
-	--        and player A has: QJ
-	--        and player B has: A2
-	--        player B won because the ace is higher than the queen
-	--        we can not just add all the ranks together
-	--        because QJ is 11+12=23
-	--        and A2 is only 14+2=16
-	--        this might need an entire compare kicker method?
-	--        or can we smh put this in absolute scores without comparing?
-	--        by giving the highest kicker a multiplier
-	--        but how high is the multiplier? if there are two high cards
-	--        on showdown we have 4 kickers?????? is that even a term?
-	--        4 kickers???? xd
+	-- first and second kicker are not of equal value!!
+	-- if two players have the same pair and 2 different kicker
+	-- we can not just add the 3 remaining cards including the 2 different kickers
+	-- lets imagine this the board is 3365T
+	-- and player A has: QJ
+	-- and player B has: A2
+	-- player B won because the ace is higher than the queen
+	-- we can not just add all the ranks together
+	-- because QJ is 11+12=23
+	-- and A2 is only 14+2=16
+	-- this might need an entire compare kicker method?
+	-- or can we smh put this in absolute scores without comparing?
+	-- by giving the highest kicker a multiplier
+	-- but how high is the multiplier? if there are two high cards
+	-- on showdown we have 4 kickers?????? is that even a term?
+	-- 4 kickers???? xd
 
 	return score, best_cards
 end
