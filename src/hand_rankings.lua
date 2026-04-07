@@ -103,7 +103,10 @@ local function build_hand_string(winning_cards, all_cards)
 		end
 	end
 
-	-- FIXME: sort remaining cards by suit!!!
+	-- only pick the best remaining cards
+	table.sort(remaining_cards, function(a, b)
+	    return a.rank> b.rank
+	end)
 
 	local score = 0
 	local idx = 0
