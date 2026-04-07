@@ -110,7 +110,7 @@ local function build_seats(amount)
 	return seats
 end
 
----@param o Poker
+---@param o Poker|nil
 ---@param table_pos Position
 ---@return Poker
 function Poker:new(o, table_pos, num_seats)
@@ -156,6 +156,15 @@ function Poker:find_free_seat()
 		end
 	end
 	return nil
+end
+
+---@param seat_number integer
+function Poker:seat_open(seat_number)
+	for _, seat in ipairs(self.table.seats) do
+		if seat.number == seat_number then
+			seat.client_id = nil
+		end
+	end
 end
 
 ---@param client_id integer
@@ -316,10 +325,6 @@ function Poker:new_round()
 end
 
 function Poker:new_game()
-	for _, player in pairs(self.players) do
-		player.chips = self.start_stack
-	end
-
 	self:new_round()
 
 	math.randomseed(ddnetpp.secure_rand_below(666999))
@@ -1112,6 +1117,7 @@ function Poker:join_table(client_id)
 		player.is_button = true
 	end
 
+	player.chips = self.start_stack
 	self:add_player(player)
 	self:send_chat(
 		"'" .. ddnetpp.server.client_name(client_id) .. "' joined the table"
@@ -1133,6 +1139,7 @@ function Poker:leave_table(client_id)
 			"'" .. ddnetpp.server.client_name(client_id) .. "' left the table"
 		)
 	end
+	self:seat_open(player.seat)
 	self:delete_player(client_id)
 	self:check_win_by_fold()
 end

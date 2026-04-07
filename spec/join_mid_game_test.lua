@@ -19,7 +19,11 @@ game:leave_table(3)
 game:leave_table(2)
 game:leave_table(1)
 
-assert_eq("You won the entire pot with 0 chips in it!", ddnetpp.get_chat_line(0, -3))
-assert_eq("'mock0' won because everyone folded", ddnetpp.get_chat_line(0, -2))
-assert_eq("'mock0' won the entire game! And collected 10 in prize money!", ddnetpp.get_chat_line(0, -1))
-assert_eq(GameState.END, game.state)
+-- the co wins because everybody folded implicitly by leaving the table
+-- the full game is not over yet because id 4 joined new and paid for chips
+-- but did not get cards yet so they play another round heads up
+
+assert_eq("You won the entire pot with 0 chips in it!", ddnetpp.get_chat_line(0, -2))
+assert_eq("'mock0' won because everyone folded", ddnetpp.get_chat_line(0, -1))
+assert_eq(GameState.PRE_FLOP, game.state)
+assert_eq(2, game:num_players_with_chips())
