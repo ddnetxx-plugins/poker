@@ -1013,6 +1013,22 @@ function Poker:join_table(client_id)
 	)
 end
 
+---Removes player from the self.players array
+---without creating a gap in the keys
+---so it stays a proper lua array
+---@param client_id integer
+---@return PokerPlayer|nil removed_player # Removed player or nil if not found
+function Poker:delete_player(client_id)
+	for i = 1, #self.players do
+		local player = self.players[i]
+		if player.client_id == client_id then
+			table.remove(self.players, i)
+			return player
+		end
+	end
+	return nil
+end
+
 ---@param client_id integer
 function Poker:leave_table(client_id)
 	local player = self:find_player(client_id)
@@ -1028,5 +1044,5 @@ function Poker:leave_table(client_id)
 			"'" .. ddnetpp.server.client_name(client_id) .. "' left the table"
 		)
 	end
-	self.players[player.seat] = nil
+	self:delete_player(client_id)
 end
