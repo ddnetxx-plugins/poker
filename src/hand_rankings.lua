@@ -93,13 +93,13 @@ end
 ---@return integer score # The score gained by the remaining cards, not the full hand!
 ---@return string five_best_cards
 local function build_hand_string(winning_cards, all_cards)
-	local remaning_cards = {}
+	local remaining_cards = {}
 	local best_cards = ""
 	for _, card in pairs(all_cards) do
 		if card_in_list(card, winning_cards) then
 			best_cards = best_cards .. card_to_str(card)
 		else
-			table.insert(remaning_cards, card)
+			table.insert(remaining_cards, card)
 		end
 	end
 
@@ -109,8 +109,8 @@ local function build_hand_string(winning_cards, all_cards)
 	local idx = 0
 	for _ = #winning_cards, 5 do
 		idx = idx + 1
-		best_cards = best_cards .. card_to_str(remaning_cards[idx])
-		score = score + remaning_cards[idx].rank
+		best_cards = best_cards .. card_to_str(remaining_cards[idx])
+		score = score + remaining_cards[idx].rank
 	end
 
 	-- FIXME: the remaining score is computed wrong
@@ -124,7 +124,7 @@ local function build_hand_string(winning_cards, all_cards)
 	--        we can not just add all the ranks together
 	--        because QJ is 11+12=23
 	--        and A2 is only 14+2=16
-	--        this might need an entire compare kicker mehtod?
+	--        this might need an entire compare kicker method?
 	--        or can we smh put this in absolute scores without comparing?
 	--        by giving the highest kicker a multiplier
 	--        but how high is the multiplier? if there are two high cards
