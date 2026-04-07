@@ -54,6 +54,8 @@ Poker = {
 		---@type Seat[]
 		seats = {}
 	},
+	-- TODO: add buy in here
+	prize_money = 10,
 	pot = 0,
 	start_stack = 50000,
 	---The key is the seat number
@@ -545,11 +547,34 @@ function Poker:round_winners_and_losers()
 	end
 end
 
+function Poker:check_win_game()
+	local chip_holders = self:players_with_chips()
+	if #chip_holders < 1 then
+		ddnetpp.log_error("no chip holders left? no idea what to do.. exploding!")
+		assert(false, "no chip holders")
+		return
+	end
+	if #chip_holders > 1 then
+		return
+	end
+
+	-- TODO: actually send the prize money to the player xd
+
+	local winner = chip_holders[1]
+	self:send_chat(
+		"'" .. ddnetpp.server.client_name(winner.client_id) .. "' " ..
+		"won the entire game! And collected " .. self.prize_money .. " in prize money!"
+	)
+	self.state = GameState.END
+end
+
 ---@return boolean won # True if someone won the game
 function Poker:check_win_by_fold()
 	if self:num_players_with_cards() == 1 then
 		self:round_winners_and_losers()
-		self:new_round()
+		if self:check_win_game() then
+			self:new_round()
+		end
 		return true
 	end
 	return false
@@ -714,9 +739,8 @@ end
 
 ---@param message string # Gets sent to all players of the current game
 function Poker:send_chat(message)
-	-- TODO: there is probably a faster way to only iterate the keys
-	for cid, _ in pairs(self.players) do
-		ddnetpp.send_chat_target(cid, message)
+	for _, player in pairs(self.players) do
+		ddnetpp.send_chat_target(player.client_id, message)
 	end
 end
 
@@ -973,6 +997,28 @@ function Poker:num_players_with_cards()
 	return num
 end
 
+---@return integer num_players
+function Poker:num_players_with_chips()
+	local num = 0
+	for _, player in pairs(self.players) do
+		if #player.chips > 0 then
+			num = num + 1
+		end
+	end
+	return num
+end
+
+---@return PokerPlayer[] players
+function Poker:players_with_chips()
+	local players = {}
+	for _, player in ipairs(self.players) do
+		if player.chips > 0 then
+			table.insert(players, player)
+		end
+	end
+	return players
+end
+
 ---Not to be confused by sort_players_by_position()
 ---The seat order can only change if a new player joins
 ---the table or someone leaves the table
@@ -1060,4 +1106,5 @@ function Poker:leave_table(client_id)
 		)
 	end
 	self:delete_player(client_id)
+	self:check_win_by_fold()
 end
