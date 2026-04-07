@@ -26,8 +26,9 @@ ButtonOffset = {
 	UTG = 3,
 }
 GameState = {
-	END = -1,
-	ERROR = 0,
+	END = -2,
+	ERROR = -1,
+	WAITING_FOR_PLAYERS = 0,
 	PRE_FLOP = 1,
 	FLOP = 2,
 	TURN = 3,

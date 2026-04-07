@@ -65,10 +65,31 @@ Poker = {
 	community_cards = {},
 	---@type string[]
 	deck = {},
-	state = GameState.PRE_FLOP,
+	state = GameState.WAITING_FOR_PLAYERS,
 	---@type integer[]
 	community_card_snap_ids = {},
 }
+
+---TODO: this can be extended to also take a client id as argument
+---      and check how many times this ip address already washed out
+---      to add a concept of maximum amount of chances
+---      for now infinite rebuy is allowed as long as 4+ players are around
+---
+---If the game already progressed too far
+---nobody can sit down at the table anymore to avoid
+---swooping the win without playing most of the opponents
+---@return boolean can_join # True if new players can still join the table
+---@return string error_msg # Only set if can_join is false, error that can be shown to the attempting joiner
+function Poker:can_still_join()
+	if self.state == GameState.WAITING_FOR_PLAYERS then
+		return true, ""
+	end
+	local num_playing = self:num_players_with_chips()
+	if num_playing > 3 then
+		return true, ""
+	end
+	return false, "Only " .. num_playing .. " players remaining, wait until the next game"
+end
 
 ---@param amount integer
 ---@return Seat[] seats
@@ -89,9 +110,9 @@ local function build_seats(amount)
 	return seats
 end
 
----@param o Poker|nil
+---@param o Poker
 ---@param table_pos Position
----@return any
+---@return Poker
 function Poker:new(o, table_pos, num_seats)
 	o = o or {}
 	setmetatable(o, self)
@@ -103,6 +124,7 @@ function Poker:new(o, table_pos, num_seats)
 	self.community_cards = {}
 	self.community_card_snap_ids = {}
 	self.next_to_act_snap_id = 0
+	self.state = GameState.WAITING_FOR_PLAYERS
 	self.deck = {}
 
 	-- TODO: yikes split pots? how? where? when?
@@ -1001,7 +1023,7 @@ end
 function Poker:num_players_with_chips()
 	local num = 0
 	for _, player in pairs(self.players) do
-		if #player.chips > 0 then
+		if player.chips > 0 then
 			num = num + 1
 		end
 	end
@@ -1053,6 +1075,12 @@ end
 ---@param client_id integer
 function Poker:join_table(client_id)
 	if self.state == GameState.ERROR then
+		ddnetpp.send_chat_target(client_id, "The game is in a failed state")
+		return
+	end
+	local can_join, join_err = self:can_still_join()
+	if not can_join then
+		ddnetpp.send_chat_target(client_id, join_err)
 		return
 	end
 	local player = PokerPlayer:new(client_id)
