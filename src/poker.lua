@@ -14,6 +14,8 @@ local function gamestate_to_str(state)
 		return "END"
 	elseif state == GameState.ERROR then
 		return "ERROR"
+	elseif state == GameState.WAITING_FOR_PLAYERS then
+		return "WAITING_FOR_PLAYERS"
 	elseif state == GameState.PRE_FLOP then
 		return "PRE_FLOP"
 	elseif state == GameState.FLOP then
