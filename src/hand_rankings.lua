@@ -127,8 +127,8 @@ local function build_hand_string(winning_cards, all_cards)
 
 	local score = 0
 	local idx = 0
-	local kicker_bonus = 5
-	for _ = #winning_cards, 5 do
+	local kicker_bonus = 4
+	for _ = #winning_cards, 4 do
 		idx = idx + 1
 		best_cards = best_cards .. card_to_str(remaining_cards[idx])
 		kicker_bonus = kicker_bonus - 1
