@@ -51,6 +51,7 @@ Poker = {
 	state = GameState.WAITING_FOR_PLAYERS,
 	---@type integer[]
 	community_card_snap_ids = {},
+	num_players_needed_to_start = 4,
 }
 
 local function gamestate_to_str(state)
@@ -119,7 +120,7 @@ end
 ---@param o Poker|nil
 ---@param table_pos Position
 ---@return Poker
-function Poker:new(o, table_pos, num_seats)
+function Poker:new(o, table_pos, num_seats, num_players_needed_to_start)
 	o = o or {}
 	setmetatable(o, self)
 	self.__index = self
@@ -151,6 +152,7 @@ function Poker:new(o, table_pos, num_seats)
 	-- yet. This is also what this variable is for
 	-- to figure out how much players still have to play to continue playing
 	self.pot_per_player = 0
+	self.num_players_needed_to_start = num_players_needed_to_start or 4
 	return o
 end
 
@@ -923,6 +925,14 @@ function Poker:render_broadcast_hud()
 	local hud =
 		"pot: " .. self.pot .. "\n" ..
 		"players with cards: " .. players_w_cards .. "\n"
+	if self.state == GameState.ERROR then
+		hud = "ERROR something went wrong\n"
+	elseif self.state == GameState.END then
+		hud = "game over!"
+	elseif self.state == GameState.WAITING_FOR_PLAYERS then
+		hud = "waiting for players ... (" .. self:num_players_with_chips() .. " out of " .. self.num_players_needed_to_start .. ")"
+	end
+
 	local align_left =
 		"                                                   " ..
 		"                                                   " ..
@@ -937,6 +947,9 @@ function Poker:render_broadcast_hud()
 end
 
 function Poker:on_tick()
+	if ddnetpp.server.tick() % 10 == 0 then
+		self:render_broadcast_hud()
+	end
 	if self.state == GameState.ERROR then
 		return
 	end
@@ -944,7 +957,7 @@ function Poker:on_tick()
 		return
 	end
 	if self.state == GameState.WAITING_FOR_PLAYERS then
-		if self:num_players_with_chips() > 3 then
+		if self:num_players_with_chips() >= self.num_players_needed_to_start then
 			self:send_chat("enough players at the table, starting a new game!")
 			self:new_game()
 		end
@@ -952,9 +965,6 @@ function Poker:on_tick()
 	end
 
 	self:print_betting_actions()
-	if ddnetpp.server.tick() % 10 == 0 then
-		self:render_broadcast_hud()
-	end
 end
 
 function Poker:on_snap(snapping_client)
