@@ -44,3 +44,12 @@ assert_eq("three of a kind", hand.name)
 assert_eq("🂤🃄🂴🃑🃛🃊", hand.cards)
 assert_eq("trip fours", hand.description)
 assert_eq(300410900, hand.score)
+
+-- hand = find_best_hand(
+-- 	{ "🂤", "🂺" },
+-- 	{ "🃊", "🃄", "🃛", "🃑", "🂢" }
+-- )
+-- assert_eq("two pair", hand.name)
+-- assert_eq("🂺🃊🂤🃄🃑🃛", hand.cards)
+-- assert_eq("trip fours", hand.description)
+-- assert_eq(300410900, hand.score)
