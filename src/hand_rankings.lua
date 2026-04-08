@@ -264,7 +264,7 @@ local function find_straight(cards)
 		if prev_card == nil then
 			table.insert(straight, card)
 		else
-			if card.rank + 1 == prev_card.rank then
+			if card.rank + 1 == prev_card.rank or card.rank == 14 and prev_card.rank == 2 then
 				table.insert(straight, card)
 				if #straight == 5 then
 					break

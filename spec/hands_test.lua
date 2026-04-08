@@ -98,3 +98,12 @@ assert_eq("straight", hand.name)
 assert_eq("🃂🂳🂤🂥🂦", hand.cards)
 assert_eq("six high straight", hand.description)
 assert_eq(40060000000, hand.score)
+
+hand = find_best_hand(
+	{ "🃉", "🃑" },
+	{ "🃂", "🂳", "🂤", "🂥", "🃎" }
+)
+assert_eq("straight", hand.name)
+assert_eq("🃑🃂🂳🂤🂥", hand.cards)
+assert_eq("ace low straight (wheel)", hand.description)
+assert_eq(40050000000, hand.score)
