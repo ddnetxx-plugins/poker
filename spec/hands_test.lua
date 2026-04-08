@@ -78,7 +78,7 @@ hand = find_best_hand(
 )
 assert_eq("two pair", hand.name)
 assert_eq("🃛🂻🂨🂸🃑", hand.cards)
-assert_eq("jacks and eigths", hand.description)
+assert_eq("jacks and eights", hand.description)
 assert_eq(20110804200, hand.score)
 
 hand = find_best_hand(
@@ -89,3 +89,12 @@ assert_eq("two pair", hand.name)
 assert_eq("🃛🂻🂩🂹🂣", hand.cards)
 assert_eq("jacks and nines", hand.description)
 assert_eq(20110900900, hand.score)
+
+hand = find_best_hand(
+	{ "🃉", "🃑" },
+	{ "🃂", "🂳", "🂤", "🂥", "🂦" }
+)
+assert_eq("straight", hand.name)
+assert_eq("🃂🂳🂤🂥🂦", hand.cards)
+assert_eq("six high straight", hand.description)
+assert_eq(40060000000, hand.score)

@@ -51,6 +51,8 @@ local function hand_rank_to_score(hand_rank, cards)
 		bonus = cards[1].rank * 10000000
 	elseif hand_rank == "two pair" then
 		bonus = (cards[1].rank * 10000000) + (cards[3].rank * 100000)
+	elseif hand_rank == "straight" then
+		bonus = cards[5].rank * 10000000
 	else
 		-- the bonus is used to compare two hands of the same rank
 		-- so for example which pair is higher a pair of sevens or a pair of nines
@@ -71,13 +73,34 @@ local function rank_to_name_plural(rank)
 		"fives",
 		"sixes",
 		"sevens",
-		"eigths",
+		"eights",
 		"nines",
 		"tens",
 		"jacks",
 		"queens 💅💅", -- wtf is this?
 		"kings",
 		"aces"
+	}
+	return names[rank-1]
+end
+
+---@param rank integer # 2-14
+---@return string name # For example rank=7 is "seven"
+local function rank_to_name(rank)
+	local names = {
+		"two",
+		"three",
+		"four",
+		"five",
+		"six",
+		"seven",
+		"eight",
+		"nine",
+		"ten",
+		"jack",
+		"queen",
+		"king",
+		"ace"
 	}
 	return names[rank-1]
 end
@@ -182,6 +205,100 @@ local function find_high_card(cards)
 		cards = "🂢🃂🂲🃑🃞",
 		score = 0
 	}
+end
+
+function sortUniqueByKey(arr, keyFunc)
+    keyFunc = keyFunc or function(x) return x end
+    local seen = {}
+    local unique = {}
+    for _, item in ipairs(arr) do
+        local key = keyFunc(item)
+        if not seen[key] then
+            seen[key] = true
+            table.insert(unique, item)
+        end
+    end
+    table.sort(unique, function(a, b)
+        return keyFunc(a) < keyFunc(b)
+    end)
+    return unique
+end
+
+local function reverse_arr(arr)
+    local n = #arr
+    for i = 1, math.floor(n / 2) do
+        arr[i], arr[n - i + 1] = arr[n - i + 1], arr[i]
+    end
+end
+
+---@param cards Card[] # 7 cards consisting of 5 community and 2 hole cards
+---@return PokerHand|nil best_straight
+local function find_straight(cards)
+	local sorted = {}
+	-- remove dupes because they dont help the straight
+	local seen = {}
+	for _, card in ipairs(cards) do
+		if not seen[card.rank] then
+			seen[card.rank] = true
+			table.insert(sorted, card)
+		end
+	end
+	-- then sort best card first
+	table.sort(sorted, function(a, b)
+		return a.rank > b.rank
+	end)
+	-- if the first card is an ace we copy it to the end for the wheel
+	local first = sorted[1]
+	if first.rank == 14 then
+		table.insert(sorted, first)
+	end
+
+	-- no point in searching for a straight in 4 or less cards
+	if #sorted < 5 then
+		return nil
+	end
+
+	local straight = {}
+	for idx, card in ipairs(sorted) do
+		local prev_card = sorted[idx-1]
+		if prev_card == nil then
+			table.insert(straight, card)
+		else
+			if card.rank + 1 == prev_card.rank then
+				table.insert(straight, card)
+				if #straight == 5 then
+					break
+				end
+			else
+				straight = {}
+				table.insert(straight, card)
+			end
+		end
+	end
+
+	if #straight ~= 5 then
+		return nil
+	end
+
+	reverse_arr(straight)
+
+	local hand_str = ""
+	for _, card in ipairs(straight) do
+		hand_str = hand_str .. card_to_str(card)
+	end
+
+	local desc = rank_to_name(straight[5].rank) .. " high straight"
+	if straight[1].rank == 14 then
+		desc = "ace low straight (wheel)"
+	end
+
+	local hand = {
+		name = "straight",
+		description = desc,
+		cards = hand_str,
+	}
+	hand.score = hand_rank_to_score(hand.name, straight)
+	return hand
 end
 
 ---@param cards Card[] # 7 cards consisting of 5 community and 2 hole cards
@@ -362,6 +479,7 @@ function find_best_hand(hole_cards, community_cards)
 	end
 
 	local finders = {
+		find_straight,
 		find_three_of_a_kind,
 		find_two_pair,
 		find_pair,
