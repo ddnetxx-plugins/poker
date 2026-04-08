@@ -327,6 +327,7 @@ function Poker:new_round()
 end
 
 function Poker:new_game()
+	assert(self.state == GameState.WAITING_FOR_PLAYERS, "tried to start game but was already in state " .. self.state)
 	self:new_round()
 
 	math.randomseed(ddnetpp.secure_rand_below(666999))
@@ -934,6 +935,14 @@ function Poker:on_tick()
 	if self.state == GameState.END then
 		return
 	end
+	if self.state == GameState.WAITING_FOR_PLAYERS then
+		if self:num_players_with_chips() > 3 then
+			self:send_chat("enough players at the table, starting a new game!")
+			self:new_game()
+		end
+		return
+	end
+
 	self:print_betting_actions()
 	if ddnetpp.server.tick() % 10 == 0 then
 		self:render_broadcast_hud()
