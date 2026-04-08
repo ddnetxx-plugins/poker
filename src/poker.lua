@@ -9,25 +9,6 @@ require(script_path() .. "hand_rankings")
 local snap = require(script_path() .. "snap")
 require(script_path() .. "player")
 
-local function gamestate_to_str(state)
-	if state == GameState.END then
-		return "END"
-	elseif state == GameState.ERROR then
-		return "ERROR"
-	elseif state == GameState.WAITING_FOR_PLAYERS then
-		return "WAITING_FOR_PLAYERS"
-	elseif state == GameState.PRE_FLOP then
-		return "PRE_FLOP"
-	elseif state == GameState.FLOP then
-		return "FLOP"
-	elseif state == GameState.TURN then
-		return "TURN"
-	elseif state == GameState.RIVER then
-		return "RIVER"
-	end
-	return "(unknown)"
-end
-
 ---@class PlayerAction
 ---@field action string
 ---|"'check'"
@@ -71,6 +52,29 @@ Poker = {
 	---@type integer[]
 	community_card_snap_ids = {},
 }
+
+local function gamestate_to_str(state)
+	if state == GameState.END then
+		return "END"
+	elseif state == GameState.ERROR then
+		return "ERROR"
+	elseif state == GameState.WAITING_FOR_PLAYERS then
+		return "WAITING_FOR_PLAYERS"
+	elseif state == GameState.PRE_FLOP then
+		return "PRE_FLOP"
+	elseif state == GameState.FLOP then
+		return "FLOP"
+	elseif state == GameState.TURN then
+		return "TURN"
+	elseif state == GameState.RIVER then
+		return "RIVER"
+	end
+	return "(unknown)"
+end
+
+function Poker:is_game_running()
+	return self.state >= GameState.PRE_FLOP
+end
 
 ---TODO: this can be extended to also take a client id as argument
 ---      and check how many times this ip address already washed out
@@ -395,6 +399,10 @@ function Poker:player_action(client_id, action)
 	-- TODO: can the player be nil here? do we need to check that? Or is that on the callsite?
 	local player = self:find_player(client_id)
 
+	if not self:is_game_running() then
+		ddnetpp.send_chat_target(client_id, "The game is not running yet")
+		return
+	end
 	if player.action ~= nil then
 		-- Premoves can still be changed
 		-- as soon as it was announced it can not be changed anymore
