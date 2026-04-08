@@ -41,16 +41,16 @@ local function hand_rank_to_score(hand_rank, cards)
 	end
 	assert(idx ~= nil, "unknown hand rank '" .. hand_rank .. "'")
 	-- high card has a score of 0
-	local score = (idx - 1) * 100000000
+	local score = (idx - 1) * 10000000000
 	local bonus = 0
 	-- these ranks are simple all cards are the same
 	-- so pick any and use that rank
 	-- more complicated is to determine which rank to give a full house where there is multiple different cards
 	-- or a straight/flush where we have to find the highest card
 	if hand_rank == "high card" or hand_rank == "pair" or hand_rank == "three of a kind" or hand_rank == "four of a kind" then
-		bonus = cards[1].rank * 100000
+		bonus = cards[1].rank * 10000000
 	elseif hand_rank == "two pair" then
-		bonus = (cards[1].rank * 100000) + (cards[3].rank * 1000)
+		bonus = (cards[1].rank * 10000000) + (cards[3].rank * 100000)
 	else
 		-- the bonus is used to compare two hands of the same rank
 		-- so for example which pair is higher a pair of sevens or a pair of nines
