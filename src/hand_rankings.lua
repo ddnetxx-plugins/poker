@@ -43,7 +43,11 @@ local function hand_rank_to_score(hand_rank, cards)
 	-- high card has a score of 0
 	local score = (idx - 1) * 100000000
 	local bonus = 0
-	if hand_rank == "high card" or hand_rank == "pair" then
+	-- these ranks are simple all cards are the same
+	-- so pick any and use that rank
+	-- more complicated is to determine which rank to give a full house where there is multiple different cards
+	-- or a straight/flush where we have to find the highest card
+	if hand_rank == "high card" or hand_rank == "pair" or hand_rank == "three of a kind" or hand_rank == "four of a kind" then
 		bonus = cards[1].rank * 100000
 	else
 		-- the bonus is used to compare two hands of the same rank
@@ -164,6 +168,61 @@ local function find_high_card(cards)
 end
 
 ---@param cards Card[] # 7 cards consisting of 5 community and 2 hole cards
+---@return PokerHand|nil best_three_of_a_kind
+local function find_three_of_a_kind(cards)
+	-- the key is the hand rank
+	-- and the value is the array of cards with that rank
+	local buckets = {}
+	for _, card in ipairs(cards) do
+		if buckets[card.rank] == nil then
+			buckets[card.rank] = {}
+		end
+		table.insert(buckets[card.rank], card)
+	end
+	local highest_three = nil
+	for _, bucket in pairs(buckets) do
+		-- we wont find a pair or quads here which is bad for performance
+		-- but helps me think about the ranking better
+		-- ideally pair,three of a kind and quads will be merged
+		-- once there are good tests and a first working version
+		if #bucket == 3 then
+			if highest_three == nil then
+				highest_three = bucket
+			elseif highest_three[1].rank < bucket[1].rank then
+				highest_three = bucket
+			end
+		end
+	end
+	if highest_three == nil then
+		return nil
+	end
+
+	local rank = highest_three[1].rank
+	local card_names = rank_to_name_plural(rank)
+	local desc = "three of a kind"
+
+	-- hole cards are first in the array
+	-- if they match the three of a kind
+	-- it is a set with pocket pair
+	if cards[1].rank == rank and cards[2].rank == rank then
+		desc = "set " .. card_names
+	elseif cards[1].rank == rank or cards[2].rank == rank then
+		desc = "trip " .. card_names
+	else
+		desc = "trip " .. card_names .. " on the board"
+	end
+
+	local remaining_score, hand_str = build_hand_string(highest_three, cards)
+	local hand = {
+		name = "three of a kind",
+		description = desc,
+		cards = hand_str
+	}
+	hand.score = hand_rank_to_score(hand.name, highest_three) + remaining_score
+	return hand
+end
+
+---@param cards Card[] # 7 cards consisting of 5 community and 2 hole cards
 ---@return PokerHand|nil best_pair
 local function find_pair(cards)
 	-- the key is the hand rank
@@ -212,6 +271,15 @@ end
 function find_best_hand(hole_cards, community_cards)
 	---@type Card[]
 	local cards = {}
+
+	-- TODO: should cards be sorted by rank and suit?
+	--       so the final hand string is consistent?
+	--       but we need the two hole cards first so
+	--       three of a kind can know if its set or trips
+	--       idk bit messy
+	--       do we evene need a deterministic card order in the hand?
+	--       it affects the unit tests and nothing else i think
+
 	for _, card in ipairs(hole_cards) do
 		table.insert(cards, str_to_card(card))
 	end
@@ -219,9 +287,13 @@ function find_best_hand(hole_cards, community_cards)
 		table.insert(cards, str_to_card(card))
 	end
 
-	local pair = find_pair(cards)
-	if pair then
-		return pair
+	local hand = find_three_of_a_kind(cards)
+	if hand then
+		return hand
+	end
+	hand = find_pair(cards)
+	if hand then
+		return hand
 	end
 	return find_high_card(cards)
 end
