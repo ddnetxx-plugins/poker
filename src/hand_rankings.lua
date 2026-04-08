@@ -49,6 +49,8 @@ local function hand_rank_to_score(hand_rank, cards)
 	-- or a straight/flush where we have to find the highest card
 	if hand_rank == "high card" or hand_rank == "pair" or hand_rank == "three of a kind" or hand_rank == "four of a kind" then
 		bonus = cards[1].rank * 100000
+	elseif hand_rank == "two pair" then
+		bonus = (cards[1].rank * 100000) + (cards[3].rank * 1000)
 	else
 		-- the bonus is used to compare two hands of the same rank
 		-- so for example which pair is higher a pair of sevens or a pair of nines
@@ -92,6 +94,16 @@ local function card_in_list(card, cards)
 	return false
 end
 
+---@return integer|nil index # Array index in cards where card is located
+local function find_card_index_in_list(card, cards)
+	for idx, c in ipairs(cards) do
+		if c.rank == card.rank and c.suit == card.suit then
+			return idx
+		end
+	end
+	return nil
+end
+
 ---@param winning_cards Card[] # 1-5 cards that formed the best hand
 ---@param all_cards Card[] # 7 cards consisting of 5 community and 2 hole cards
 ---@return integer score # The score gained by the remaining cards, not the full hand!
@@ -99,12 +111,17 @@ end
 local function build_hand_string(winning_cards, all_cards)
 	local remaining_cards = {}
 	local best_cards = ""
+
 	for _, card in ipairs(all_cards) do
-		if card_in_list(card, winning_cards) then
-			best_cards = best_cards .. card_to_str(card)
-		else
-			table.insert(remaining_cards, card)
+		table.insert(remaining_cards, card)
+	end
+
+	for _, card in ipairs(winning_cards) do
+		local idx = find_card_index_in_list(card, remaining_cards)
+		if idx then
+			table.remove(remaining_cards, idx)
 		end
+		best_cards = best_cards .. card_to_str(card)
 	end
 
 	-- only pick the best remaining cards
@@ -223,6 +240,63 @@ local function find_three_of_a_kind(cards)
 end
 
 ---@param cards Card[] # 7 cards consisting of 5 community and 2 hole cards
+---@return PokerHand|nil best_two_pair
+local function find_two_pair(cards)
+	-- the key is the hand rank
+	-- and the value is the array of cards with that rank
+	local buckets = {}
+	for _, card in ipairs(cards) do
+		if buckets[card.rank] == nil then
+			buckets[card.rank] = {}
+		end
+		table.insert(buckets[card.rank], card)
+	end
+	local top_pair = nil
+	for _, bucket in pairs(buckets) do
+		if #bucket == 2 then
+			if top_pair == nil then
+				top_pair = bucket
+			elseif top_pair[1].rank < bucket[1].rank then
+				top_pair = bucket
+			end
+		end
+	end
+	if top_pair == nil then
+		return nil
+	end
+	local second_pair = nil
+	for _, bucket in pairs(buckets) do
+		-- this won't find a full house
+		-- which makes the code easier to reason about for now
+		-- but should be refactored later
+		if #bucket == 2 and bucket[1].rank ~= top_pair[1].rank then
+			if second_pair == nil then
+				second_pair = bucket
+			elseif second_pair[1].rank < bucket[1].rank then
+				second_pair = bucket
+			end
+		end
+	end
+	if second_pair == nil then
+		return nil
+	end
+
+	local two_pair = top_pair
+	for _, card in ipairs(second_pair) do
+		table.insert(two_pair, card)
+	end
+
+	local remaining_score, hand_str = build_hand_string(two_pair, cards)
+	local hand = {
+		name = "two pair",
+		description = rank_to_name_plural(top_pair[1].rank) .. " and " .. rank_to_name_plural(second_pair[1].rank),
+		cards = hand_str
+	}
+	hand.score = hand_rank_to_score(hand.name, two_pair) + remaining_score
+	return hand
+end
+
+---@param cards Card[] # 7 cards consisting of 5 community and 2 hole cards
 ---@return PokerHand|nil best_pair
 local function find_pair(cards)
 	-- the key is the hand rank
@@ -287,14 +361,20 @@ function find_best_hand(hole_cards, community_cards)
 		table.insert(cards, str_to_card(card))
 	end
 
-	local hand = find_three_of_a_kind(cards)
-	if hand then
-		return hand
+	local finders = {
+		find_three_of_a_kind,
+		find_two_pair,
+		find_pair,
+		find_high_card,
+	}
+
+	for _, finder in ipairs(finders) do
+		local hand = finder(cards)
+		if hand then
+			return hand
+		end
 	end
-	hand = find_pair(cards)
-	if hand then
-		return hand
-	end
-	return find_high_card(cards)
+
+	assert(false, "no hand found")
 end
 

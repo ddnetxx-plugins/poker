@@ -20,7 +20,7 @@ assert_eq(100707400, hand.score)
 
 hand = find_best_hand(
 	{ "🂤", "🂧" },
-	{ "🃊", "🂷", "🃛", "🃑", "🂴" }
+	{ "🃊", "🂷", "🃛", "🃑", "🃃" }
 )
 assert_eq("pair", hand.name)
 assert_eq("🂧🂷🃑🃛🃊", hand.cards)
@@ -45,11 +45,11 @@ assert_eq("🂤🃄🂴🃑🃛", hand.cards)
 assert_eq("trip fours", hand.description)
 assert_eq(300406400, hand.score)
 
--- hand = find_best_hand(
--- 	{ "🂤", "🂺" },
--- 	{ "🃊", "🃄", "🃛", "🃑", "🂢" }
--- )
--- assert_eq("two pair", hand.name)
--- assert_eq("🂺🃊🂤🃄🃑🃛", hand.cards)
--- assert_eq("trip fours", hand.description)
--- assert_eq(300410900, hand.score)
+hand = find_best_hand(
+	{ "🂤", "🂺" },
+	{ "🃄", "🃊", "🃛", "🃑", "🂢" }
+)
+assert_eq("two pair", hand.name)
+assert_eq("🂺🃊🂤🃄🃑", hand.cards)
+assert_eq("tens and fours", hand.description)
+assert_eq(201008200, hand.score)
