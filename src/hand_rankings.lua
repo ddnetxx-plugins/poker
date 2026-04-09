@@ -276,12 +276,10 @@ local function find_flush(cards)
 	-- this multiplier makes sure that multiple weak kicker
 	-- can not outrank one stronger kicker
 	local score = 0
-	local kicker_bonus = 5
-	for _, card in ipairs(flush) do
-		card_score = card.rank * kicker_bonus * 100
+	for i, card in ipairs(flush) do
+		local position_value = math.floor(100 ^ (5 - i))
+		local card_score = (card.rank * position_value)
 		score = score + card_score
-		-- print("card=" .. card_to_str(card) .. " bonus=" .. kicker_bonus .. " card_score=" .. card_score)
-		kicker_bonus = kicker_bonus - 1
 	end
 
 	local hand = {

@@ -116,16 +116,17 @@ hand = find_best_hand(
 assert_eq("flush", hand.name)
 assert_eq("🂡🂮🂨🂥🂣", hand.cards)
 assert_eq("ace high flush", hand.description)
+assert_eq(51413080503, hand.score)
 
 hand = find_best_hand(
 	{ "🃉", "🂡" },
 	{ "🃂", "🂤", "🂨", "🂥", "🂮" }
 )
--- 🂢🂣🂥🂦🂧🂨🂩🂪🂫🂭🂮🂡
 
 assert_eq("flush", hand.name)
 assert_eq("🂡🂮🂨🂥🂤", hand.cards)
 assert_eq("ace high flush", hand.description)
+assert_eq(51413080504, hand.score)
 
 hand = find_best_hand(
 	{ "🃉", "🂡" },
@@ -135,6 +136,7 @@ hand = find_best_hand(
 assert_eq("flush", hand.name)
 assert_eq("🂡🂮🂩🂥🂤", hand.cards)
 assert_eq("ace high flush", hand.description)
+assert_eq(51413090504, hand.score)
 
 hand = find_best_hand(
 	{ "🃉", "🂡" },
@@ -144,3 +146,4 @@ hand = find_best_hand(
 assert_eq("flush", hand.name)
 assert_eq("🂡🂮🂨🂧🂦", hand.cards)
 assert_eq("ace high flush", hand.description)
+assert_eq(51413080706, hand.score)

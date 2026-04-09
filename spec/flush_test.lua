@@ -17,6 +17,4 @@ local flush_ak8 = find_best_hand(
 	{ "🃉", "🂡" },
 	{ "🃂", "🂧", "🂨", "🂦", "🂮" }
 )
-
--- FIXME: this fails
--- assert_eq(true, flush_ak9.score > flush_ak8.score)
+assert_eq(true, flush_ak9.score > flush_ak8.score)
