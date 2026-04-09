@@ -1,0 +1,22 @@
+-- local assert_eq = require("simple.assert").assert_eq
+local assert_eq = require("spec.simple_assert").assert_eq
+require("../src/globals")
+require("../src/card_converter")
+require("../src/hand_rankings")
+
+-- 🂢🂣🂤🂥🂦🂧🂨🂩🂪🂫🂭🂮🂡
+-- 🂲🂳🂴🂵🂶🂷🂸🂹🂺🂻🂽🂾🂱
+-- 🃂🃃🃄🃅🃆🃇🃈🃉🃋🃊🃍🃎🃁
+-- 🃒🃓🃔🃕🃖🃗🃘🃙🃚🃝🃛🃞🃑
+
+local flush_ak9 = find_best_hand(
+	{ "🃉", "🂡" },
+	{ "🃂", "🂤", "🂩", "🂥", "🂮" }
+)
+local flush_ak8 = find_best_hand(
+	{ "🃉", "🂡" },
+	{ "🃂", "🂧", "🂨", "🂦", "🂮" }
+)
+
+-- FIXME: this fails
+-- assert_eq(true, flush_ak9.score > flush_ak8.score)

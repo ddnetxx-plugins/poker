@@ -53,6 +53,10 @@ local function hand_rank_to_score(hand_rank, cards)
 		bonus = (cards[1].rank * 10000000) + (cards[3].rank * 100000)
 	elseif hand_rank == "straight" then
 		bonus = cards[5].rank * 10000000
+	elseif hand_rank == "flush" then
+		-- the flush implements the bonus in place
+		-- which is a bit of a mess xd
+		-- should be cleaned up
 	else
 		-- the bonus is used to compare two hands of the same rank
 		-- so for example which pair is higher a pair of sevens or a pair of nines
@@ -229,6 +233,65 @@ local function reverse_arr(arr)
     for i = 1, math.floor(n / 2) do
         arr[i], arr[n - i + 1] = arr[n - i + 1], arr[i]
     end
+end
+
+---@param cards Card[] # 7 cards consisting of 5 community and 2 hole cards
+---@return PokerHand|nil best_flush
+local function find_flush(cards)
+	---Buckets of suits
+	---@type Card[][]
+	local buckets = {}
+	for _, card in ipairs(cards) do
+		-- print("card=" .. card_to_str(card) .. " suit=" .. card.suit)
+		if buckets[card.suit] == nil then
+			buckets[card.suit] = {}
+		end
+		table.insert(buckets[card.suit], card)
+	end
+	---@type Card[]
+	local flush = {}
+	for _, bucket in pairs(buckets) do
+		-- print(" " .. _ .. " with cards=" .. #bucket)
+		if #bucket >= 5 then
+			-- there can at least only be one flush
+			-- in 7 cards so we break here
+			flush = bucket
+			break
+		end
+	end
+	if #flush < 5 then
+		return nil
+	end
+	table.sort(flush, function(a, b)
+		return a.rank > b.rank
+	end)
+	-- truncate too long flush
+	flush[6] = nil
+
+	-- this is a similar logic to computing
+	-- the kicker score
+	-- all the card ranks in the flush could be seen
+	-- as "kicker" where the highest different kicker wins
+	-- so we sum them all up multiplying the position by 100
+	-- this multiplier makes sure that multiple weak kicker
+	-- can not outrank one stronger kicker
+	local score = 0
+	local kicker_bonus = 5
+	for _, card in ipairs(flush) do
+		card_score = card.rank * kicker_bonus * 100
+		score = score + card_score
+		-- print("card=" .. card_to_str(card) .. " bonus=" .. kicker_bonus .. " card_score=" .. card_score)
+		kicker_bonus = kicker_bonus - 1
+	end
+
+	local hand = {
+		name = "flush",
+		description = rank_to_name(flush[1].rank) .. " high flush",
+		cards = cards_to_str(flush),
+		score = score,
+	}
+	hand.score = hand.score + hand_rank_to_score(hand.name, flush)
+	return hand
 end
 
 ---@param cards Card[] # 7 cards consisting of 5 community and 2 hole cards
@@ -479,6 +542,7 @@ function find_best_hand(hole_cards, community_cards)
 	end
 
 	local finders = {
+		find_flush,
 		find_straight,
 		find_three_of_a_kind,
 		find_two_pair,
