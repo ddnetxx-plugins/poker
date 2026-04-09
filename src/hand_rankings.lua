@@ -48,11 +48,17 @@ local function hand_rank_to_score(hand_rank, cards)
 	-- more complicated is to determine which rank to give a full house where there is multiple different cards
 	-- or a straight/flush where we have to find the highest card
 	if hand_rank == "high card" or hand_rank == "pair" or hand_rank == "three of a kind" or hand_rank == "four of a kind" then
-		bonus = cards[1].rank * 10000000
+		-- there is only card we rank by
+		-- so we use the highest possible index in the score number
+		-- which is the second and third digit
+		-- the first digit is the hand rank (pair, three of a kind, and so on..)
+		-- and the second and third hold the card value from 02 (duce) to 14 (ace)
+		-- and all the remaining digits are for kickers
+		bonus = cards[1].rank * 100000000
 	elseif hand_rank == "two pair" then
-		bonus = (cards[1].rank * 10000000) + (cards[3].rank * 100000)
+		bonus = (cards[1].rank * 100000000) + (cards[3].rank * 100000)
 	elseif hand_rank == "straight" then
-		bonus = cards[5].rank * 10000000
+		bonus = cards[5].rank * 100000000
 	elseif hand_rank == "flush" then
 		-- the flush implements the bonus in place
 		-- which is a bit of a mess xd
@@ -171,13 +177,13 @@ local function build_hand_string(winning_cards, all_cards)
 
 	local score = 0
 	local idx = 0
-	local kicker_bonus = 4
 	for _ = #winning_cards, 4 do
 		idx = idx + 1
 		best_cards = best_cards .. card_to_str(remaining_cards[idx])
-		kicker_bonus = kicker_bonus - 1
-		local kicker_score = remaining_cards[idx].rank * (kicker_bonus * 100)
+		local position_value = math.floor(100 ^ (5 - idx))
+		local kicker_score = (remaining_cards[idx].rank * position_value)
 		score = score + kicker_score
+		print(" card=" .. card_to_str(remaining_cards[idx]) .. " idx=" .. idx .. " card_score=" .. kicker_score)
 	end
 
 	-- first and second kicker are not of equal value!!
@@ -203,11 +209,25 @@ end
 ---@param cards Card[] # 7 cards consisting of 5 community and 2 hole cards
 ---@return PokerHand best_high_card
 local function find_high_card(cards)
+	local sorted = {}
+	for _, card in ipairs(cards) do
+		table.insert(sorted, card)
+	end
+	table.sort(sorted, function (a, b)
+		return a.rank > b.rank
+	end)
+	sorted[6] = nil
+	local score, _ = build_hand_string(sorted[1], sorted)
+
+	local desc =
+		rank_to_name(sorted[1].rank) .. " high " ..
+		rank_to_name(sorted[2].rank) .. " kicker"
+
 	return {
 		name = "high card",
-		description = "MADE UP HAND OMG XD",
-		cards = "🂢🃂🂲🃑🃞",
-		score = 0
+		description = desc,
+		cards = cards_to_str(sorted),
+		score = score
 	}
 end
 
