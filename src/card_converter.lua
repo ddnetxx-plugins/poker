@@ -53,3 +53,13 @@ function card_to_str(card)
 	local idx = 13 * y + card.rank - 1
 	return CARDS[idx]
 end
+
+---@param cards Card[]
+---@return string cards_str # Something like "🂸🃔"
+function cards_to_str(cards)
+	local result = ""
+	for _, card in ipairs(cards) do
+		result = result .. card_to_str(card)
+	end
+	return result
+end
