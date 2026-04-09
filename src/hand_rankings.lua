@@ -39,8 +39,9 @@ local HAND_RANKS = {
 -- this value is 00 for high card, pair, quads, three of a kind
 --
 -- flush, straight and straight flush are a bit special
--- they also use the first digit to show the hand rank (flush, straight, ..)
--- but the remaining 5 pairs of digits are all ranks in the straight or flush
+-- straight and straight flash contain the highest ranking card as last 2 digits
+-- and the remaining digits are 00
+-- in a flush all 5 cards are listed ordered by rank
 --
 -- the 11 digit number can be split into these segments:
 --
@@ -48,6 +49,8 @@ local HAND_RANKS = {
 --                ^ ^  ^  ^  ^  ^
 --                | |  |  |  |  |
 --                | |  |  |  | 3rd best kicker
+--                | |  |  |  | in a straight this is the highest card
+--                | |  |  |  | and aa,bb,k1,k2 are all 00
 --                | |  |  |  |
 --                | |  |  | 2nd best kicker
 --                | |  |  |
@@ -81,6 +84,10 @@ local HAND_RANKS = {
 --                 | | 09=9 2nd kicker
 --                 | 10=ten kicker
 --                 12=queen
+--
+-- the kickers are right aligned
+-- there is a padding of zeros between the cards
+-- that make the hand an the kickers
 
 ---@param hand_rank HandRank
 ---@param cards Card[] # The winning cards
@@ -110,9 +117,9 @@ local function hand_rank_to_score(hand_rank, cards)
 		-- and all the remaining digits are for kickers
 		bonus = cards[1].rank * 100000000
 	elseif hand_rank == "two pair" then
-		bonus = (cards[1].rank * 100000000) + (cards[3].rank * 100000)
+		bonus = (cards[1].rank * 100000000) + (cards[3].rank * 1000000)
 	elseif hand_rank == "straight" then
-		bonus = cards[5].rank * 100000000
+		bonus = cards[5].rank
 	elseif hand_rank == "flush" then
 		-- the flush implements the bonus in place
 		-- which is a bit of a mess xd
@@ -231,10 +238,11 @@ local function build_hand_string(winning_cards, all_cards)
 
 	local score = 0
 	local idx = 0
+	local num_kickers = 5 - #winning_cards
 	for _ = #winning_cards, 4 do
 		idx = idx + 1
 		best_cards = best_cards .. card_to_str(remaining_cards[idx])
-		local position_value = math.floor(100 ^ (5 - idx))
+		local position_value = math.floor(100 ^ (num_kickers - idx))
 		local kicker_score = (remaining_cards[idx].rank * position_value)
 		score = score + kicker_score
 		print(" card=" .. card_to_str(remaining_cards[idx]) .. " idx=" .. idx .. " card_score=" .. kicker_score)
