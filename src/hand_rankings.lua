@@ -28,6 +28,60 @@ local HAND_RANKS = {
 	"straight flush",
 }
 
+-- poker hand score format
+-- it is always 11 digits
+-- where the first digit is the hand rank (high card, pair, ..)
+-- the second 2 digits is the rank of the most valuable card
+-- that is the high card or the pair or the 3 cards of the full house
+-- or the stronger pair of two pair
+-- the next two digits are the rank of the weaker part of the hand rank
+-- so the lower pair in two pair or the 2 matching cards in full house
+-- this value is 00 for high card, pair, quads, three of a kind
+--
+-- flush, straight and straight flush are a bit special
+-- they also use the first digit to show the hand rank (flush, straight, ..)
+-- but the remaining 5 pairs of digits are all ranks in the straight or flush
+--
+-- the 11 digit number can be split into these segments:
+--
+--                x aa bb k1 k2 k3
+--                ^ ^  ^  ^  ^  ^
+--                | |  |  |  |  |
+--                | |  |  |  | 3rd best kicker
+--                | |  |  |  |
+--                | |  |  | 2nd best kicker
+--                | |  |  |
+--        hand rank |  | best kicker
+--     0=high card  |  |
+--     1=pair       | second most valuable rank
+--     2=two pair   | but never the kicker!
+--     ...          | this is the weaker pairs rank for two pair
+--                  | or the 2 matching cards of the full house
+--                  | ----
+--                  | in a flush this is the highest card of the flush
+--                  |
+--                  |
+--            most valuable rank
+--            so for high card ace
+--            this is 14 for high card
+--            ten this is 10
+--            and for a pair of sevens this
+--            is 07
+--            for a two pair this is the number
+--            of the stronger pair
+--            ----
+--            in a flush this is the highest card of the flush
+--
+-- here an example of 🃍🂪🃙🂸🃕 queen high with 10 kicker
+--
+--                01210090805
+--                ^^ ^ ^ ^ ^
+--        high card| | | | 05=5 4th kicker
+--                 | | | 08=8 3rd kicker
+--                 | | 09=9 2nd kicker
+--                 | 10=ten kicker
+--                 12=queen
+
 ---@param hand_rank HandRank
 ---@param cards Card[] # The winning cards
 ---@return integer score
