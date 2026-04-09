@@ -17,6 +17,9 @@ assert_eq("clubs", str_to_card("🃒").suit)
 assert_eq(4, str_to_card("🃔").rank)
 assert_eq("clubs", str_to_card("🃔").suit)
 
+assert_eq(8, str_to_card("🃘").rank)
+assert_eq("clubs", str_to_card("🃘").suit)
+
 assert_eq(14, str_to_card("🃑").rank)
 assert_eq("clubs", str_to_card("🃑").suit)
 
