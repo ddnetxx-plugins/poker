@@ -21,8 +21,8 @@ local sf_wheel = find_best_hand(
 	{ "🂢", "🂣", "🂤", "🂥", "🂶" }
 )
 assert_eq("straight flush", sf_wheel.name)
-assert_eq("🂥🂤🂣🂢🂡", sf_wheel.cards)
-assert_eq(80000000014, sf_wheel.score)
+assert_eq("🂡🂢🂣🂤🂥", sf_wheel.cards)
+assert_eq(80000000005, sf_wheel.score)
 
 -- k high straight flush and ace high straight
 local sf_kh = find_best_hand(
@@ -30,4 +30,13 @@ local sf_kh = find_best_hand(
 	{ "🂪", "🂫", "🂭", "🂮", "🃁" }
 )
 assert_eq("straight flush", sf_kh.name)
+assert_eq("🂩🂪🂫🂭🂮", sf_kh.cards)
+assert_eq("king high straight flush", sf_kh.description)
 
+local royal_flush = find_best_hand(
+	{ "🃉", "🂩" },
+	{ "🂪", "🂫", "🂭", "🂮", "🂡" }
+)
+assert_eq("straight flush", royal_flush.name)
+assert_eq("🂪🂫🂭🂮🂡", royal_flush.cards)
+assert_eq("royal flush", royal_flush.description)

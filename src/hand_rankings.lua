@@ -516,8 +516,10 @@ local function find_straight_flush(cards)
 		return nil
 	end
 
-	local desc = rank_to_name(straight[1].rank) .. " high straight flush"
-	if straight[1].rank == 14 then
+	reverse_arr(straight)
+
+	local desc = rank_to_name(straight[5].rank) .. " high straight flush"
+	if straight[5].rank == 14 then
 		desc = "royal flush"
 	end
 
