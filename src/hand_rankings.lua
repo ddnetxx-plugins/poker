@@ -245,7 +245,6 @@ local function build_hand_string(winning_cards, all_cards)
 		local position_value = math.floor(100 ^ (num_kickers - idx))
 		local kicker_score = (remaining_cards[idx].rank * position_value)
 		score = score + kicker_score
-		print(" card=" .. card_to_str(remaining_cards[idx]) .. " idx=" .. idx .. " card_score=" .. kicker_score)
 	end
 
 	-- first and second kicker are not of equal value!!
