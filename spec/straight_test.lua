@@ -8,12 +8,12 @@ require("../src/hand_rankings")
 -- 🃂🃃🃄🃅🃆🃇🃈🃉🃋🃊🃍🃎🃁
 -- 🃒🃓🃔🃕🃖🃗🃘🃙🃚🃝🃛🃞🃑
 
-local hand = find_best_hand(
+local straight_6h = find_best_hand(
 	{ "🃉", "🃑" },
 	{ "🃂", "🂳", "🂤", "🂥", "🂦" }
 )
-assert_eq("straight", hand.name)
-assert_eq("🃂🂳🂤🂥🂦", hand.cards)
-assert_eq("six high straight", hand.description)
-assert_eq(40000000006, hand.score)
+assert_eq("straight", straight_6h.name)
+assert_eq("🃂🂳🂤🂥🂦", straight_6h.cards)
+assert_eq("six high straight", straight_6h.description)
+assert_eq(40000000006, straight_6h.score)
 

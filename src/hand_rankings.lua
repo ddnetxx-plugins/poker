@@ -118,8 +118,17 @@ local function hand_rank_to_score(hand_rank, cards)
 		bonus = cards[1].rank * 100000000
 	elseif hand_rank == "two pair" then
 		bonus = (cards[1].rank * 100000000) + (cards[3].rank * 1000000)
-	elseif hand_rank == "straight" then
-		bonus = cards[5].rank
+	elseif hand_rank == "straight" or hand_rank == "straight flush" then
+		if cards[5].rank == 14 then
+			if cards[4].rank == 2 then
+				-- wheel
+				
+			else
+				-- nut straight
+			end
+		else
+			bonus = cards[5].rank
+		end
 	elseif hand_rank == "flush" then
 		-- the flush implements the bonus in place
 		-- which is a bit of a mess xd
@@ -444,6 +453,84 @@ local function find_straight(cards)
 end
 
 ---@param cards Card[] # 7 cards consisting of 5 community and 2 hole cards
+---@return PokerHand|nil straight_flush
+local function find_straight_flush(cards)
+
+	-- TODO: fix the performance here lmao
+	--       this is the worst possible way to do it
+	--       i just wanted to use the already existing flush and straight
+	--       finder here to progress faster
+	--       ----
+	--       also move this method to the top to be ordered
+	--       by rank once the dependency on find_flush() and find_straight()
+	--       is removed
+
+	local _flush = find_flush(cards)
+	-- no straight flush without flush :D
+	if _flush == nil then
+		return nil
+	end
+	local suit = str_to_card(string.sub(_flush.cards, 1, 4)).suit
+
+	local sorted = {}
+	-- filter out other suits than the flush
+	for _, card in ipairs(cards) do
+		if card.suit == suit then
+			table.insert(sorted, card)
+		end
+	end
+	-- then sort best card first
+	table.sort(sorted, function(a, b)
+		return a.rank > b.rank
+	end)
+	-- if the first card is an ace we copy it to the end for the wheel
+	local first = sorted[1]
+	if first.rank == 14 then
+		table.insert(sorted, first)
+	end
+
+	-- no point in searching for a straight in 4 or less cards
+	if #sorted < 5 then
+		return nil
+	end
+
+	local straight = {}
+	for idx, card in ipairs(sorted) do
+		local prev_card = sorted[idx-1]
+		if prev_card == nil then
+			table.insert(straight, card)
+		else
+			if card.rank + 1 == prev_card.rank or card.rank == 14 and prev_card.rank == 2 then
+				table.insert(straight, card)
+				if #straight == 5 then
+					break
+				end
+			else
+				straight = {}
+				table.insert(straight, card)
+			end
+		end
+	end
+
+	if #straight ~= 5 then
+		return nil
+	end
+
+	local desc = rank_to_name(straight[1].rank) .. " high straight flush"
+	if straight[1].rank == 14 then
+		desc = "royal flush"
+	end
+
+	local hand = {
+		name = "straight flush",
+		description = desc,
+		cards = cards_to_str(straight),
+	}
+	hand.score = hand_rank_to_score(hand.name, straight)
+	return hand
+end
+
+---@param cards Card[] # 7 cards consisting of 5 community and 2 hole cards
 ---@return PokerHand|nil best_three_of_a_kind
 local function find_three_of_a_kind(cards)
 	-- the key is the hand rank
@@ -621,6 +708,7 @@ function find_best_hand(hole_cards, community_cards)
 	end
 
 	local finders = {
+		find_straight_flush,
 		find_flush,
 		find_straight,
 		find_three_of_a_kind,
