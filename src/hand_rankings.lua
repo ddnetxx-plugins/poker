@@ -119,6 +119,7 @@ local function hand_rank_to_score(hand_rank, cards)
 		bonus = (cards[1].rank * 100000000) + (cards[4].rank * 1000000)
 	elseif hand_rank == "straight" or hand_rank == "straight flush" then
 		if cards[5].rank == 14 then
+			-- FIXME: WHAT IS GOING ON HERE??? xd
 			if cards[4].rank == 2 then
 				-- wheel
 				
@@ -587,7 +588,42 @@ local function find_three_of_a_kind(cards)
 end
 
 ---@param cards Card[] # 7 cards consisting of 5 community and 2 hole cards
----@return PokerHand|nil best_two_pair
+---@return PokerHand|nil best_four_of_a_kind
+local function find_four_of_a_kind(cards)
+	---@type Card[][]
+	local buckets = {}
+	for _, card in ipairs(cards) do
+		if buckets[card.rank] == nil then
+			buckets[card.rank] = {}
+		end
+		table.insert(buckets[card.rank], card)
+	end
+	local quads = nil
+	for _, bucket in pairs(buckets) do
+		if #bucket == 4 then
+			if quads == nil then
+				quads = bucket
+			elseif quads[1].rank < bucket[1].rank then
+				quads = bucket
+			end
+		end
+	end
+	if quads == nil then
+		return nil
+	end
+
+	local remaining_score, hand_str = build_hand_string(quads, cards)
+	local hand = {
+		name = "four of a kind",
+		description = "quad " .. rank_to_name_plural(quads[1].rank),
+		cards = hand_str,
+	}
+	hand.score = hand_rank_to_score(hand.name, quads) + remaining_score
+	return hand
+end
+
+---@param cards Card[] # 7 cards consisting of 5 community and 2 hole cards
+---@return PokerHand|nil best_full_house
 local function find_full_house(cards)
 	---@type Card[][]
 	local buckets = {}
@@ -778,6 +814,7 @@ function find_best_hand(hole_cards, community_cards)
 
 	local finders = {
 		find_straight_flush,
+		find_four_of_a_kind,
 		find_full_house,
 		find_flush,
 		find_straight,
