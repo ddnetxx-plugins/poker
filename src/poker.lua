@@ -550,34 +550,23 @@ function Poker:find_winners()
 			end
 		end
 	else
-		-- FIXME: IMPLEMENT A REAL SHOWDOWN
-
-		local best_player = nil
-		for _, player in pairs(self.players) do
+		local sorted_players = {}
+		for _, player in ipairs(self.players) do
 			if #player.hole_cards > 0 then
-
-				print("building hand for cid=" .. player.client_id)
-				print(" board: " .. join_str_array(self.community_cards))
-				print("  hole: " .. join_str_array(player.hole_cards))
-
 				player.hand = find_best_hand(player.hole_cards, self.community_cards)
-				if best_player == nil then
-					best_player = player
-				end
+				table.insert(sorted_players, player)
 			end
 		end
-		table.insert(winners, best_player)
-
-		print("winner is cid=" .. best_player.client_id)
-		print(" board: " .. join_str_array(self.community_cards))
-		print("  hole: " .. join_str_array(best_player.hole_cards))
-		print("  made hand: " .. best_player.hand.name .. " " .. best_player.hand.description)
-		print("             " ..  best_player.hand.cards)
-
-		-- TODO: insert multiple players if they all have the same top score
-
-
-		-- assert(false, "winning on showdown is not implemented yet xd")
+		table.sort(sorted_players, function (a, b)
+			return a.hand.score > b.hand.score
+		end)
+		local top_score = sorted_players[1].hand.score
+		for _, player in ipairs(sorted_players) do
+			if player.hand.score < top_score then
+				break
+			end
+			table.insert(winners, player)
+		end
 	end
 	return win_type, winners
 end
