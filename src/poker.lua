@@ -571,6 +571,8 @@ function Poker:find_winners()
 		print("winner is cid=" .. best_player.client_id)
 		print(" board: " .. join_str_array(self.community_cards))
 		print("  hole: " .. join_str_array(best_player.hole_cards))
+		print("  made hand: " .. best_player.hand.name .. " " .. best_player.hand.description)
+		print("             " ..  best_player.hand.cards)
 
 		-- TODO: insert multiple players if they all have the same top score
 
