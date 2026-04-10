@@ -525,6 +525,16 @@ end
 ---|"'showdown'"
 ---|"'fold'"
 
+---@param words string[]
+---@return string joined_words
+local function join_str_array(words)
+	local joined = ""
+	for _, word in ipairs(words) do
+		joined = joined .. word
+	end
+	return joined
+end
+
 ---@return WinType win_type # What caused the win
 ---@return PokerPlayer[] winners # Who won, can be multiple if there is a split pot
 function Poker:find_winners()
@@ -545,6 +555,11 @@ function Poker:find_winners()
 		local best_player = nil
 		for _, player in pairs(self.players) do
 			if #player.hole_cards > 0 then
+
+				print("building hand for cid=" .. player.client_id)
+				print(" board: " .. join_str_array(self.community_cards))
+				print("  hole: " .. join_str_array(player.hole_cards))
+
 				player.hand = find_best_hand(player.hole_cards, self.community_cards)
 				if best_player == nil then
 					best_player = player
@@ -552,6 +567,10 @@ function Poker:find_winners()
 			end
 		end
 		table.insert(winners, best_player)
+
+		print("winner is cid=" .. best_player.client_id)
+		print(" board: " .. join_str_array(self.community_cards))
+		print("  hole: " .. join_str_array(best_player.hole_cards))
 
 		-- TODO: insert multiple players if they all have the same top score
 

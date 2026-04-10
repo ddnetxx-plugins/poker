@@ -42,7 +42,7 @@ function suit_to_rank(suit)
 	elseif suit == "clubs" then
 		return 1
 	end
-	assert(false, "unknown suit '" .. suit .. "'")
+	assert(false, "unknown suit '" .. tostring(suit) .. "'")
 	return 0
 end
 
