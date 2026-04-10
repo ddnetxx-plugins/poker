@@ -118,17 +118,7 @@ local function hand_rank_to_score(hand_rank, cards)
 	elseif hand_rank == "two pair" or hand_rank == "full house" then
 		bonus = (cards[1].rank * 100000000) + (cards[4].rank * 1000000)
 	elseif hand_rank == "straight" or hand_rank == "straight flush" then
-		if cards[5].rank == 14 then
-			-- FIXME: WHAT IS GOING ON HERE??? xd
-			if cards[4].rank == 2 then
-				-- wheel
-				
-			else
-				-- nut straight
-			end
-		else
-			bonus = cards[5].rank
-		end
+		bonus = cards[5].rank
 	elseif hand_rank == "flush" then
 		-- the flush implements the bonus in place
 		-- which is a bit of a mess xd
@@ -441,6 +431,8 @@ local function find_straight(cards)
 	local desc = rank_to_name(straight[5].rank) .. " high straight"
 	if straight[1].rank == 14 then
 		desc = "ace low straight (wheel)"
+	elseif straight[5].rank == 14 then
+		desc = "ace high straight (broadway)"
 	end
 
 	local hand = {

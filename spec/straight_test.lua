@@ -5,7 +5,7 @@ require("../src/hand_rankings")
 
 -- 🂢🂣🂤🂥🂦🂧🂨🂩🂪🂫🂭🂮🂡
 -- 🂲🂳🂴🂵🂶🂷🂸🂹🂺🂻🂽🂾🂱
--- 🃂🃃🃄🃅🃆🃇🃈🃉🃋🃊🃍🃎🃁
+-- 🃂🃃🃄🃅🃆🃇🃈🃉🃊🃋🃍🃎🃁
 -- 🃒🃓🃔🃕🃖🃗🃘🃙🃚🃝🃛🃞🃑
 
 local straight_6h = find_best_hand(
@@ -25,3 +25,12 @@ assert_eq("straight", straight_5h.name)
 assert_eq("🃑🃂🂳🂤🂥", straight_5h.cards)
 assert_eq("ace low straight (wheel)", straight_5h.description)
 assert_eq(50000000005, straight_5h.score)
+
+local broadway = find_best_hand(
+	{ "🃉", "🃑" },
+	{ "🃚", "🃝", "🃋", "🃎", "🃙" }
+)
+assert_eq("straight", broadway.name)
+assert_eq("🃚🃋🃝🃎🃑", broadway.cards)
+assert_eq("ace high straight (broadway)", broadway.description)
+assert_eq(50000000014, broadway.score)
