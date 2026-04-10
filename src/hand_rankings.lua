@@ -115,8 +115,8 @@ local function hand_rank_to_score(hand_rank, cards)
 		-- and the second and third hold the card value from 02 (duce) to 14 (ace)
 		-- and all the remaining digits are for kickers
 		bonus = cards[1].rank * 100000000
-	elseif hand_rank == "two pair" then
-		bonus = (cards[1].rank * 100000000) + (cards[3].rank * 1000000)
+	elseif hand_rank == "two pair" or hand_rank == "full house" then
+		bonus = (cards[1].rank * 100000000) + (cards[4].rank * 1000000)
 	elseif hand_rank == "straight" or hand_rank == "straight flush" then
 		if cards[5].rank == 14 then
 			if cards[4].rank == 2 then
@@ -588,6 +588,74 @@ end
 
 ---@param cards Card[] # 7 cards consisting of 5 community and 2 hole cards
 ---@return PokerHand|nil best_two_pair
+local function find_full_house(cards)
+	---@type Card[][]
+	local buckets = {}
+	for _, card in ipairs(cards) do
+		if buckets[card.rank] == nil then
+			buckets[card.rank] = {}
+		end
+		table.insert(buckets[card.rank], card)
+	end
+	local top_three = nil
+	for _, bucket in pairs(buckets) do
+		if #bucket == 3 then
+			if top_three == nil then
+				top_three = bucket
+			elseif top_three[1].rank < bucket[1].rank then
+				top_three = bucket
+			end
+		end
+	end
+	if top_three == nil then
+		return nil
+	end
+
+	local top_pair = nil
+	for _, bucket in pairs(buckets) do
+		-- the "pair" in the full house can also
+		-- consist of 3 cards
+		-- if the board and player hole cards together are
+		-- 3-d 3-s 3-c 6-d 6-s 6-c 7-c
+		-- we have a full house with 666 and 33
+		-- but there are three threes we just count them as 2
+		-- we do not say 2 or greater because we want
+		-- to intentionally not find quads
+		if #bucket == 3 or #bucket == 2 then
+			-- cant use the same cards for the pair
+			-- and the three of a kind
+			if bucket[1].rank ~= top_three[1].rank then
+				if top_pair == nil then
+					top_pair = bucket
+				elseif top_pair[1].rank < bucket[1].rank then
+					top_pair = bucket
+				end
+			end
+		end
+	end
+	if top_pair == nil then
+		return nil
+	end
+
+	local full_house = {}
+	for _, card in ipairs(top_three) do
+		table.insert(full_house, card)
+	end
+	for _, card in ipairs(top_pair) do
+		table.insert(full_house, card)
+	end
+
+	local hand = {
+		name = "full house",
+		description = rank_to_name_plural(top_three[1].rank) .. " full of " .. rank_to_name_plural(top_pair[1].rank),
+		cards = cards_to_str(full_house),
+		score = hand_rank_to_score('full house', full_house),
+	}
+	return hand
+end
+
+---@param cards Card[] # 7 cards consisting of 5 community and 2 hole cards
+---@return PokerHand|nil best_two_pair
 local function find_two_pair(cards)
 	-- the key is the hand rank
 	-- and the value is the array of cards with that rank
@@ -710,6 +778,7 @@ function find_best_hand(hole_cards, community_cards)
 
 	local finders = {
 		find_straight_flush,
+		find_full_house,
 		find_flush,
 		find_straight,
 		find_three_of_a_kind,
