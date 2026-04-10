@@ -16,7 +16,7 @@ local jacks_and_nines = find_best_hand(
 assert_eq("two pair", jacks_and_nines.name)
 assert_eq("🃛🂻🂩🂹🂣", jacks_and_nines.cards)
 assert_eq("jacks and nines", jacks_and_nines.description)
-assert_eq(21109000003, jacks_and_nines.score)
+assert_eq(31109000003, jacks_and_nines.score)
 
 local jacks_and_eights = find_best_hand(
 	{ "🂤", "🂨" },
@@ -25,6 +25,6 @@ local jacks_and_eights = find_best_hand(
 assert_eq("two pair", jacks_and_eights.name)
 assert_eq("🃛🂻🂨🂸🃑", jacks_and_eights.cards)
 assert_eq("jacks and eights", jacks_and_eights.description)
-assert_eq(21108000014, jacks_and_eights.score)
+assert_eq(31108000014, jacks_and_eights.score)
 
 assert_eq(true, jacks_and_nines.score > jacks_and_eights.score)

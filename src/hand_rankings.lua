@@ -55,9 +55,9 @@ local HAND_RANKS = {
 --                | |  |  | 2nd best kicker
 --                | |  |  |
 --        hand rank |  | best kicker
---     0=high card  |  |
---     1=pair       | second most valuable rank
---     2=two pair   | but never the kicker!
+--     1=high card  |  |
+--     2=pair       | second most valuable rank
+--     3=two pair   | but never the kicker!
 --     ...          | this is the weaker pairs rank for two pair
 --                  | or the 2 matching cards of the full house
 --                  | ----
@@ -77,7 +77,7 @@ local HAND_RANKS = {
 --
 -- here an example of 🃍🂪🃙🂸🃕 queen high with 10 kicker
 --
---                01210090805
+--                11210090805
 --                ^^ ^ ^ ^ ^
 --        high card| | | | 05=5 4th kicker
 --                 | | | 08=8 3rd kicker
@@ -101,8 +101,7 @@ local function hand_rank_to_score(hand_rank, cards)
 		end
 	end
 	assert(idx ~= nil, "unknown hand rank '" .. hand_rank .. "'")
-	-- high card has a score of 0
-	local score = (idx - 1) * 10000000000
+	local score = idx * 10000000000
 	local bonus = 0
 	-- these ranks are simple all cards are the same
 	-- so pick any and use that rank

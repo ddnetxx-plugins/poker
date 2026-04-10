@@ -16,7 +16,7 @@ local set4_ace_kicker = find_best_hand(
 assert_eq("three of a kind", set4_ace_kicker.name)
 assert_eq("🂤🃄🂴🃑🃛", set4_ace_kicker.cards)
 assert_eq("set fours", set4_ace_kicker.description)
-assert_eq(30400001411, set4_ace_kicker.score)
+assert_eq(40400001411, set4_ace_kicker.score)
 
 local set4_king_kicker = find_best_hand(
 	{ "🂤", "🃄" },
@@ -25,6 +25,6 @@ local set4_king_kicker = find_best_hand(
 assert_eq("three of a kind", set4_king_kicker.name)
 assert_eq("🂤🃄🂴🃎🃛", set4_king_kicker.cards)
 assert_eq("set fours", set4_king_kicker.description)
-assert_eq(30400001311, set4_king_kicker.score)
+assert_eq(40400001311, set4_king_kicker.score)
 
 assert_eq(true, set4_ace_kicker.score > set4_king_kicker.score)

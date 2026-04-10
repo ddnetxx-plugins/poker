@@ -14,13 +14,13 @@ local flush_ak9 = find_best_hand(
 	{ "🃂", "🂤", "🂩", "🂥", "🂮" }
 )
 assert_eq("🂡🂮🂩🂥🂤", flush_ak9.cards)
-assert_eq(51413090504, flush_ak9.score)
+assert_eq(61413090504, flush_ak9.score)
 
 local flush_ak8 = find_best_hand(
 	{ "🃉", "🂡" },
 	{ "🃂", "🂧", "🂨", "🂦", "🂮" }
 )
 assert_eq("🂡🂮🂨🂧🂦", flush_ak8.cards)
-assert_eq(51413080706, flush_ak8.score)
+assert_eq(61413080706, flush_ak8.score)
 
 assert_eq(true, flush_ak9.score > flush_ak8.score)
