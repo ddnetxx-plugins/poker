@@ -538,6 +538,7 @@ end
 ---@return WinType win_type # What caused the win
 ---@return PokerPlayer[] winners # Who won, can be multiple if there is a split pot
 function Poker:find_winners()
+	---@type PokerPlayer[]
 	local winners = {}
 	---@type WinType
 	local win_type = "showdown"

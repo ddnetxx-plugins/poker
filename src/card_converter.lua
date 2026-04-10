@@ -6,7 +6,7 @@
 ---@return Card
 function str_to_card(card_str)
 	local idx = nil
-	for i, card in pairs(CARDS) do
+	for i, card in ipairs(CARDS) do
 		if card == card_str then
 			idx = i
 			break
