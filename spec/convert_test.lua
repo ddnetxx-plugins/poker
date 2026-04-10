@@ -3,6 +3,11 @@ local assert_eq = require("spec.simple_assert").assert_eq
 require("../src/globals")
 require("../src/card_converter")
 
+-- FIXME: remove and make sure shuffle is not IN PLACE OMG
+require("../src/poker")
+local game = Poker:new(nil, {x=0,y=0})
+game:shuffled_deck()
+
 assert_eq("🃑", card_to_str({ suit = "clubs", rank = 14 }))
 assert_eq("🂢", card_to_str({ suit = "spades", rank = 2 }))
 assert_eq("🂴", card_to_str({ suit = "hearts", rank = 4 }))
