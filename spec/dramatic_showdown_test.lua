@@ -1,0 +1,34 @@
+local t = require("spec.util.test_base")
+require("../src/poker")
+
+local game = Poker:new(nil, { x = 33, y = 30 })
+game:join_table(0) -- utg
+game:join_table(1) -- btn
+game:join_table(2) -- sb
+game:join_table(3) -- bb
+
+game:find_player(2).chips = game.start_stack * 2
+game:find_player(3).chips = game.start_stack * 4
+
+game:new_game()
+
+-- 🂢🂣🂤🂥🂦🂧🂨🂩🂪🂫🂭🂮🂡
+-- 🂲🂳🂴🂵🂶🂷🂸🂹🂺🂻🂽🂾🂱
+-- 🃂🃃🃄🃅🃆🃇🃈🃉🃊🃋🃍🃎🃁
+-- 🃒🃓🃔🃕🃖🃗🃘🃙🃚🃛🃝🃑🃞
+
+-- ace kicker wins quads
+t.set_hole_cards(game, 0, "🂡🂮") -- best kicker for quads
+t.set_hole_cards(game, 1, "🂢🂣")
+t.set_hole_cards(game, 2, "🂵🃅")
+t.set_hole_cards(game, 3, "🃋🃛")
+
+game:player_action(0, { action = "fold" }) -- utg fold
+game:player_action(1, { action = "fold" }) -- btn fold
+game:player_action(2, { action = "raise", amount = game:find_player(2).chips }) -- sb all in
+game:player_action(3, { action = "call" }) -- bb call
+
+-- TODO: this fails idk why but i rq now xd
+t.assert_eq("This call made you go all in!", ddnetpp.get_chat_line(3, -1))
+
+-- TODO: call game:on_tick() and make sure the board reveals it self automatically during showdown
