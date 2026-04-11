@@ -1,5 +1,4 @@
--- local assert_eq = require("simple.assert").assert_eq
-local assert_eq = require("spec.simple_assert").assert_eq
+local assert_eq = require("simple.assert").assert_eq
 require("../src/poker")
 ddnetpp = require("spec.mock.ddnetpp")
 
@@ -47,6 +46,7 @@ assert_eq(ButtonOffset.SMALL_BLIND, players[9].position.offset)
 assert_eq(ButtonOffset.BIG_BLIND, players[10].position.offset)
 
 for _, player in pairs(game.players) do
+	game:player_action(player.client_id, { action = "call" })
 	game:player_action(player.client_id, { action = "check" })
 end
 

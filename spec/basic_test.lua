@@ -1,5 +1,4 @@
--- local assert_eq = require("simple.assert").assert_eq
-local assert_eq = require("spec.simple_assert").assert_eq
+local assert_eq = require("simple.assert").assert_eq
 require("../src/poker")
 ddnetpp = require("spec.mock.ddnetpp")
 
@@ -38,8 +37,8 @@ assert_eq(0, game:next_to_act().client_id)
 -- still preflop
 assert_eq(0, #game.community_cards)
 
-game:player_action(0, { action = "check" })
-assert_eq("'mock0' did a check", ddnetpp.get_chat_line(1, -3))
+game:player_action(0, { action = "call" })
+assert_eq("'mock0' did a call", ddnetpp.get_chat_line(1, -3))
 assert_eq("'mock1' did a check", ddnetpp.get_chat_line(1, -2))
 assert_eq("next round!", ddnetpp.get_chat_line(1, -1))
 

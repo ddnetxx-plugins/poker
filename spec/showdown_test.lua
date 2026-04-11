@@ -27,6 +27,6 @@ t.set_hole_cards(game, 1, "🂱🃁") -- same ace kicker for quads
 t.set_hole_cards(game, 2, "🂵🃅")
 t.set_hole_cards(game, 3, "🃋🃛")
 t.all_check_till_showdown_and_rig_board(game, "🂤🂴🃄🃔🃕")
-t.assert_eq("You won a split pot with 0 chips in it!", ddnetpp.get_chat_line(0, -3)) -- TODO: who yoinked the blinds xd
+t.assert_eq("You won a split pot with 200 chips in it!", ddnetpp.get_chat_line(0, -3))
 t.assert_eq("'mock0' won the split pot with four of a kind (quad fours)", ddnetpp.get_chat_line(0, -2))
 t.assert_eq("'mock1' won the split pot with four of a kind (quad fours)", ddnetpp.get_chat_line(0, -1))

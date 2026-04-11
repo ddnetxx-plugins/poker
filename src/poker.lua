@@ -311,6 +311,7 @@ function Poker:place_blinds(num_players)
 		if player.position.offset == ButtonOffset.SMALL_BLIND then
 			local diff = math.min(player.chips, self.small_blind)
 			player.chips = player.chips - diff
+			player.chips_paid_into_pot = player.chips_paid_into_pot + diff
 			self.pot = self.pot + diff
 		else
 			local is_big_blind = false
@@ -324,6 +325,7 @@ function Poker:place_blinds(num_players)
 			if is_big_blind then
 				local diff = math.min(player.chips, self.small_blind * 2)
 				player.chips = player.chips - diff
+				player.chips_paid_into_pot = player.chips_paid_into_pot + diff
 				self.pot = self.pot + diff
 			end
 		end

@@ -1,5 +1,4 @@
--- local assert_eq = require("simple.assert").assert_eq
-local assert_eq = require("spec.simple_assert").assert_eq
+local assert_eq = require("simple.assert").assert_eq
 require("../src/poker")
 ddnetpp = require("spec.mock.ddnetpp")
 
@@ -22,13 +21,13 @@ assert_eq(game.next_to_act_offset, ButtonOffset.UTG)
 
 -- pre flop
 assert_eq(0, game:next_to_act().client_id)
-game:player_action(0, { action = "check" })
+game:player_action(0, { action = "call" })
 
 assert_eq(1, game:next_to_act().client_id)
-game:player_action(1, { action = "check" })
+game:player_action(1, { action = "call" })
 
 assert_eq(2, game:next_to_act().client_id)
-game:player_action(2, { action = "check" })
+game:player_action(2, { action = "call" })
 
 assert_eq(3, game:next_to_act().client_id)
 game:player_action(3, { action = "check" })
@@ -96,13 +95,13 @@ assert_eq(true, game:find_player(2).is_button)
 
 -- utg first to act
 assert_eq(1, game:next_to_act().client_id)
-game:player_action(1, { action = "check" })
+game:player_action(1, { action = "call" })
 
 assert_eq(2, game:next_to_act().client_id)
-game:player_action(2, { action = "check" })
+game:player_action(2, { action = "call" })
 
 assert_eq(3, game:next_to_act().client_id)
-game:player_action(3, { action = "check" })
+game:player_action(3, { action = "call" })
 
 assert_eq(0, game:next_to_act().client_id)
 game:player_action(0, { action = "check" })

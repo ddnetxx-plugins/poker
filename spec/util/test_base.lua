@@ -1,4 +1,4 @@
-local assert_eq = require("spec.simple_assert").assert_eq
+local assert_eq = require("simple.assert").assert_eq
 
 ddnetpp = require("spec.mock.ddnetpp")
 
@@ -8,7 +8,11 @@ ddnetpp.verbosity = 0
 ---@param game Poker
 local function all_check(game)
 	for _, player in ipairs(game:players_with_chips()) do
-		game:player_action(player.client_id, { action = "check" })
+		if player.chips_paid_into_pot < game.pot_per_player then
+			game:player_action(player.client_id, { action = "call" })
+		else
+			game:player_action(player.client_id, { action = "check" })
+		end
 	end
 end
 

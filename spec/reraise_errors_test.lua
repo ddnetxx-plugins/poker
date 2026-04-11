@@ -1,5 +1,4 @@
--- local assert_eq = require("simple.assert").assert_eq
-local assert_eq = require("spec.simple_assert").assert_eq
+local assert_eq = require("simple.assert").assert_eq
 require("../src/poker")
 ddnetpp = require("spec.mock.ddnetpp")
 

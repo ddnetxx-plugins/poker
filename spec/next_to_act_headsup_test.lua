@@ -1,5 +1,4 @@
--- local assert_eq = require("simple.assert").assert_eq
-local assert_eq = require("spec.simple_assert").assert_eq
+local assert_eq = require("simple.assert").assert_eq
 require("../src/poker")
 ddnetpp = require("spec.mock.ddnetpp")
 
@@ -13,7 +12,7 @@ game:new_game()
 
 -- pre flop
 assert_eq(0, game:next_to_act().client_id)
-game:player_action(0, { action = "check" })
+game:player_action(0, { action = "call" })
 
 assert_eq(1, game:next_to_act().client_id)
 game:player_action(1, { action = "check" })
@@ -43,7 +42,7 @@ game:player_action(1, { action = "check" })
 
 -- pre flop (button moved)
 assert_eq(1, game:next_to_act().client_id)
-game:player_action(1, { action = "check" })
+game:player_action(1, { action = "call" })
 
 assert_eq(0, game:next_to_act().client_id)
 game:player_action(0, { action = "check" })
@@ -74,7 +73,7 @@ game:player_action(0, { action = "check" })
 -- copy pasted test from first section:
 
 assert_eq(0, game:next_to_act().client_id)
-game:player_action(0, { action = "check" })
+game:player_action(0, { action = "call" })
 
 assert_eq(1, game:next_to_act().client_id)
 game:player_action(1, { action = "check" })

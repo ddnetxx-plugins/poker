@@ -1,5 +1,4 @@
--- local assert_eq = require("simple.assert").assert_eq
-local assert_eq = require("spec.simple_assert").assert_eq
+local assert_eq = require("simple.assert").assert_eq
 require("../src/poker")
 ddnetpp = require("spec.mock.ddnetpp")
 
@@ -17,7 +16,7 @@ game:new_game()
 assert_eq(false, game:find_player(0).is_button)
 assert_eq(true, game:find_player(1).is_button)
 
-game:player_action(0, { action = "check" })
+game:player_action(0, { action = "call" })
 game:player_action(1, { action = "check" })
 
 -- after one round of betting the button should
@@ -51,7 +50,7 @@ assert_eq(true, game:find_player(0).is_button)
 assert_eq(false, game:find_player(1).is_button)
 
 game:player_action(0, { action = "check" })
-game:player_action(1, { action = "check" })
+game:player_action(1, { action = "call" })
 
 game:player_action(0, { action = "check" })
 game:player_action(1, { action = "check" })

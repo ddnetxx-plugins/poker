@@ -1,5 +1,4 @@
--- local assert_eq = require("simple.assert").assert_eq
-local assert_eq = require("spec.simple_assert").assert_eq
+local assert_eq = require("simple.assert").assert_eq
 require("../src/poker")
 ddnetpp = require("spec.mock.ddnetpp")
 
@@ -14,10 +13,10 @@ game:new_game()
 
 -- pre flop
 assert_eq(1, game:next_to_act().client_id)
-game:player_action(1, { action = "check" })
+game:player_action(1, { action = "call" })
 
 assert_eq(2, game:next_to_act().client_id)
-game:player_action(2, { action = "check" })
+game:player_action(2, { action = "call" })
 
 assert_eq(0, game:next_to_act().client_id)
 game:player_action(0, { action = "bet", amount = 2 })
@@ -38,7 +37,7 @@ game:player_action(2, { action = "call" })
 
 -- flop
 assert_eq(GameState.FLOP, game.state)
-assert_eq(6, game.pot)
+assert_eq(306, game.pot)
 game:player_action(2, { action = "check" })
 game:player_action(0, { action = "check" })
 game:player_action(1, { action = "check" })
@@ -51,7 +50,7 @@ game:player_action(1, { action = "call" })
 
 -- river
 assert_eq(GameState.RIVER, game.state)
-assert_eq(12, game.pot)
+assert_eq(312, game.pot)
 game:player_action(2, { action = "bet", amount = 2 })
 game:player_action(0, { action = "raise", amount = 20 })
 game:player_action(1, { action = "call" })

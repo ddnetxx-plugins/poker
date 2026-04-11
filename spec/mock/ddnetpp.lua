@@ -1,3 +1,4 @@
+---@class mock.ddnet
 local ddnetpp = {
 	strict_occupy = false,
 	verbosity = 1,
