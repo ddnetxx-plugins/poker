@@ -393,10 +393,21 @@ function Poker:deal_hole_cards()
 	return cards
 end
 
+
+function Poker:clear_player_actions()
+	for _, player in pairs(self.players) do
+		player.action = nil
+		player.prev_actions = {}
+	end
+end
+
 function Poker:flop()
 	assert(self.state == GameState.PRE_FLOP, "tried to flop while in gamestate '" .. gamestate_to_str(self.state) .. "'")
 	assert(#self.community_cards == 0, "tried to flop but there were already " .. #self.community_cards .. " cards on the board")
 	self.state = GameState.FLOP
+
+	self:clear_player_actions()
+	self.next_to_act_offset = self:first_offset_to_act()
 
 	table.insert(self.community_cards, table.remove(self.deck, 1))
 	table.insert(self.community_cards, table.remove(self.deck, 1))
@@ -408,6 +419,9 @@ function Poker:turn()
 	assert(#self.community_cards == 3, "tried to turn but there were already " .. #self.community_cards .. " cards on the board")
 	self.state = GameState.TURN
 
+	self:clear_player_actions()
+	self.next_to_act_offset = self:first_offset_to_act()
+
 	table.insert(self.community_cards, table.remove(self.deck, 1))
 end
 
@@ -415,6 +429,9 @@ function Poker:river()
 	assert(self.state == GameState.TURN, "tried to river while in gamestate '" .. gamestate_to_str(self.state) .. "'")
 	assert(#self.community_cards == 4, "tried to river but there were already " .. #self.community_cards .. " cards on the board")
 	self.state = GameState.RIVER
+
+	self:clear_player_actions()
+	self.next_to_act_offset = self:first_offset_to_act()
 
 	table.insert(self.community_cards, table.remove(self.deck, 1))
 end
@@ -687,10 +704,7 @@ function Poker:check_win_by_fold()
 end
 
 function Poker:next_state()
-	for _, player in pairs(self.players) do
-		player.action = nil
-		player.prev_actions = {}
-	end
+	self:clear_player_actions()
 
 	if self.state == GameState.PRE_FLOP then
 		self:flop()
@@ -703,8 +717,6 @@ function Poker:next_state()
 		self:new_round()
 		return
 	end
-
-	self.next_to_act_offset = self:first_offset_to_act()
 end
 
 ---@param offset integer
