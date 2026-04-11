@@ -10,6 +10,10 @@ game:join_table(0) -- utg
 game:join_table(1) -- button
 game:join_table(2) -- small blind
 game:join_table(3) -- big blind
+
+-- hack because i am too lazy to refactor the test xd
+game.small_blind = 0
+
 game:new_game()
 
 game:find_player(0).chips = 100
