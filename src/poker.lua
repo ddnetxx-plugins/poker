@@ -37,6 +37,11 @@ Poker = {
 		---@type Seat[]
 		seats = {}
 	},
+	-- there is no straddle
+	-- big blind is always 2x of small blind
+	-- thats it
+	-- keep it simple for now
+	small_blind = 50,
 	-- TODO: add buy in here
 	prize_money = 10,
 	pot = 0,
@@ -133,9 +138,12 @@ function Poker:new(o, table_pos, num_seats, num_players_needed_to_start)
 	self.next_to_act_snap_id = 0
 	self.state = GameState.WAITING_FOR_PLAYERS
 	self.deck = {}
+	self.small_blind = 50
 
 	-- TODO: yikes split pots? how? where? when?
 	self.pot = 0
+
+	self.start_stack = 50000
 
 	-- TODO: this variable feels super chaotic
 	--       do we really need a total "pot" variable
@@ -301,7 +309,9 @@ end
 function Poker:place_blinds(num_players)
 	for _, player in pairs(self.players) do
 		if player.position.offset == ButtonOffset.SMALL_BLIND then
-			-- TODO: place small blind here
+			local diff = math.min(player.chips, self.small_blind)
+			player.chips = player.chips - diff
+			self.pot = self.pot + diff
 		else
 			local is_big_blind = false
 			if player.position.offset == ButtonOffset.BIG_BLIND then
@@ -312,10 +322,13 @@ function Poker:place_blinds(num_players)
 			end
 
 			if is_big_blind then
-				-- TODO: place big blind here
+				local diff = math.min(player.chips, self.small_blind * 2)
+				player.chips = player.chips - diff
+				self.pot = self.pot + diff
 			end
 		end
 	end
+	self.pot_per_player = self.small_blind * 2
 end
 
 function Poker:new_round()
