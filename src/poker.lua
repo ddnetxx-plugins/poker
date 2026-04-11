@@ -218,14 +218,21 @@ end
 
 ---@param array table
 ---@return table
-function shuffle(array)
-   local shuffled_array = {}
-   for i = #array, 1, -1 do
-      local j = math.random(i)
-      array[i], array[j] = array[j], array[i]
-      table.insert(shuffled_array, array[i])
-   end
-   return shuffled_array
+local function shuffle(array)
+	-- TODO: i freestyled this while being offline
+	--       there has to be a more performant version for
+	--       shuffling an array without editing the original array
+	local array_copy = {}
+	for _, element in ipairs(array) do
+		table.insert(array_copy, element)
+	end
+	local shuffled_array = {}
+	for i = #array_copy, 1, -1 do
+		local j = math.random(i)
+		array_copy[i], array_copy[j] = array_copy[j], array_copy[i]
+		table.insert(shuffled_array, array_copy[i])
+	end
+	return shuffled_array
 end
 
 function Poker:shuffled_deck()
