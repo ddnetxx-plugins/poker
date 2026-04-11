@@ -45,10 +45,13 @@ game:player_action(1, { action = "fold" })
 t.assert_eq(49900, game:find_player(1).chips)
 t.assert_eq(0, #game:find_player(1).hole_cards)
 
--- this is wrong, why is the chip bullys turn again?
--- he raised everybody called or folded
--- round should be over
-t.assert_eq(2, game:next_to_act().client_id)
+-- TODO: how much sense does flop make here?
+--       there is only one player with chips and cards left
+--       should skip straight to showdown
+--       but then its hard for the unit test to rig the board haha
+--       i guess this should happen on tick for unit test
+--       and to be dramatic in game
+t.assert_eq(GameState.FLOP, game.state)
 
 -- t.rig_board(game, "🂤🂴🃄🃔🃕")
 
