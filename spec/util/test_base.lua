@@ -18,7 +18,7 @@ end
 
 ---@param game Poker
 ---@param board_str string # 5 community cards as unicode string
-local function all_check_till_showdown_and_rig_board(game, board_str)
+local function all_check_call_till_showdown_and_rig_board(game, board_str)
 	assert_eq(GameState.PRE_FLOP, game.state)
 	all_check(game)
 	assert_eq(GameState.FLOP, game.state)
@@ -51,6 +51,6 @@ return {
 	assert_eq = assert_eq,
 
 	all_check = all_check,
-	all_check_till_showdown_and_rig_board = all_check_till_showdown_and_rig_board,
+	all_check_call_till_showdown_and_rig_board = all_check_call_till_showdown_and_rig_board,
 	set_hole_cards = set_hole_cards,
 }

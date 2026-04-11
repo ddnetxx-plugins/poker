@@ -21,6 +21,23 @@ t.assert_eq(game.start_stack, game:find_player(1).chips)
 t.assert_eq(game.start_stack - game.small_blind * 1, game:find_player(2).chips) -- sb
 t.assert_eq(game.start_stack - game.small_blind * 2, game:find_player(3).chips) -- bb
 
+t.set_hole_cards(game, 0, "🂡🂮") -- best kicker for quads
+t.set_hole_cards(game, 1, "🂢🂣")
+t.set_hole_cards(game, 2, "🂵🃅")
+t.set_hole_cards(game, 3, "🃋🃛")
+t.all_check_call_till_showdown_and_rig_board(game, "🂤🂴🃄🃔🃕")
+t.assert_eq("You won the entire pot with 400 chips in it!", ddnetpp.get_chat_line(0, -2))
+t.assert_eq("'mock0' won with best hand four of a kind (quad fours)", ddnetpp.get_chat_line(0, -1))
+
+
+print("big blind: " .. game.small_blind * 2)
+
+local limps = game.small_blind * 2 * game:num_players_with_chips()
+-- remove the winners limp from the prize
+limps = limps - game.small_blind * 2
+t.assert_eq(game.start_stack + limps, game:find_player(0).chips)
+
+
 -- -- ace kicker wins quads
 -- t.set_hole_cards(game, 0, "🂡🂮") -- best kicker for quads
 -- t.set_hole_cards(game, 1, "🂢🂣")
