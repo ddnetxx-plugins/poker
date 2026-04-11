@@ -18,6 +18,18 @@ end
 
 ---@param game Poker
 ---@param board_str string # 5 community cards as unicode string
+local function rig_board(game, board_str)
+	assert(game.state == GameState.RIVER, "the board can only be rigged on the river")
+	game.community_cards = {}
+	for i = 0, 4 do
+		local start = i * 4 + 1
+		local card = string.sub(board_str, start, start + 3)
+		table.insert(game.community_cards, card)
+	end
+end
+
+---@param game Poker
+---@param board_str string # 5 community cards as unicode string
 local function all_check_call_till_showdown_and_rig_board(game, board_str)
 	assert_eq(GameState.PRE_FLOP, game.state)
 	all_check(game)
@@ -26,12 +38,7 @@ local function all_check_call_till_showdown_and_rig_board(game, board_str)
 	assert_eq(GameState.TURN, game.state)
 	all_check(game)
 	assert_eq(GameState.RIVER, game.state)
-	game.community_cards = {}
-	for i = 0, 4 do
-		local start = i * 4 + 1
-		local card = string.sub(board_str, start, start + 3)
-		table.insert(game.community_cards, card)
-	end
+	rig_board(game, board_str)
 	all_check(game)
 	assert_eq(GameState.PRE_FLOP, game.state)
 end
@@ -52,5 +59,6 @@ return {
 
 	all_check = all_check,
 	all_check_call_till_showdown_and_rig_board = all_check_call_till_showdown_and_rig_board,
+	rig_board = rig_board,
 	set_hole_cards = set_hole_cards,
 }
