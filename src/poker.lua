@@ -707,7 +707,7 @@ function Poker:compute_next_to_act()
 	assert(prev ~= nil, "tried to compute next to act but betting round was already over")
 
 	-- still waiting for same player
-	if prev.action == nil then
+	if prev.action == nil and prev.chips > 0 and #prev.hole_cards > 0 then
 		return
 	end
 
