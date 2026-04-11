@@ -423,6 +423,9 @@ function Poker:player_action(client_id, action)
 	-- TODO: can the player be nil here? do we need to check that? Or is that on the callsite?
 	local player = self:find_player(client_id)
 
+	-- this assert is just here for my sanity because the linter is annoying xd
+	assert(player ~= nil, "cid=" .. client_id .. " tried to do a betting action but is not at the table")
+
 	if not self:is_game_running() then
 		ddnetpp.send_chat_target(client_id, "The game is not running yet")
 		return
@@ -459,18 +462,19 @@ function Poker:player_action(client_id, action)
 			return
 		end
 
+		-- print("cid=" .. player.client_id .. " chips=" .. player.chips .. " paid_prev=" .. player.chips_paid_into_pot .. " ask=" .. self.pot_per_player)
+
 		-- TODO: should we do auto all in here? Or warn the player and require an intentional all in action
 		--       with for example an /allin chat command
 		if diff > player.chips then
-			-- FIXME: this is breaking the game :D
-			--        if players can never go all in ending the game will be fucked
-			--        i guess you could still bleed out on blinds but bru.. xd
-			ddnetpp.send_chat_target(client_id, "You do not have enough chips, and all in is not implemented yet xd")
+			ddnetpp.send_chat_target(client_id, "This call made you go all in!")
+			diff = player.chips
 
-			-- TODO: go all in for now here with /call
-			--       needs a split pot implementation and test
-
-			return
+			-- this will cause a split pot but we do not track them explicitly
+			-- i am too lazy to show the split pots in the ui for now anyways
+			-- they can computed on the fly later if needed in the ui
+			-- and for now they will only computed on demand on round end
+			-- the winner will just get all chips unless he did not pay required amount into the pot
 		end
 
 		player.chips = player.chips - diff

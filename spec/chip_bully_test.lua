@@ -31,7 +31,24 @@ game:player_action(1, { action = "call" })
 -- omg this is personal :D
 game:player_action(2, { action = "raise", amount = game:find_player(0).chips * 2 })
 game:player_action(3, { action = "call" })
-t.assert_eq("You do not have enough chips, and all in is not implemented yet xd", ddnetpp.get_chat_line(3, -1))
+t.assert_eq("This call made you go all in!", ddnetpp.get_chat_line(3, -1))
+t.assert_eq(0, game:find_player(3).chips)
+t.assert_eq(2, #game:find_player(3).hole_cards)
+
+game:player_action(0, { action = "call" })
+t.assert_eq("This call made you go all in!", ddnetpp.get_chat_line(0, -2))
+t.assert_eq("'mock0' did a call", ddnetpp.get_chat_line(0, -1))
+t.assert_eq(0, game:find_player(0).chips)
+t.assert_eq(2, #game:find_player(0).hole_cards)
+
+game:player_action(1, { action = "fold" })
+t.assert_eq(49900, game:find_player(1).chips)
+t.assert_eq(0, #game:find_player(1).hole_cards)
+
+-- this is wrong, why is the chip bullys turn again?
+-- he raised everybody called or folded
+-- round should be over
+t.assert_eq(2, game:next_to_act().client_id)
 
 -- t.rig_board(game, "🂤🂴🃄🃔🃕")
 
