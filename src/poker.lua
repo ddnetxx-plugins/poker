@@ -9,13 +9,15 @@ require(script_path() .. "hand_rankings")
 local snap = require(script_path() .. "snap")
 require(script_path() .. "player")
 
----@class PlayerAction
----@field action string
+---@alias ActionName string
 ---|"'check'"
 ---|"'bet'"
 ---|"'call'"
 ---|"'raise'"
 ---|"'fold'"
+
+---@class PlayerAction
+---@field action ActionName
 ---@field amount? integer # Absolute amount in chip value
 ---@field announced? boolean # True if this action was already announced to other players, can stay false|nil longer for pre moves
 
@@ -54,6 +56,12 @@ Poker = {
 	---@type string[]
 	deck = {},
 	state = GameState.WAITING_FOR_PLAYERS,
+	-- a special state that can coexist with the self.state
+	-- it happens when all remaining players went all in
+	-- now all the community cards will be revealed slowly
+	-- also all player cards are shown above their heads
+	-- no player can do any betting action anymore
+	is_showdown = false,
 	---@type integer[]
 	community_card_snap_ids = {},
 	num_players_needed_to_start = 4,
@@ -80,6 +88,35 @@ end
 
 function Poker:is_game_running()
 	return self.state >= GameState.PRE_FLOP
+end
+
+function Poker:check_showdown()
+	if self.is_showdown then
+		return false
+	end
+
+	local num = 0
+	for _, player in ipairs(self.players) do
+		if #player.hole_cards > 0 and player.chips > 0 then
+			num = num + 1
+		end
+	end
+	-- print("players that can still bet: " .. num)
+	if num <= 1 then
+		-- we need at least 2 players with cards and chips
+		-- to continue betting
+		--
+		-- if all players went all in which is rare because it requires
+		-- exact same amount of chip stacks
+		--
+		-- or all but one player went all in which is pretty common
+		--
+		-- there is no point in betting anymore
+		-- so we lock betting and reveal all cards
+		self.is_showdown = true
+		return true
+	end
+	return false
 end
 
 ---TODO: this can be extended to also take a client id as argument
@@ -335,6 +372,7 @@ end
 
 function Poker:new_round()
 	self.state = GameState.PRE_FLOP
+	self.is_showdown = false
 	self.community_cards = {}
 	self.deck = self:shuffled_deck()
 	self.pot = 0
@@ -458,6 +496,10 @@ function Poker:player_action(client_id, action)
 		ddnetpp.send_chat_target(client_id, "The game is not running yet")
 		return
 	end
+	if self.is_showdown then
+		ddnetpp.send_chat_target(client_id, "Please wait until the showdown is over")
+		return
+	end
 	if player.action ~= nil then
 		-- Premoves can still be changed
 		-- as soon as it was announced it can not be changed anymore
@@ -572,6 +614,17 @@ function Poker:player_action(client_id, action)
 
 	self:print_betting_actions()
 	if not self:check_win_by_fold() then
+		-- checking can never cause a dramatic showdown
+		-- so to increase performance we can the showdown check
+		-- after a check action
+		if action.action ~= "check" then
+			if self:check_showdown() then
+				-- we intentionally skip
+				-- next state here because we are in showdown state
+				return
+			end
+		end
+
 		if self.next_to_act_offset == player.position.offset then
 			self:compute_next_to_act()
 		end

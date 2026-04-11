@@ -41,18 +41,22 @@ t.assert_eq("'mock0' did a call", ddnetpp.get_chat_line(0, -1))
 t.assert_eq(0, game:find_player(0).chips)
 t.assert_eq(2, #game:find_player(0).hole_cards)
 
+t.assert_eq(GameState.PRE_FLOP, game.state)
 game:player_action(1, { action = "fold" })
 t.assert_eq(49900, game:find_player(1).chips)
 t.assert_eq(0, #game:find_player(1).hole_cards)
 
--- TODO: how much sense does flop make here?
---       there is only one player with chips and cards left
---       should skip straight to showdown
---       but then its hard for the unit test to rig the board haha
---       i guess this should happen on tick for unit test
---       and to be dramatic in game
-t.assert_eq(GameState.FLOP, game.state)
+-- everybody acted but it is still pre flop
+-- that is because we entered the showdown state
+-- and all cards will be dramatically revealed on
+-- the board after a few ticks
+t.assert_eq(true, game.is_showdown)
+t.assert_eq(GameState.PRE_FLOP, game.state)
 
--- t.rig_board(game, "🂤🂴🃄🃔🃕")
+-- we are too lazy to call on tick so we rig the game manually
+game:flop()
+game:turn()
+game:river()
+t.rig_board(game, "🂤🂴🃄🃔🃕")
 
 -- t.assert_eq("'mock0' won with best hand four of a kind (quad fours)", ddnetpp.get_chat_line(0, -1))
