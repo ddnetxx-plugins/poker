@@ -56,9 +56,20 @@ game:new_game()
 -- 🃂🃃🃄🃅🃆🃇🃈🃉🃊🃋🃍🃎🃁
 -- 🃒🃓🃔🃕🃖🃗🃘🃙🃚🃛🃝🃑🃞
 
+-- ace kicker wins quads
 set_hole_cards(game, 0, "🂡🂮") -- best kicker for quads
 set_hole_cards(game, 1, "🂢🂣")
 set_hole_cards(game, 2, "🂵🃅")
 set_hole_cards(game, 3, "🃋🃛")
 all_check_till_showdown_and_rig_board(game, "🂤🂴🃄🃔🃕")
 assert_eq("'mock0' won with best hand four of a kind (quad fours)", ddnetpp.get_chat_line(0, -1))
+
+-- two ace kicker quads split pot
+set_hole_cards(game, 0, "🂡🂮") -- ace kicker for quads
+set_hole_cards(game, 1, "🂱🃁") -- same ace kicker for quads
+set_hole_cards(game, 2, "🂵🃅")
+set_hole_cards(game, 3, "🃋🃛")
+all_check_till_showdown_and_rig_board(game, "🂤🂴🃄🃔🃕")
+assert_eq("You won a split pot with 0 chips in it!", ddnetpp.get_chat_line(0, -3)) -- TODO: who yoinked the blinds xd
+assert_eq("'mock0' won the split pot with four of a kind (quad fours)", ddnetpp.get_chat_line(0, -2))
+assert_eq("'mock1' won the split pot with four of a kind (quad fours)", ddnetpp.get_chat_line(0, -1))

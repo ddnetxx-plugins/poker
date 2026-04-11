@@ -583,10 +583,24 @@ function Poker:round_winners_and_losers()
 	-- TODO: kick ALL IN losers out of the table here
 
 	local win_type, winners = self:find_winners()
+	assert(#winners > 0, "nobody won???")
+
 	if #winners > 1 then
-		assert(false, "split pot is not implemented yet. there are " ..  #winners .. " winnners")
-	elseif #winners < 1 then
-		assert(false, "nobody won???")
+		assert(win_type == 'showdown', "there are " .. #winners .. " but the win type is '" .. win_type .. "' (expected 'showdown')")
+		self:send_chat(#winners .. " players share the best hand there is a split pot!")
+
+		-- negative rake casino poggers
+		-- chips that can't be split get duplication glitched watafak
+		local split = math.ceil(self.pot / #winners)
+
+		for _, winner in ipairs(winners) do
+			winner.chips = winner.chips + split
+			ddnetpp.send_chat_target(winner.client_id, "You won a split pot with " .. split .. " chips in it!")
+			self:send_chat(
+				"'" .. ddnetpp.server.client_name(winner.client_id) .. "' won the split pot with " .. winner.hand.name .. " (" .. winner.hand.description .. ")"
+			)
+		end
+		return
 	end
 
 	local winner = winners[1]
