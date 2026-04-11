@@ -58,5 +58,25 @@ game:flop()
 game:turn()
 game:river()
 t.rig_board(game, "🂤🂴🃄🃔🃕")
+game:next_state()
 
--- t.assert_eq("'mock0' won with best hand four of a kind (quad fours)", ddnetpp.get_chat_line(0, -1))
+-- mock0 client id 0 won with quads and ace kicker and we move on to the next pre flop
+t.assert_eq("'mock0' won with best hand four of a kind (quad fours)", ddnetpp.get_chat_line(0, -1))
+t.assert_eq(GameState.PRE_FLOP, game.state)
+
+-- here is what happend we have one
+-- chip bully who raised with a size that covers everyone
+-- 2 players called and went all in
+-- one of them won the pot
+-- so the chip bully, the folder and the all in winner stay alive
+-- the second all in player is seat open
+--
+-- cid=0 ALL IN (best cards)
+-- cid=1   FOLD
+-- cid=2  BULLY
+-- cid=3 ALL IN
+
+t.assert_eq(2, #game:find_player(0).hole_cards)
+t.assert_eq(2, #game:find_player(1).hole_cards)
+t.assert_eq(2, #game:find_player(2).hole_cards)
+t.assert_eq(2, #game:find_player(3).hole_cards) -- WHO GAVE THIS MF CARDS AGAIN
