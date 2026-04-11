@@ -466,6 +466,10 @@ function Poker:player_action(client_id, action)
 			--        if players can never go all in ending the game will be fucked
 			--        i guess you could still bleed out on blinds but bru.. xd
 			ddnetpp.send_chat_target(client_id, "You do not have enough chips, and all in is not implemented yet xd")
+
+			-- TODO: go all in for now here with /call
+			--       needs a split pot implementation and test
+
 			return
 		end
 
