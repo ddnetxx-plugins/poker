@@ -378,7 +378,10 @@ function Poker:new_round()
 	self.pot = 0
 
 	for _, player in pairs(self.players) do
-		player.hole_cards = self:deal_hole_cards()
+		player.hole_cards = {}
+		if player.chips > 0 then
+			player.hole_cards = self:deal_hole_cards()
+		end
 		player.action = nil
 		player.prev_actions = {}
 		player.chips_paid_into_pot = 0

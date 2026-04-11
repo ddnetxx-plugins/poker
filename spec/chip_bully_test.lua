@@ -79,4 +79,4 @@ t.assert_eq(GameState.PRE_FLOP, game.state)
 t.assert_eq(2, #game:find_player(0).hole_cards)
 t.assert_eq(2, #game:find_player(1).hole_cards)
 t.assert_eq(2, #game:find_player(2).hole_cards)
-t.assert_eq(2, #game:find_player(3).hole_cards) -- WHO GAVE THIS MF CARDS AGAIN
+t.assert_eq(0, #game:find_player(3).hole_cards) -- seat open
