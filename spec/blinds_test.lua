@@ -29,11 +29,11 @@ t.all_check_call_till_showdown_and_rig_board(game, "🂤🂴🃄🃔🃕")
 t.assert_eq("You won the entire pot with 400 chips in it!", ddnetpp.get_chat_line(0, -2))
 t.assert_eq("'mock0' won with best hand four of a kind (quad fours)", ddnetpp.get_chat_line(0, -1))
 
-
-print("big blind: " .. game.small_blind * 2)
-
 local limps = game.small_blind * 2 * game:num_players_with_chips()
 -- remove the winners limp from the prize
+limps = limps - game.small_blind * 2
+-- the winner moved from utg to bb and we are already pre flop
+-- so the winner had to place one big blind already
 limps = limps - game.small_blind * 2
 t.assert_eq(game.start_stack + limps, game:find_player(0).chips)
 
