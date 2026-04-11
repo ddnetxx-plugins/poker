@@ -804,8 +804,6 @@ function find_best_hand(hole_cards, community_cards)
 		table.insert(cards, str_to_card(card))
 	end
 
-	print("hand finder got cards: " .. cards_to_str(cards))
-
 	local finders = {
 		find_straight_flush,
 		find_four_of_a_kind,
