@@ -7,7 +7,7 @@ ddnetpp.verbosity = 0
 
 ---@param game Poker
 local function all_check(game)
-	for _, player in ipairs(game:players_with_chips()) do
+	for _, player in ipairs(game:sort_players_by_position()) do
 		if player.chips_paid_into_pot < game.pot_per_player then
 			game:player_action(player.client_id, { action = "call" })
 		else
