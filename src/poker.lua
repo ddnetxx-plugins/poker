@@ -394,17 +394,28 @@ function Poker:deal_hole_cards()
 end
 
 function Poker:flop()
-	-- TODO: assert that flop has not happened yet
+	assert(self.state == GameState.PRE_FLOP, "tried to flop while in gamestate '" .. gamestate_to_str(self.state) .. "'")
+	assert(#self.community_cards == 0, "tried to flop but there were already " .. #self.community_cards .. " cards on the board")
+	self.state = GameState.FLOP
+
 	table.insert(self.community_cards, table.remove(self.deck, 1))
 	table.insert(self.community_cards, table.remove(self.deck, 1))
 	table.insert(self.community_cards, table.remove(self.deck, 1))
 end
 
 function Poker:turn()
+	assert(self.state == GameState.FLOP, "tried to turn while in gamestate '" .. gamestate_to_str(self.state) .. "'")
+	assert(#self.community_cards == 3, "tried to turn but there were already " .. #self.community_cards .. " cards on the board")
+	self.state = GameState.TURN
+
 	table.insert(self.community_cards, table.remove(self.deck, 1))
 end
 
 function Poker:river()
+	assert(self.state == GameState.TURN, "tried to river while in gamestate '" .. gamestate_to_str(self.state) .. "'")
+	assert(#self.community_cards == 4, "tried to river but there were already " .. #self.community_cards .. " cards on the board")
+	self.state = GameState.RIVER
+
 	table.insert(self.community_cards, table.remove(self.deck, 1))
 end
 
@@ -683,13 +694,10 @@ function Poker:next_state()
 
 	if self.state == GameState.PRE_FLOP then
 		self:flop()
-		self.state = GameState.FLOP
 	elseif self.state == GameState.FLOP then
 		self:turn()
-		self.state = GameState.TURN
 	elseif self.state == GameState.TURN then
 		self:river()
-		self.state = GameState.RIVER
 	elseif self.state == GameState.RIVER then
 		self:round_winners_and_losers()
 		self:new_round()
