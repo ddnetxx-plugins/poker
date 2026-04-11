@@ -7,7 +7,7 @@ ddnetpp.chat.silent = true
 ddnetpp.verbosity = 0
 
 ---@param game Poker
-function all_check(game)
+local function all_check(game)
 	for _, player in ipairs(game:players_with_chips()) do
 		game:player_action(player.client_id, { action = "check" })
 	end
@@ -15,7 +15,7 @@ end
 
 ---@param game Poker
 ---@param board_str string # 5 community cards as unicode string
-function all_check_till_showdown_and_rig_board(game, board_str)
+local function all_check_till_showdown_and_rig_board(game, board_str)
 	assert_eq(GameState.PRE_FLOP, game.state)
 	all_check(game)
 	assert_eq(GameState.FLOP, game.state)
@@ -36,7 +36,7 @@ end
 ---@param game Poker
 ---@param client_id integer
 ---@param hole_cards_str any
-function set_hole_cards(game, client_id, hole_cards_str)
+local function set_hole_cards(game, client_id, hole_cards_str)
 	local player = game:find_player(client_id)
 	assert(player ~= nil, "player with client id " .. client_id .. " not found")
 	player.hole_cards = {}
@@ -56,9 +56,9 @@ game:new_game()
 -- 🃂🃃🃄🃅🃆🃇🃈🃉🃊🃋🃍🃎🃁
 -- 🃒🃓🃔🃕🃖🃗🃘🃙🃚🃛🃝🃑🃞
 
-set_hole_cards(game, 0, "🂡🂮")
+set_hole_cards(game, 0, "🂡🂮") -- best kicker for quads
 set_hole_cards(game, 1, "🂢🂣")
 set_hole_cards(game, 2, "🂵🃅")
 set_hole_cards(game, 3, "🃋🃛")
 all_check_till_showdown_and_rig_board(game, "🂤🂴🃄🃔🃕")
--- assert_eq("", ddnetpp.get_chat_line(0, -1))
+assert_eq("'mock0' won with best hand four of a kind (quad fours)", ddnetpp.get_chat_line(0, -1))
