@@ -16,7 +16,7 @@ game:new_game()
 t.assert_eq(false, game:find_player(0).is_button)
 t.assert_eq(true, game:find_player(1).is_button)
 
--- button is first to act
+-- button is first to act pre flop
 t.assert_eq(1, game:next_to_act().client_id)
 
 game:player_action(1, { action = "call" })
@@ -52,9 +52,10 @@ t.assert_eq(GameState.PRE_FLOP, game.state)
 t.assert_eq(true, game:find_player(0).is_button)
 t.assert_eq(false, game:find_player(1).is_button)
 
-t.assert_eq(1, game:next_to_act().client_id)
-game:player_action(1, { action = "call" })
-game:player_action(0, { action = "check" })
+-- button is first to act pre flop
+t.assert_eq(0, game:next_to_act().client_id)
+game:player_action(0, { action = "call" })
+game:player_action(1, { action = "check" })
 t.assert_eq(GameState.FLOP, game.state)
 
 game:player_action(1, { action = "check" })
