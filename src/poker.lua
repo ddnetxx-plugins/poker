@@ -197,6 +197,7 @@ function Poker:new(o, table_pos, num_seats, num_players_needed_to_start)
 	self.community_cards = {}
 	self.community_card_snap_ids = {}
 	self.next_to_act_snap_id = 0
+	self.button_snap_id = 0
 	self.state = GameState.WAITING_FOR_PLAYERS
 	self.deck = {}
 	self.small_blind = 50
@@ -438,6 +439,11 @@ function Poker:new_game()
 
 	math.randomseed(ddnetpp.secure_rand_below(666999))
 
+
+	-- TODO: we allocate ids here in new_game() should that maybe happen less often?
+	--       like in the constructor?
+	--       also we have to make sure end_game() is called so these get freed
+
 	if #self.community_card_snap_ids == 0 then
 		for _ = 1, 5, 1 do
 			local free_id = self:find_and_occupy_free_client_id()
@@ -450,6 +456,7 @@ function Poker:new_game()
 		end
 	end
 	self.next_to_act_snap_id = ddnetpp.snap.new_id()
+	self.button_snap_id = ddnetpp.snap.new_id()
 end
 
 function Poker:end_game()
@@ -458,6 +465,7 @@ function Poker:end_game()
 		ddnetpp.server.free_occupied_client_id(occupied_id)
 	end
 	ddnetpp.snap.free_id(self.next_to_act_snap_id)
+	ddnetpp.snap.free_id(self.button_snap_id)
 	for _, player in pairs(self.players) do
 		self:leave_table(player.client_id)
 	end
@@ -958,6 +966,19 @@ function Poker:next_to_act()
 	return next_player
 end
 
+---TODO: make this faster by caching or something
+---      we call this on snap to render the button
+---
+---@return PokerPlayer|nil
+function Poker:find_button()
+	for _, player in ipairs(self.players) do
+		if player.is_button then
+			return player
+		end
+	end
+	return nil
+end
+
 function Poker:check_next_state()
 	if self:next_to_act() == nil then
 		-- TODO: remove or at least call it better like "FLOPPING", "new card!!!", "knock knock, whos there?"
@@ -1221,7 +1242,22 @@ function Poker:on_snap(snapping_client)
 				pos = {
 					x = chr_next:pos().x,
 					y = chr_next:pos().y - 2,
-				}
+				},
+			})
+		end
+	end
+
+	local btn = self:find_button()
+	if btn ~= nil then
+		local chr_btn = ddnetpp.get_character(btn.client_id)
+		if chr_btn then
+			ddnetpp.snap.new_pickup({
+				id = self.button_snap_id,
+				pos = {
+					x = chr_btn:pos().x,
+					y = chr_btn:pos().y - 5,
+				},
+				type = ddnetpp.protocol.POWERUP_ARMOR,
 			})
 		end
 	end

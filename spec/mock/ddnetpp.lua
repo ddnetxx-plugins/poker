@@ -1,3 +1,18 @@
+local protocol = {
+	POWERUP_HEALTH = 0,
+	POWERUP_ARMOR = 1,
+	POWERUP_WEAPON = 2,
+	POWERUP_NINJA = 3,
+
+	WEAPON_HAMMER = 0,
+	WEAPON_GUN = 1,
+	WEAPON_SHOTGUN = 2,
+	WEAPON_GRENADE = 3,
+	WEAPON_LASER = 4,
+	WEAPON_NINJA = 5,
+	NUM_WEAPONS = 6,
+}
+
 ---@class mock.ddnet
 local ddnetpp = {
 	strict_occupy = false,
@@ -23,7 +38,8 @@ local ddnetpp = {
 	weapon = {
 		NONE = -1
 	},
-	ticks_passed = 0
+	protocol = protocol,
+	ticks_passed = 0,
 }
 
 function ddnetpp.get_chat_line(client_id, offset)
@@ -216,5 +232,9 @@ end
 
 function ddnetpp.snap.new_laser(item)
 end
+
+function ddnetpp.snap.new_pickup(item)
+end
+
 
 return ddnetpp
