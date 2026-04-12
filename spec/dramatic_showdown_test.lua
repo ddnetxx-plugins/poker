@@ -33,10 +33,23 @@ t.assert_eq("This raise made you go all in!", ddnetpp.get_chat_line(2, -2))
 t.assert_eq(false, game.is_showdown)
 
 t.assert_eq(3, game:next_to_act().client_id)
-
 game:player_action(3, { action = "call" }) -- bb call
 t.assert_eq("'mock3' did a call", ddnetpp.get_chat_line(3, -1))
 
 t.assert_eq(true, game.is_showdown)
+
+-- we have a heads up now
+-- utg and btn folded.
+-- sb is all in and bb which has the bigger stack just calls
+-- we are still preflop but now the showdown will slowly reveal all cards
+
+t.assert_eq(GameState.PRE_FLOP, game.state)
+t.assert_eq(0, #game.community_cards)
+
+-- there is no way to continue betting in showdown mode
+-- all cards are open on the table and all bets were made
+t.assert_eq(nil, game:next_to_act())
+game:player_action(3, { action = "raise", amount = 10 })
+t.assert_eq("Please wait until the showdown is over", ddnetpp.get_chat_line(3, -1))
 
 -- TODO: call game:on_tick() and make sure the board reveals it self automatically during showdown
