@@ -25,7 +25,9 @@ t.set_hole_cards(game, 3, "🃋🃛")
 
 game:player_action(0, { action = "fold" }) -- utg fold
 game:player_action(1, { action = "fold" }) -- btn fold
-game:player_action(2, { action = "raise", amount = game:find_player(2).chips }) -- sb all in
+t.assert_eq(2, game:next_to_act().client_id)
+game:player_action(2, { action = "raise", amount = game:find_player(2).chips - game.small_blind * 2 }) -- sb all in
+t.assert_eq("This call made you go all in!", ddnetpp.get_chat_line(2, -1))
 game:player_action(3, { action = "call" }) -- bb call
 
 -- TODO: this fails idk why but i rq now xd
