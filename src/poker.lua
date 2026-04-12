@@ -95,14 +95,26 @@ function Poker:check_showdown()
 		return false
 	end
 
-	local num = 0
+	---@type PokerPlayer[]
+	local players_that_can_act = {}
 	for _, player in ipairs(self.players) do
 		if #player.hole_cards > 0 and player.chips > 0 then
-			num = num + 1
+			table.insert(players_that_can_act, player)
 		end
 	end
 	-- print("players that can still bet: " .. num)
-	if num <= 1 then
+	if #players_that_can_act <= 1 then
+		-- if there is only one player left with chips and cards
+		-- we enter showdown BUT only AFTER that player already
+		-- decided if he wants to participate in the showdown or not
+		-- so we have to wait for that one player to act
+		if #players_that_can_act == 1 then
+			local last = players_that_can_act[1]
+			if last.action == nil then
+				return
+			end
+		end
+
 		-- we need at least 2 players with cards and chips
 		-- to continue betting
 		--
