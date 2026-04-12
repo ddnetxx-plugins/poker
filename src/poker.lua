@@ -578,6 +578,11 @@ function Poker:player_action(client_id, action)
 		self.pot = self.pot + (action.amount + diff)
 		self.pot_per_player = self.pot_per_player + action.amount
 
+		assert(player.chips >= 0, "cid=" .. player.client_id .. " chip count went negative to " .. player.chips)
+		if player.chips == 0 then
+			ddnetpp.send_chat_target(client_id, "This raise made you go all in!")
+		end
+
 		-- we have to call print_betting_actions()
 		-- here even tho it is called at the very end of the method too
 		-- that is because clear_all_actions_on_raise_or_bet()
