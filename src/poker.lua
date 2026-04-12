@@ -366,31 +366,45 @@ function Poker:init_player_positions()
 	end
 end
 
----@param num_players integer
-function Poker:place_blinds(num_players)
-	for _, player in pairs(self.players) do
-		if player.position.offset == ButtonOffset.SMALL_BLIND then
-			local diff = math.min(player.chips, self.small_blind)
-			player.chips = player.chips - diff
-			player.chips_paid_into_pot = player.chips_paid_into_pot + diff
-			self.pot = self.pot + diff
-		else
-			local is_big_blind = false
-			if player.position.offset == ButtonOffset.BIG_BLIND then
-				is_big_blind = true
+function Poker:place_blinds()
+	if self:num_players_with_chips() == 2 then
+		-- nasty heads up edge case
+		for _, player in pairs(self.players) do
+			if player.chips > 0 then
+				if player.position.offset == ButtonOffset.BUTTON then
+					-- button is small blind heads up
+					local diff = math.min(player.chips, self.small_blind)
+					player.chips = player.chips - diff
+					player.chips_paid_into_pot = player.chips_paid_into_pot + diff
+					self.pot = self.pot + diff
+				else
+					-- other player is big blind heads up
+					local diff = math.min(player.chips, self.small_blind * 2)
+					player.chips = player.chips - diff
+					player.chips_paid_into_pot = player.chips_paid_into_pot + diff
+					self.pot = self.pot + diff
+				end
 			end
-			if num_players == 2 and player.position.offset == ButtonOffset.BUTTON then
-				is_big_blind = true
-			end
-
-			if is_big_blind then
-				local diff = math.min(player.chips, self.small_blind * 2)
-				player.chips = player.chips - diff
-				player.chips_paid_into_pot = player.chips_paid_into_pot + diff
-				self.pot = self.pot + diff
+		end
+	else
+		for _, player in pairs(self.players) do
+			if player.chips > 0 then
+				if player.position.offset == ButtonOffset.SMALL_BLIND then
+					-- TODO: does it make sense to create a pay_into_pot() method?
+					local diff = math.min(player.chips, self.small_blind)
+					player.chips = player.chips - diff
+					player.chips_paid_into_pot = player.chips_paid_into_pot + diff
+					self.pot = self.pot + diff
+				elseif player.position.offset == ButtonOffset.BIG_BLIND then
+					local diff = math.min(player.chips, self.small_blind * 2)
+					player.chips = player.chips - diff
+					player.chips_paid_into_pot = player.chips_paid_into_pot + diff
+					self.pot = self.pot + diff
+				end
 			end
 		end
 	end
+
 	self.pot_per_player = self.small_blind * 2
 end
 
@@ -414,8 +428,7 @@ function Poker:new_round()
 	self:move_button()
 	self:init_player_positions()
 
-	local num_players = self:num_players()
-	self:place_blinds(num_players)
+	self:place_blinds()
 	self.next_to_act_offset = self:first_offset_to_act()
 end
 
