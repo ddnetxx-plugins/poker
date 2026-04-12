@@ -981,17 +981,34 @@ end
 ---act this round use first_offset_to_act()
 ---@return integer button_offset
 function Poker:_first_offset_to_act_stupid()
+	-- TODO: num_players() will break as soon as there are spectators
+	--       without chips
+	--       and num_players_with_chips() might break the sorter
+	--       this needs some attention
+	--       but right now half the tests are failing so i can not look into it xd
+	--       ----
+	--       a possible less dangerous refactor could be some
+	--       is_headsup() method
+	local num_players = self:num_players()
 	if self.state == GameState.PRE_FLOP then
-		local num_players = self:num_players()
 		if num_players == 2 then
-			return ButtonOffset.SMALL_BLIND
+			return ButtonOffset.BUTTON
 		elseif num_players == 3 then
 			return ButtonOffset.BUTTON
 		end
 		return ButtonOffset.UTG
+	else
+		if num_players == 2 then
+			-- offset small blind is actually BIG BLIND SMH OMG OMG
+			-- because the BUTTON is the small blind
+			-- but first to act post flop is the other player which technically is
+			-- the big blind
+			-- but we call the offset small blind because it comes one after the button
+			return ButtonOffset.SMALL_BLIND -- BIG BLIND
+		end
 	end
 
-	-- post flop is simple
+	-- post flop non heads up is simple
 	return ButtonOffset.SMALL_BLIND
 end
 
