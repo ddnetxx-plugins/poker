@@ -15,8 +15,8 @@ function ddnetpp.on_init()
    local game = Poker:new(
       nil,
       {
-         x = 3,
-         y = 30,
+         x = 33,
+         y = 3,
       }
    )
 
