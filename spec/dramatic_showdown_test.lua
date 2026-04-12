@@ -79,11 +79,11 @@ t.assert_eq(5, #game.community_cards)
 t.assert_eq(nil, game:next_to_act())
 t.assert_eq(true, game.is_showdown)
 
--- TODO: WHO WON????
-
--- t.assert_eq("Please wait until the showdown is over", ddnetpp.get_chat_line(3, -1))
-
 game:on_tick()
 t.assert_eq(GameState.PRE_FLOP, game.state)
 t.assert_eq(false, game.is_showdown)
 t.assert_eq(true, game:next_to_act() ~= nil) -- TODO: add assert_neq()
+
+-- someone won now, we don't know who because we did not rig the cards
+t.assert_eq(true, string.match(ddnetpp.get_chat_line(3, -1), " won ") ~= nil)
+
