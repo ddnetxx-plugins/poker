@@ -1,9 +1,5 @@
-local assert_eq = require("simple.assert").assert_eq
+local t = require("spec.util.test_base")
 require("../src/poker")
-ddnetpp = require("spec.mock.ddnetpp")
-
-ddnetpp.chat.silent = true
-ddnetpp.verbosity = 0
 
 local game = Poker:new(nil, { x = 33, y = 30 })
 game:join_table(0) -- utg
@@ -28,16 +24,16 @@ game:player_action(0, { action = "raise", amount = 10 })
 -- so raising to 5 while facing a bet of 10
 -- is 15 which is more than the balance of this player
 game:player_action(1, { action = "raise", amount = 5 })
-assert_eq("You do not have that many chips!", ddnetpp.get_chat_line(1, -1))
+t.assert_eq("You do not have that many chips!", ddnetpp.get_chat_line(1, -1))
 
 game:player_action(1, { action = "raise", amount = 0 })
-assert_eq("bruder was", ddnetpp.get_chat_line(1, -1))
+t.assert_eq("bruder was", ddnetpp.get_chat_line(1, -1))
 
 game:player_action(1, { action = "check"  })
-assert_eq("You can not check. You need to pay at least 10 chips to call.", ddnetpp.get_chat_line(1, -1))
+t.assert_eq("You can not check. You need to pay at least 10 chips to call.", ddnetpp.get_chat_line(1, -1))
 
 game:player_action(1, { action = "call"  })
-assert_eq("'mock1' did a call", ddnetpp.get_chat_line(1, -1))
+t.assert_eq("'mock1' did a call", ddnetpp.get_chat_line(1, -1))
 
 -- the call put the player all in
-assert_eq(0, game:find_player(1).chips)
+t.assert_eq(0, game:find_player(1).chips)
