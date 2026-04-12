@@ -556,6 +556,11 @@ function Poker:player_action(client_id, action)
 		ddnetpp.send_chat_target(client_id, "You are already all in, wait until next round")
 		return
 	end
+	local next = self:next_to_act()
+	if next == nil or next.client_id ~= client_id then
+		ddnetpp.send_chat_target(client_id, "It is not your turn yet, please wait")
+		return
+	end
 
 	local diff = self.pot_per_player - player.chips_paid_into_pot
 	if action.action == "check" then
