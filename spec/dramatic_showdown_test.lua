@@ -35,13 +35,7 @@ t.assert_eq(false, game.is_showdown)
 t.assert_eq(3, game:next_to_act().client_id)
 
 game:player_action(3, { action = "call" }) -- bb call
-
--- TODO: this fails idk why but i rq now xd
--- TODO: actually its not "all in" we expect the bb is a bigger stack
---       calling the sb's all in is not putting the bb at risk
---       but eh whatever right now it prints 'Nobody raised you. You can raise or check' which for sure is wrong
--- t.assert_eq("This call made you go all in!", ddnetpp.get_chat_line(3, -1))
-
+t.assert_eq("'mock3' did a call", ddnetpp.get_chat_line(3, -1))
 
 t.assert_eq(true, game.is_showdown)
 
