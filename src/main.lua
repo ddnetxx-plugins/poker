@@ -15,7 +15,7 @@ function ddnetpp.on_init()
    local game = Poker:new(
       nil,
       {
-         x = 33,
+         x = 3,
          y = 30,
       }
    )
@@ -71,6 +71,18 @@ ddnetpp.register_chat("check", "", "check to next player in poker", function (cl
    for _, game in pairs(games) do
       if game:is_at_table(client_id) then
          game:player_action(client_id, { action = "check" })
+
+          -- no multi table support yet -.-
+         return
+      end
+   end
+   ddnetpp.log_info("chatresp", "You are not any poker table")
+end)
+
+ddnetpp.register_chat("call", "", "call previous raise in poker", function (client_id, args)
+   for _, game in pairs(games) do
+      if game:is_at_table(client_id) then
+         game:player_action(client_id, { action = "call" })
 
           -- no multi table support yet -.-
          return
