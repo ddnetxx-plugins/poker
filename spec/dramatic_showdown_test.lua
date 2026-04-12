@@ -52,8 +52,9 @@ t.assert_eq(nil, game:next_to_act())
 game:player_action(3, { action = "raise", amount = 10 })
 t.assert_eq("Please wait until the showdown is over", ddnetpp.get_chat_line(3, -1))
 
--- TODO: call on_tick() tick_speed() times because it should be slower
-game:on_tick()
+for _ = 1, math.ceil(game.showdown_speed * ddnetpp.server.tick_speed()) do
+	game:on_tick()
+end
 t.assert_eq(GameState.FLOP, game.state)
 t.assert_eq(3, #game.community_cards)
 
@@ -63,7 +64,9 @@ t.assert_eq(3, #game.community_cards)
 t.assert_eq(nil, game:next_to_act())
 t.assert_eq(true, game.is_showdown)
 
-game:on_tick()
+for _ = 1, math.ceil(game.showdown_speed * ddnetpp.server.tick_speed()) do
+	game:on_tick()
+end
 t.assert_eq(GameState.TURN, game.state)
 t.assert_eq(4, #game.community_cards)
 t.assert_eq(nil, game:next_to_act())
@@ -73,13 +76,17 @@ t.assert_eq(true, game.is_showdown)
 game:player_action(3, { action = "check" })
 t.assert_eq("Please wait until the showdown is over", ddnetpp.get_chat_line(3, -1))
 
-game:on_tick()
+for _ = 1, math.ceil(game.showdown_speed * ddnetpp.server.tick_speed()) do
+	game:on_tick()
+end
 t.assert_eq(GameState.RIVER, game.state)
 t.assert_eq(5, #game.community_cards)
 t.assert_eq(nil, game:next_to_act())
 t.assert_eq(true, game.is_showdown)
 
-game:on_tick()
+for _ = 1, math.ceil(game.showdown_speed * ddnetpp.server.tick_speed()) do
+	game:on_tick()
+end
 t.assert_eq(GameState.PRE_FLOP, game.state)
 t.assert_eq(false, game.is_showdown)
 t.assert_eq(true, game:next_to_act() ~= nil) -- TODO: add assert_neq()

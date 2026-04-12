@@ -56,12 +56,22 @@ Poker = {
 	---@type string[]
 	deck = {},
 	state = GameState.WAITING_FOR_PLAYERS,
+
+	-- TODO: make this entire showdown mess a nested table
+
 	-- a special state that can coexist with the self.state
 	-- it happens when all remaining players went all in
 	-- now all the community cards will be revealed slowly
 	-- also all player cards are shown above their heads
 	-- no player can do any betting action anymore
 	is_showdown = false,
+	-- dramatic tick counter to slowly
+	-- reveal cards during showdown
+	-- when multiple players went all in for example
+	ticks_till_next_showdown_card = 0,
+	-- how fast cards get revealed during showdown in seconds
+	showdown_speed = 1.5,
+
 	---@type integer[]
 	community_card_snap_ids = {},
 	num_players_needed_to_start = 4,
@@ -126,6 +136,7 @@ function Poker:check_showdown()
 		-- there is no point in betting anymore
 		-- so we lock betting and reveal all cards
 		self.is_showdown = true
+		self.ticks_till_next_showdown_card = math.ceil(self.showdown_speed * ddnetpp.server.tick_speed())
 		self.next_to_act_offset = nil
 		return true
 	end
@@ -1137,9 +1148,11 @@ function Poker:on_tick()
 	end
 
 	if self.is_showdown then
-		-- TODO: one card per tick is omega fast
-		--       make it more dramatic!!!
-		self:check_next_state()
+		self.ticks_till_next_showdown_card = self.ticks_till_next_showdown_card - 1
+		if self.ticks_till_next_showdown_card < 1 then
+			self.ticks_till_next_showdown_card = math.ceil(self.showdown_speed * ddnetpp.server.tick_speed())
+			self:check_next_state()
+		end
 	end
 
 	self:print_betting_actions()

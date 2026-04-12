@@ -50,6 +50,10 @@ end
 
 local occupied_ids = {}
 
+function ddnetpp.server.tick_speed()
+	return 50
+end
+
 ---@param client_id integer
 ---@return boolean
 function ddnetpp.server.occupy_client_id(client_id)
