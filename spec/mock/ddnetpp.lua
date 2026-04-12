@@ -90,6 +90,10 @@ function ddnetpp.server.tick()
 	return ddnetpp.ticks_passed
 end
 
+---@param client_id ClientId
+---@param score_type ScoreType
+function ddnetpp.set_client_score_type(client_id, score_type) end
+
 function ddnetpp.send_chat(message)
 	if ddnetpp.chat.silent == false then
 		print("[chat] *** " .. message)

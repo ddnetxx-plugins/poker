@@ -1111,9 +1111,9 @@ function Poker:render_broadcast_hud()
 	if self.state == GameState.ERROR then
 		hud = "ERROR something went wrong\n"
 	elseif self.state == GameState.END then
-		hud = "game over!"
+		hud = "game over!\n"
 	elseif self.state == GameState.WAITING_FOR_PLAYERS then
-		hud = "waiting for players ... (" .. self:num_players_with_chips() .. " out of " .. self.num_players_needed_to_start .. ")"
+		hud = "waiting for players ... (" .. self:num_players_with_chips() .. " out of " .. self.num_players_needed_to_start .. ")\n"
 	end
 
 	local align_left =
@@ -1205,6 +1205,26 @@ function Poker:on_snap(snapping_client)
 				card)
 		end
 	end
+end
+
+---@param snapping_client integer
+---@param player Player
+---@param item SnapItemPlayer
+---@return SnapItemPlayerOptional|nil
+function Poker:on_snap_player(snapping_client, player, item)
+	local poker_player = self:find_player(player:id())
+	if poker_player == nil then
+		return nil
+	end
+
+	-- TODO: who do we snap this to? too all?
+	--       who can spectate a poker game?
+	--       based on distance to the table?
+	--       what about the scoreboard types
+
+	return {
+		score = poker_player.chips
+	}
 end
 
 ---@param client_id integer
@@ -1339,6 +1359,7 @@ function Poker:join_table(client_id)
 
 	player.chips = self.start_stack
 	self:add_player(player)
+	ddnetpp.set_client_score_type(client_id, 'points')
 	self:send_chat(
 		"'" .. ddnetpp.server.client_name(client_id) .. "' joined the table"
 	)

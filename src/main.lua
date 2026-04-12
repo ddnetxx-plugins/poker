@@ -8,6 +8,9 @@ require(script_path() .. "poker")
 ---@type Poker[]
 local games = {}
 
+---@type Poker
+local test_game = nil
+
 function ddnetpp.on_init()
    local game = Poker:new(
       nil,
@@ -17,21 +20,32 @@ function ddnetpp.on_init()
       }
    )
 
-   game:join_table(0)
-   game:join_table(1)
-
-   game:new_game()
-
-   -- game:player_action(1, { action = "check" })
-   -- game:player_action(0, { action = "check" })
-
    table.insert(games, game)
+   test_game = game
+end
+
+function ddnetpp.on_player_connect(client_id)
+   if client_id < 2 then
+      test_game:join_table(client_id)
+   end
+
+   -- force start
+   if client_id == 1 then
+      test_game:new_game()
+   end
 end
 
 function ddnetpp.on_snap(snapping_client)
    for _, game in pairs(games) do
       game:on_snap(snapping_client)
    end
+end
+
+function ddnetpp.on_snap_player(snapping_client, player, item)
+   for _, game in pairs(games) do
+      item = game:on_snap_player(snapping_client, player, item)
+   end
+   return item
 end
 
 function ddnetpp.on_tick()
