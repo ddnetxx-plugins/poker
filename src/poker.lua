@@ -114,6 +114,7 @@ function Poker:check_showdown()
 		-- there is no point in betting anymore
 		-- so we lock betting and reveal all cards
 		self.is_showdown = true
+		self.next_to_act_offset = nil
 		return true
 	end
 	return false
