@@ -991,6 +991,15 @@ end
 ---TODO: would it be useful to skip players here?
 ---      players that went all in or folded for example
 ---      not sure yet
+---      ----
+---      UPDATE: I am a bit more sure now
+---      i gave this a try and it was actually a bit annoying
+---      because in print_betting_actions() the players that
+---      went all in or folded would be filtered before
+---      their all in or fold action was announced
+---      so it is probably easiest to keep this a plain
+---      sorter and not mix in a filter as well
+---      doing a if statement on the call site is not that dramatic
 ---
 ---Sorts players by the position relative to the button
 ---The returned array will have the first player to act
