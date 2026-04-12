@@ -22,6 +22,17 @@ function ddnetpp.on_init()
 
    table.insert(games, game)
    test_game = game
+
+   for cid = 0, 1 do
+      local player = ddnetpp.get_player(cid)
+      if player then
+         game:join_table(cid)
+      end
+   end
+
+   if game:num_players() > 1 then
+      game:new_game()
+   end
 end
 
 function ddnetpp.on_player_connect(client_id)
