@@ -495,7 +495,7 @@ function Poker:clear_all_actions_on_raise_or_bet()
 		-- we do not require players that went all in
 		-- or folded to act again if another player raised
 		-- we just keep their last action around
-		if player.chips > 0 and #player.hole_cards then
+		if player.chips > 0 and #player.hole_cards > 0 then
 			if player.action then
 				table.insert(player.prev_actions, player.action)
 			end
