@@ -1034,6 +1034,9 @@ function Poker:sort_players_by_position()
 end
 
 function Poker:print_betting_actions()
+	-- print all betting actions only once in order until there is a gap
+	-- this ensures premoves get announced as soon as possible
+	-- but never leaked if it was not the players turn yet
 	for _, player in ipairs(self:sort_players_by_position()) do
 		if player.action == nil then
 			-- print("waiting for " .. player.client_id)
