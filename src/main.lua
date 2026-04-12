@@ -76,7 +76,7 @@ ddnetpp.register_chat("check", "", "check to next player in poker", function (cl
          return
       end
    end
-   ddnetpp.log_info("chatresp", "You are not any poker table")
+   ddnetpp.send_chat_target(client_id, "You are not at any poker table")
 end)
 
 ddnetpp.register_chat("call", "", "call previous raise in poker", function (client_id, args)
@@ -88,7 +88,7 @@ ddnetpp.register_chat("call", "", "call previous raise in poker", function (clie
          return
       end
    end
-   ddnetpp.log_info("chatresp", "You are not any poker table")
+   ddnetpp.send_chat_target(client_id, "You are not at any poker table")
 end)
 
 -- TODO: what does the raise amount mean? Is that relative or absolute?
@@ -119,5 +119,5 @@ ddnetpp.register_chat("raise", "i[amount]", "raise in poker", function (client_i
          return
       end
    end
-   ddnetpp.log_info("chatresp", "You are not at any poker table")
+   ddnetpp.send_chat_target(client_id, "You are not at any poker table")
 end)
