@@ -6,8 +6,8 @@ ddnetpp.chat.silent = true
 ddnetpp.verbosity = 0
 
 local game = Poker:new(nil, { x = 33, y = 30 })
-game:join_table(0) -- sb
-game:join_table(1) -- btn
+game:join_table(0) -- bb
+game:join_table(1) -- btn,sb (first preflop, second post flop)
 game:new_game()
 
 -- first player that joins will get the button
@@ -16,8 +16,11 @@ game:new_game()
 t.assert_eq(false, game:find_player(0).is_button)
 t.assert_eq(true, game:find_player(1).is_button)
 
-game:player_action(0, { action = "call" })
-game:player_action(1, { action = "check" })
+-- button is first to act
+t.assert_eq(1, game:next_to_act().client_id)
+
+game:player_action(1, { action = "call" })
+game:player_action(0, { action = "check" })
 
 -- after one round of betting the button should
 -- NOT have moved yet
