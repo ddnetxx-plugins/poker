@@ -52,4 +52,38 @@ t.assert_eq(nil, game:next_to_act())
 game:player_action(3, { action = "raise", amount = 10 })
 t.assert_eq("Please wait until the showdown is over", ddnetpp.get_chat_line(3, -1))
 
--- TODO: call game:on_tick() and make sure the board reveals it self automatically during showdown
+-- TODO: call on_tick() tick_speed() times because it should be slower
+game:on_tick()
+t.assert_eq(GameState.FLOP, game.state)
+t.assert_eq(3, #game.community_cards)
+
+-- make sure the flop does not reset player actions
+-- and ask someone to start acting now
+-- we are still in showdown until the round is over
+t.assert_eq(nil, game:next_to_act())
+t.assert_eq(true, game.is_showdown)
+
+game:on_tick()
+t.assert_eq(GameState.TURN, game.state)
+t.assert_eq(4, #game.community_cards)
+t.assert_eq(nil, game:next_to_act())
+t.assert_eq(true, game.is_showdown)
+
+-- troller
+game:player_action(3, { action = "check" })
+t.assert_eq("Please wait until the showdown is over", ddnetpp.get_chat_line(3, -1))
+
+game:on_tick()
+t.assert_eq(GameState.RIVER, game.state)
+t.assert_eq(5, #game.community_cards)
+t.assert_eq(nil, game:next_to_act())
+t.assert_eq(true, game.is_showdown)
+
+-- TODO: WHO WON????
+
+-- t.assert_eq("Please wait until the showdown is over", ddnetpp.get_chat_line(3, -1))
+
+game:on_tick()
+t.assert_eq(GameState.PRE_FLOP, game.state)
+t.assert_eq(false, game.is_showdown)
+t.assert_eq(true, game:next_to_act() ~= nil) -- TODO: add assert_neq()

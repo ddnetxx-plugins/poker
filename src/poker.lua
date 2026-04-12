@@ -460,8 +460,10 @@ function Poker:flop()
 	assert(#self.community_cards == 0, "tried to flop but there were already " .. #self.community_cards .. " cards on the board")
 	self.state = GameState.FLOP
 
-	self:clear_player_actions()
-	self.next_to_act_offset = self:first_offset_to_act()
+	if not self.is_showdown then
+		self:clear_player_actions()
+		self.next_to_act_offset = self:first_offset_to_act()
+	end
 
 	table.insert(self.community_cards, table.remove(self.deck, 1))
 	table.insert(self.community_cards, table.remove(self.deck, 1))
@@ -473,8 +475,10 @@ function Poker:turn()
 	assert(#self.community_cards == 3, "tried to turn but there were already " .. #self.community_cards .. " cards on the board")
 	self.state = GameState.TURN
 
-	self:clear_player_actions()
-	self.next_to_act_offset = self:first_offset_to_act()
+	if not self.is_showdown then
+		self:clear_player_actions()
+		self.next_to_act_offset = self:first_offset_to_act()
+	end
 
 	table.insert(self.community_cards, table.remove(self.deck, 1))
 end
@@ -484,8 +488,10 @@ function Poker:river()
 	assert(#self.community_cards == 4, "tried to river but there were already " .. #self.community_cards .. " cards on the board")
 	self.state = GameState.RIVER
 
-	self:clear_player_actions()
-	self.next_to_act_offset = self:first_offset_to_act()
+	if not self.is_showdown then
+		self:clear_player_actions()
+		self.next_to_act_offset = self:first_offset_to_act()
+	end
 
 	table.insert(self.community_cards, table.remove(self.deck, 1))
 end
@@ -925,7 +931,7 @@ end
 
 function Poker:check_next_state()
 	if self:next_to_act() == nil then
-		-- TODO: remove
+		-- TODO: remove or at least call it better like "FLOPPING", "new card!!!", "knock knock, whos there?"
 		self:send_chat("next round!")
 		self:next_state()
 	end
@@ -1128,6 +1134,12 @@ function Poker:on_tick()
 			self:new_game()
 		end
 		return
+	end
+
+	if self.is_showdown then
+		-- TODO: one card per tick is omega fast
+		--       make it more dramatic!!!
+		self:check_next_state()
 	end
 
 	self:print_betting_actions()
