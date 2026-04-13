@@ -1253,18 +1253,21 @@ function Poker:on_snap(snapping_client)
 		end
 	end
 
-	local poker_player = self:find_player(snapping_client)
-	local chr = ddnetpp.get_character(snapping_client)
-	if poker_player ~= nil and chr ~= nil then
-		local pos = chr:pos()
-		pos.x = pos.x - 1.5
-		pos.y = pos.y - 2
-		for i, card in ipairs(poker_player.hole_cards) do
-			pos.x = pos.x + 0.9
-			snap.display_card(
-				poker_player.hole_card_snap_ids[i],
-				pos,
-				card)
+	for _, poker_player in ipairs(self.players) do
+		if poker_player.client_id == snapping_client or self.is_showdown then
+			local chr = ddnetpp.get_character(poker_player.client_id)
+			if chr ~= nil then
+				local pos = chr:pos()
+				pos.x = pos.x - 1.5
+				pos.y = pos.y - 2
+				for i, card in ipairs(poker_player.hole_cards) do
+					pos.x = pos.x + 0.9
+					snap.display_card(
+						poker_player.hole_card_snap_ids[i],
+						pos,
+						card)
+				end
+			end
 		end
 	end
 end
