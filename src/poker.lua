@@ -752,9 +752,7 @@ function Poker:find_winners()
 	return win_type, winners
 end
 
-function Poker:round_winners_and_losers()
-	-- TODO: kick ALL IN losers out of the table here
-
+function Poker:move_chips_to_winner()
 	local win_type, winners = self:find_winners()
 	assert(#winners > 0, "nobody won???")
 
@@ -765,6 +763,7 @@ function Poker:round_winners_and_losers()
 		-- negative rake casino poggers
 		-- chips that can't be split get duplication glitched watafak
 		local split = math.ceil(self.pot / #winners)
+		self.pot = 0
 
 		for _, winner in ipairs(winners) do
 			winner.chips = winner.chips + split
@@ -777,9 +776,11 @@ function Poker:round_winners_and_losers()
 	end
 
 	local winner = winners[1]
-	winner.chips = winner.chips + self.pot
 
 	ddnetpp.send_chat_target(winner.client_id, "You won the entire pot with " .. self.pot .. " chips in it!")
+
+	winner.chips = winner.chips + self.pot
+	self.pot = 0
 
 	if win_type == "showdown" then
 		self:send_chat(
@@ -826,7 +827,7 @@ end
 ---@return boolean won # True if someone a round or the entire game
 function Poker:check_win_game_or_round()
 	if self:num_players_with_cards() == 1 then
-		self:round_winners_and_losers()
+		self:move_chips_to_winner()
 		if not self:check_win_game() then
 			self:new_round()
 		end
@@ -845,8 +846,8 @@ function Poker:next_state()
 	elseif self.state == GameState.TURN then
 		self:river()
 	elseif self.state == GameState.RIVER then
+		self:move_chips_to_winner()
 		if not self:check_win_game_or_round() then
-			self:round_winners_and_losers()
 			self:new_round()
 		end
 		return
