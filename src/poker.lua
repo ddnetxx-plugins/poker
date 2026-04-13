@@ -1216,32 +1216,33 @@ function Poker:on_snap(snapping_client)
 			card)
 	end
 
-	local next_to_act = self:next_to_act()
-	if next_to_act ~= nil then
-		local chr_next = ddnetpp.get_character(next_to_act.client_id)
-		if chr_next then
-			ddnetpp.snap.new_laser({
-				id = self.next_to_act_snap_id,
-				pos = {
-					x = chr_next:pos().x,
-					y = chr_next:pos().y - 2,
-				},
-			})
+	if self.state >= GameState.PRE_FLOP and self.state <= GameState.RIVER then
+		local next_to_act = self:next_to_act()
+		if next_to_act ~= nil then
+			local chr_next = ddnetpp.get_character(next_to_act.client_id)
+			if chr_next then
+				ddnetpp.snap.new_laser({
+					id = self.next_to_act_snap_id,
+					pos = {
+						x = chr_next:pos().x,
+						y = chr_next:pos().y - 2,
+					},
+				})
+			end
 		end
-	end
-
-	local btn = self:find_button()
-	if btn ~= nil then
-		local chr_btn = ddnetpp.get_character(btn.client_id)
-		if chr_btn then
-			ddnetpp.snap.new_pickup({
-				id = self.button_snap_id,
-				pos = {
-					x = chr_btn:pos().x,
-					y = chr_btn:pos().y - 5,
-				},
-				type = ddnetpp.protocol.POWERUP_ARMOR,
-			})
+		local btn = self:find_button()
+		if btn ~= nil then
+			local chr_btn = ddnetpp.get_character(btn.client_id)
+			if chr_btn then
+				ddnetpp.snap.new_pickup({
+					id = self.button_snap_id,
+					pos = {
+						x = chr_btn:pos().x,
+						y = chr_btn:pos().y - 5,
+					},
+					type = ddnetpp.protocol.POWERUP_ARMOR,
+				})
+			end
 		end
 	end
 
