@@ -682,7 +682,7 @@ function Poker:player_action(client_id, action)
 	end
 
 	self:print_betting_actions()
-	if not self:check_win_by_fold() then
+	if not self:check_win_game_or_round() then
 		-- checking can never cause a dramatic showdown
 		-- so to increase performance we can the showdown check
 		-- after a check action
@@ -815,14 +815,16 @@ function Poker:check_win_game()
 	return true
 end
 
----TODO: why is this called "win by fold" ?
----      i do not really see any fold related call sites
----      or fold related logic in this method
----      players do not get dealt cards if they have no chips
----      that can also happen on losing a "all in"
+---Checks if the round is over because there is a round winner
+---then also check if that round win caused the entire game to end
 ---
----@return boolean won # True if someone won the game
-function Poker:check_win_by_fold()
+---and also progress the state
+---updating winner and loser chip count
+---so starting a new round if the game is still running
+---or ending the entire game if someone won it all
+---
+---@return boolean won # True if someone a round or the entire game
+function Poker:check_win_game_or_round()
 	if self:num_players_with_cards() == 1 then
 		self:round_winners_and_losers()
 		if not self:check_win_game() then
@@ -843,8 +845,10 @@ function Poker:next_state()
 	elseif self.state == GameState.TURN then
 		self:river()
 	elseif self.state == GameState.RIVER then
-		self:round_winners_and_losers()
-		self:new_round()
+		if not self:check_win_game_or_round() then
+			self:round_winners_and_losers()
+			self:new_round()
+		end
 		return
 	end
 end
@@ -1460,6 +1464,8 @@ function Poker:leave_table(client_id)
 		self:send_chat(
 			"'" .. ddnetpp.server.client_name(client_id) .. "' left the table"
 		)
-		self:check_win_by_fold()
+		-- if someone rage quits it might cause a win
+		-- by implicitly folding
+		self:check_win_game_or_round()
 	end
 end
