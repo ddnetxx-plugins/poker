@@ -412,7 +412,7 @@ function Poker:new_round()
 end
 
 function Poker:new_game()
-	assert(self.state == GameState.WAITING_FOR_PLAYERS, "tried to start game but was already in state " .. self.state)
+	assert(self.state == GameState.WAITING_FOR_PLAYERS, "tried to start game but was already in state '" .. gamestate_to_str(self.state) .. "'")
 	self:new_round()
 
 	math.randomseed(ddnetpp.secure_rand_below(666999))
