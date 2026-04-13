@@ -77,25 +77,6 @@ Poker = {
 	num_players_needed_to_start = 4,
 }
 
-local function gamestate_to_str(state)
-	if state == GameState.END then
-		return "END"
-	elseif state == GameState.ERROR then
-		return "ERROR"
-	elseif state == GameState.WAITING_FOR_PLAYERS then
-		return "WAITING_FOR_PLAYERS"
-	elseif state == GameState.PRE_FLOP then
-		return "PRE_FLOP"
-	elseif state == GameState.FLOP then
-		return "FLOP"
-	elseif state == GameState.TURN then
-		return "TURN"
-	elseif state == GameState.RIVER then
-		return "RIVER"
-	end
-	return "(unknown)"
-end
-
 function Poker:is_game_running()
 	return self.state >= GameState.PRE_FLOP
 end
@@ -682,7 +663,7 @@ function Poker:player_action(client_id, action)
 	end
 
 	self:print_betting_actions()
-	if not self:check_win_game_or_round() then
+	if not self:check_win_by_fold() then
 		-- checking can never cause a dramatic showdown
 		-- so to increase performance we can the showdown check
 		-- after a check action
@@ -816,16 +797,12 @@ function Poker:check_win_game()
 	return true
 end
 
----Checks if the round is over because there is a round winner
----then also check if that round win caused the entire game to end
----
----and also progress the state
----updating winner and loser chip count
----so starting a new round if the game is still running
----or ending the entire game if someone won it all
+---If all but one players lost their cards
+---by folding or leaving the game
+---we perform a forced win check
 ---
 ---@return boolean won # True if someone a round or the entire game
-function Poker:check_win_game_or_round()
+function Poker:check_win_by_fold()
 	if self:num_players_with_cards() == 1 then
 		self:move_chips_to_winner()
 		if not self:check_win_game() then
@@ -847,7 +824,7 @@ function Poker:next_state()
 		self:river()
 	elseif self.state == GameState.RIVER then
 		self:move_chips_to_winner()
-		if not self:check_win_game_or_round() then
+		if not self:check_win_game() then
 			self:new_round()
 		end
 		return
@@ -1467,6 +1444,6 @@ function Poker:leave_table(client_id)
 		)
 		-- if someone rage quits it might cause a win
 		-- by implicitly folding
-		self:check_win_game_or_round()
+		self:check_win_by_fold()
 	end
 end

@@ -28,14 +28,18 @@ end
 ---@param game Poker
 local function next_showdown_card(game)
 	assert_eq(true, game.is_showdown)
-	local expected_state = game.state + 1
-	if game.state == GameState.RIVER then
-		expected_state = GameState.PRE_FLOP
-	end
+	local old_state = game.state
 	for _ = 1, math.ceil(game.showdown_speed * ddnetpp.server.tick_speed()) do
 		game:on_tick()
 	end
-	assert_eq(expected_state, game.state)
+	if old_state == GameState.RIVER then
+		assert(
+			game.state == GameState.PRE_FLOP or game.state == GameState.END,
+			"got state '" .. gamestate_to_str(game.state) .. "' after river during showdown (expected 'end' or 'pre_flop')"
+		)
+	else
+		assert_eq(old_state + 1, game.state)
+	end
 end
 
 ---@param game Poker
