@@ -792,15 +792,16 @@ function Poker:round_winners_and_losers()
 	end
 end
 
+---@return boolean someone_won # True if one player won the entire game
 function Poker:check_win_game()
 	local chip_holders = self:players_with_chips()
 	if #chip_holders < 1 then
 		ddnetpp.log_error("no chip holders left? no idea what to do.. exploding!")
 		assert(false, "no chip holders")
-		return
+		return false
 	end
 	if #chip_holders > 1 then
-		return
+		return false
 	end
 
 	-- TODO: actually send the prize money to the player xd
@@ -811,13 +812,20 @@ function Poker:check_win_game()
 		"won the entire game! And collected " .. self.prize_money .. " in prize money!"
 	)
 	self.state = GameState.END
+	return true
 end
 
+---TODO: why is this called "win by fold" ?
+---      i do not really see any fold related call sites
+---      or fold related logic in this method
+---      players do not get dealt cards if they have no chips
+---      that can also happen on losing a "all in"
+---
 ---@return boolean won # True if someone won the game
 function Poker:check_win_by_fold()
 	if self:num_players_with_cards() == 1 then
 		self:round_winners_and_losers()
-		if self:check_win_game() then
+		if not self:check_win_game() then
 			self:new_round()
 		end
 		return true
@@ -1446,12 +1454,12 @@ function Poker:leave_table(client_id)
 	for _, snap_id in ipairs(player.hole_card_snap_ids) do
 		ddnetpp.server.free_occupied_client_id(snap_id)
 	end
+	self:seat_open(player.seat)
+	self:delete_player(client_id)
 	if self.state ~= GameState.END then
 		self:send_chat(
 			"'" .. ddnetpp.server.client_name(client_id) .. "' left the table"
 		)
+		self:check_win_by_fold()
 	end
-	self:seat_open(player.seat)
-	self:delete_player(client_id)
-	self:check_win_by_fold()
 end
