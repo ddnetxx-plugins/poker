@@ -73,9 +73,8 @@ function ddnetpp.on_player_disconnect(client_id)
    end
 end
 
--- TODO: remove this debug command, or turn into a rcon command with a better name
-ddnetpp.register_chat("state", "", "", function (client_id, args)
-   ddnetpp.send_motd_target(client_id, games[1]:state_to_str())
+ddnetpp.register_rcon("poker_state", "", "show current game state as motd", function (client_id, args)
+   ddnetpp.send_motd_target(client_id, test_game:state_to_str())
 end)
 
 ddnetpp.register_chat("check", "", "check to next player in poker", function (client_id, args)

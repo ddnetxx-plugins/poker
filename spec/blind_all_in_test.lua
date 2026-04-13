@@ -35,15 +35,13 @@ game:player_action(0, { action = "call" })
 game:player_action(1, { action = "call" })
 t.assert_eq(GameState.PRE_FLOP, game.state)
 game:player_action(2, { action = "call" })
--- we alreday flop before player 3 did anything
+-- we already flop before player 3 did anything
 -- that is because that player was put all in
 -- by the blind
 t.assert_eq(GameState.FLOP, game.state)
 
+-- premove error
 game:player_action(3, { action = "check" })
--- TODO: double check if this should be printed
---       premove success is silent because its broadcasted to all
---       should premove errors be printed then?
 t.assert_eq("You are already all in, wait until next round", ddnetpp.get_chat_line(3, -1))
 
 t.all_check(game)

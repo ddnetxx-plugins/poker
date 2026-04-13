@@ -182,10 +182,7 @@ function Poker:new(o, table_pos, num_seats, num_players_needed_to_start)
 	self.state = GameState.WAITING_FOR_PLAYERS
 	self.deck = {}
 	self.small_blind = 50
-
-	-- TODO: yikes split pots? how? where? when?
 	self.pot = 0
-
 	self.start_stack = 50000
 
 	-- TODO: this variable feels super chaotic
@@ -653,10 +650,6 @@ function Poker:player_action(client_id, action)
 		player.action = action
 	elseif action.action == "fold" then
 		player.action = action
-
-		-- TODO: should we do player.is_folded = true here instead?
-		--       so we can show cards in the end smh?
-		--       probably not but idk
 		player.hole_cards = {}
 	else
 		assert(false, "Invalid betting action")
@@ -971,7 +964,7 @@ end
 
 function Poker:check_next_state()
 	if self:next_to_act() == nil then
-		-- TODO: remove or at least call it better like "FLOPPING", "new card!!!", "knock knock, whos there?"
+		-- TODO: remove or at least call it better like "FLOPPING", "new card!!!", "knock knock, who is there?"
 		self:send_chat("next round!")
 		self:next_state()
 	end

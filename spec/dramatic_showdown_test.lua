@@ -89,7 +89,7 @@ for _ = 1, math.ceil(game.showdown_speed * ddnetpp.server.tick_speed()) do
 end
 t.assert_eq(GameState.PRE_FLOP, game.state)
 t.assert_eq(false, game.is_showdown)
-t.assert_eq(true, game:next_to_act() ~= nil) -- TODO: add assert_neq()
+t.assert_ne(nil, game:next_to_act())
 
 -- someone won now, we don't know who because we did not rig the cards
 t.assert_eq(true, string.match(ddnetpp.get_chat_line(3, -1), " won ") ~= nil)
