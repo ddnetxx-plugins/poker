@@ -45,7 +45,7 @@ t.next_showdown_card(game) -- pick winner -> pre flop next round
 -- and cid 0 won the prize money
 t.assert_eq("You won the entire pot with 250100 chips in it!", ddnetpp.get_chat_line(0, -3))
 t.assert_eq("'mock0' won with best hand four of a kind (quad fours)", ddnetpp.get_chat_line(0, -2))
-t.assert_eq("'mock0' won the entire game! And collected 10 in prize money!", ddnetpp.get_chat_line(0, -1))
+t.assert_eq("'mock0' won the entire game! And collected 40 in prize money!", ddnetpp.get_chat_line(0, -1))
 t.assert_eq(GameState.END, game.state)
 
 -- game is over nobody still sitting at the table can do anything

@@ -20,5 +20,5 @@ game:leave_table(1)
 
 assert_eq("You won the entire pot with 150 chips in it!", ddnetpp.get_chat_line(0, -3))
 assert_eq("'mock0' won because everyone folded", ddnetpp.get_chat_line(0, -2))
-assert_eq("'mock0' won the entire game! And collected 10 in prize money!", ddnetpp.get_chat_line(0, -1))
+assert_eq("'mock0' won the entire game! And collected 50 in prize money!", ddnetpp.get_chat_line(0, -1))
 assert_eq(GameState.END, game.state)

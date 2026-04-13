@@ -183,6 +183,16 @@ function Player:name()
 	return "mock" .. self.client_id
 end
 
+function Player:money()
+	return 9000000
+end
+
+---@param money integer
+---@param description string
+function Player:money_transaction(money, description)
+	-- TODO: we can log this so we can assert the value in the test
+end
+
 Character = {}
 
 function Character:new()
