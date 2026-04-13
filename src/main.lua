@@ -16,7 +16,7 @@ function ddnetpp.on_init()
       nil,
       {
          x = 33,
-         y = 3,
+         y = 30,
       }
    )
 
@@ -41,7 +41,7 @@ function ddnetpp.on_player_connect(client_id)
    end
 
    -- force start
-   if client_id == 1 then
+   if test_game:num_players() > 1 and test_game.state == GameState.WAITING_FOR_PLAYERS then
       test_game:new_game()
    end
 end
@@ -130,4 +130,25 @@ ddnetpp.register_chat("raise", "i[amount]", "raise in poker", function (client_i
       end
    end
    ddnetpp.send_chat_target(client_id, "You are not at any poker table")
+end)
+
+ddnetpp.register_chat("poker", "?i[confirm_buy_in_amount]", "join poker table", function (client_id, args)
+   for _, game in pairs(games) do
+      if game:is_at_table(client_id) then
+         ddnetpp.send_chat_target(client_id, "You are already at a poker table")
+          -- no multi table support yet -.-
+         return
+      end
+   end
+
+   if args.confirm_buy_in_amount ~= test_game.buy_in then
+      ddnetpp.send_chat_target(client_id, "The buy in for that game is " .. test_game.buy_in .. " money!")
+      ddnetpp.send_chat_target(client_id, "If you understand the risk and want to join the game use this command:")
+      ddnetpp.send_chat_target(client_id, "")
+      ddnetpp.send_chat_target(client_id, " /poker " .. test_game.buy_in)
+      ddnetpp.send_chat_target(client_id, "")
+      return
+   end
+
+   test_game:join_table(client_id)
 end)

@@ -44,8 +44,8 @@ Poker = {
 	-- thats it
 	-- keep it simple for now
 	small_blind = 50,
-	-- TODO: add buy in here
-	prize_money = 10,
+	buy_in = 10,
+	prize_money = 0,
 	pot = 0,
 	start_stack = 50000,
 	---The key is the seat number
@@ -769,6 +769,7 @@ end
 
 ---@return boolean someone_won # True if one player won the entire game
 function Poker:check_win_game()
+	assert(self.state ~= GameState.END, "tried to check for win in a game that already ended")
 	local chip_holders = self:players_with_chips()
 	if #chip_holders < 1 then
 		ddnetpp.log_error("no chip holders left? no idea what to do.. exploding!")
@@ -779,14 +780,20 @@ function Poker:check_win_game()
 		return false
 	end
 
-	-- TODO: actually send the prize money to the player xd
-
 	local winner = chip_holders[1]
 	self:send_chat(
 		"'" .. ddnetpp.server.client_name(winner.client_id) .. "' " ..
 		"won the entire game! And collected " .. self.prize_money .. " in prize money!"
 	)
 	self.state = GameState.END
+
+	local player = ddnetpp.get_player(winner.client_id)
+	if player then
+		player:money_transaction(self.prize_money, "won poker game")
+	else
+		ddnetpp.log_error("the winner of the game with client id " .. winner.client_id .. " is not connected!")
+	end
+
 	return true
 end
 
@@ -1383,6 +1390,13 @@ function Poker:join_table(client_id)
 		ddnetpp.send_chat_target(client_id, join_err)
 		return
 	end
+	local server_player = ddnetpp.get_player(client_id)
+	assert(server_player ~= nil, "player with id " .. client_id .. " tried to join table but does not exist")
+	if server_player:money() < self.buy_in then
+		ddnetpp.send_chat_target(client_id, "You need at least " .. self.buy_in .. " money to pay the buy in")
+		return
+	end
+
 	local player = PokerPlayer:new(client_id)
 
 	local seat = self:find_free_seat()
@@ -1415,6 +1429,8 @@ function Poker:join_table(client_id)
 	player.chips = self.start_stack
 	self:add_player(player)
 	ddnetpp.set_client_score_type(client_id, 'points')
+	server_player:money_transaction(-self.buy_in, "poker buy in")
+	self.prize_money = self.prize_money + self.buy_in
 	self:send_chat(
 		"'" .. ddnetpp.server.client_name(client_id) .. "' joined the table"
 	)
