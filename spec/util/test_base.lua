@@ -35,10 +35,10 @@ local function next_showdown_card(game)
 	for _ = 1, ticks do
 		game:on_tick()
 	end
-	if old_state == GameState.RIVER then
+	if old_state == GameState.SHOWDOWN then
 		assert(
 			game.state == GameState.PRE_FLOP or game.state == GameState.END,
-			"got state '" .. gamestate_to_str(game.state) .. "' after river during showdown (expected 'end' or 'pre_flop')"
+			"got state '" .. gamestate_to_str(game.state) .. "' after showdown (expected 'end' or 'pre_flop')"
 		)
 	else
 		assert_eq(old_state + 1, game.state)

@@ -959,19 +959,26 @@ function Poker:compute_next_to_act()
 	local prev = self:next_to_act()
 	assert(prev ~= nil, "tried to compute next to act but betting round was already over")
 
-	-- still waiting for same player
-	if prev.action == nil and prev.chips > 0 and #prev.hole_cards > 0 then
-		return
-	end
-
 	-- TODO: this is the wrong order i just wanted some code that works first
 	if self.state == GameState.SHOWDOWN then
 		for _, player in ipairs(self.players) do
 			if player.action == nil and player.show_cards == false and #player.hole_cards then
 				self.next_to_act_offset = player.position.offset
+				return
+				-- else
+				-- 	print("skipping cid=" .. player.client_id)
+				-- 	print("  action=" .. tostring(player.action))
+				-- 	print("  cards_shown=" .. tostring(player.show_cards))
+				-- 	print("  cards=" .. #player.hole_cards)
 			end
 		end
 		self.next_to_act_offset = nil
+		return
+	end
+
+	-- still waiting for same player
+	if prev.action == nil and prev.chips > 0 and #prev.hole_cards > 0 then
+		return
 	end
 
 	local num_players = self:num_players()
