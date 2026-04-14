@@ -18,6 +18,8 @@ local function all_check(game)
 	end
 end
 
+---Let all players show their cards during showdown
+---nobody is hiding a bluff here :D
 ---@param game Poker
 local function all_show(game)
 	assert(game.state == GameState.SHOWDOWN, "tried to show player cards during state '" .. gamestate_to_str(game.state) .. "' expected showdown")
@@ -44,7 +46,7 @@ end
 ---so this helper simulates a time progress of exactly one showdown stage.
 ---@param game Poker
 local function next_showdown_card(game)
-	assert(game.is_showdown == true, "tried to show next showdown card but there is no showdown")
+	assert(game.is_showdown == true, "tried to show next showdown card but the board is not running (current_state=" .. gamestate_to_str(game.state) .. ")")
 	local old_state = game.state
 	local ticks = game.ticks_till_next_showdown_card
 	for _ = 1, ticks do

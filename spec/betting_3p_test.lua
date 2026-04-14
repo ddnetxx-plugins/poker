@@ -57,6 +57,7 @@ game:player_action(0, { action = "raise", amount = 20 })
 game:player_action(1, { action = "call" })
 assert_eq(GameState.RIVER, game.state) -- still river because, sb got reraised
 game:player_action(2, { action = "call" })
+t.all_show(game)
 t.next_showdown_card(game)
 
 -- some player won, new round

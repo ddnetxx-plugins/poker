@@ -59,6 +59,8 @@ game:turn()
 game:river()
 t.rig_board(game, "🂤🂴🃄🃔🃕")
 game:next_state()
+t.all_show(game)
+game:next_state()
 
 -- mock0 client id 0 won with quads and ace kicker and we move on to the next pre flop
 t.assert_eq("'mock0' won with best hand four of a kind (quad fours)", ddnetpp.get_chat_line(0, -1))

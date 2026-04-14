@@ -36,6 +36,8 @@ t.next_showdown_card(game) -- river
 
 t.rig_board(game, "🂤🂴🃄🃔🃕")
 
+game:next_state()
+t.all_show(game)
 t.next_showdown_card(game) -- pick winner -> pre flop next round
 
 -- cid 0 with the biggest stack won the entire game by raising big

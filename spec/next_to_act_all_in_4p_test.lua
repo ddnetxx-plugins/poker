@@ -81,6 +81,7 @@ game:player_action(0, { action = "check" })
 
 t.assert_eq(1, game:next_to_act().client_id)
 game:player_action(1, { action = "check" })
+t.all_show(game)
 t.next_showdown_card(game)
 
 -- pre flop (button moved)

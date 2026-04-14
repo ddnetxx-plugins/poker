@@ -128,6 +128,11 @@ function Poker:check_showdown()
 		self.is_showdown = true
 		self.ticks_till_next_showdown_card = math.ceil(self.showdown_speed * ddnetpp.server.tick_speed())
 		self.next_to_act_offset = nil
+		for _, player in ipairs(self.players) do
+			if player.chips < 1 and player.show_cards == false and #player.hole_cards > 0 then
+				self:show_player_cards(player)
+			end
+		end
 		return true
 	end
 	return false
@@ -873,6 +878,7 @@ end
 ---@param player PokerPlayer
 function Poker:show_player_cards(player)
 	assert(player.show_cards == false, "tried to show cid=" .. player.client_id .. " cards twice")
+	assert(#player.hole_cards > 0, "tried to show cid=" .. player.client_id .. " cards but that player has no cards")
 	player.show_cards = true
 	self:send_chat(
 		"'" .. ddnetpp.server.client_name(player.client_id) .. "' showed " .. join_str_array(player.hole_cards)
@@ -898,7 +904,7 @@ function Poker:show_first_hand()
 	-- this is for split pot scenarios
 	-- they can not choose to not show anyway (i think xd, double check the rules)
 	for _, player in ipairs(self.players) do
-		if player.chips < 1 and player.show_cards == false then
+		if player.chips < 1 and player.show_cards == false and #player.hole_cards > 0 then
 			self:show_player_cards(player)
 		end
 	end
@@ -918,6 +924,15 @@ function Poker:next_state()
 		self:river()
 	elseif self.state == GameState.RIVER then
 		self.state = GameState.SHOWDOWN
+
+		if self.is_showdown then
+			-- if the board is running already
+			-- because there were enough "all ins"
+			-- all cards are shown already anyways
+			-- we just skip to the next stage
+			self.next_to_act_offset = nil
+			return
+		end
 
 		-- TODO: this part is not really implemented fully and correctly yet
 		self:show_first_hand()

@@ -34,7 +34,8 @@ t.assert_eq(false, game.is_showdown)
 
 t.assert_eq(3, game:next_to_act().client_id)
 game:player_action(3, { action = "call" }) -- bb call
-t.assert_eq("'mock3' did a call", ddnetpp.get_chat_line(3, -1))
+t.assert_eq("'mock3' did a call", ddnetpp.get_chat_line(3, -2))
+t.assert_eq("'mock2' showed 🂵🃅", ddnetpp.get_chat_line(3, -1))
 
 t.assert_eq(true, game.is_showdown)
 
@@ -84,9 +85,14 @@ t.assert_eq(5, #game.community_cards)
 t.assert_eq(nil, game:next_to_act())
 t.assert_eq(true, game.is_showdown)
 
+-- tick from river to showdown
 for _ = 1, math.ceil(game.showdown_speed * ddnetpp.server.tick_speed()) do
 	game:on_tick()
 end
+
+-- tick from showdown to next round
+t.next_showdown_card(game)
+
 t.assert_eq(GameState.PRE_FLOP, game.state)
 t.assert_eq(false, game.is_showdown)
 t.assert_ne(nil, game:next_to_act())

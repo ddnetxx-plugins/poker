@@ -50,6 +50,7 @@ t.assert_eq(0, game:next_to_act().client_id)
 game:player_action(0, { action = "check" })
 game:player_action(1, { action = "check" })
 
+t.all_show(game)
 t.next_showdown_card(game)
 t.assert_eq(GameState.PRE_FLOP, game.state)
 
