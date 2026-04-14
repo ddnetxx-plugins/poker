@@ -70,3 +70,9 @@ t.next_showdown_card(game) -- the naming of the method is a bit rigged here, no 
 
 t.assert_eq(GameState.PRE_FLOP, game.state)
 t.assert_eq("'mock0' won with best hand four of a kind (quad fours)", ddnetpp.get_chat_line(0, -1))
+
+---------
+
+-- just checking if we crash or not, not a proper test
+t.all_check_call_till_showdown_and_rig_board(game, "🂤🂴🃄🃔🃕")
+

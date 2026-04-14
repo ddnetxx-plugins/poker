@@ -18,6 +18,21 @@ local function all_check(game)
 	end
 end
 
+---@param game Poker
+local function all_show(game)
+	assert(game.state == GameState.SHOWDOWN, "tried to show player cards during state '" .. gamestate_to_str(game.state) .. "' expected showdown")
+
+	-- TODO: this order is wrong but so is the actual code order xd
+	for _ = 1, 100 do
+		local player = game:next_to_act()
+		if player == nil then
+			return
+		end
+		game:player_action(player.client_id, { action = "show" })
+	end
+	assert(false, "failed to show all players cards during showdown")
+end
+
 ---If the game is in showdown state where no player can act anymore
 ---because 1 or less players still has chips and the remaining players
 ---are already all in or folded.
@@ -72,6 +87,12 @@ local function all_check_call_till_showdown_and_rig_board(game, board_str)
 	if game.is_showdown then
 		next_showdown_card(game)
 	end
+	assert_eq(GameState.SHOWDOWN, game.state)
+	all_show(game)
+	-- this name is not ideal because it is not showing a new card
+	-- its just progressing time because after all players showed
+	-- their cards there is a delay
+	next_showdown_card(game)
 	assert_eq(GameState.PRE_FLOP, game.state)
 end
 
@@ -91,6 +112,7 @@ return {
 	assert_ne = assert_ne,
 
 	all_check = all_check,
+	all_show = all_show,
 	next_showdown_card = next_showdown_card,
 	all_check_call_till_showdown_and_rig_board = all_check_call_till_showdown_and_rig_board,
 	rig_board = rig_board,
