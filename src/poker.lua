@@ -823,6 +823,18 @@ function Poker:next_state()
 	elseif self.state == GameState.TURN then
 		self:river()
 	elseif self.state == GameState.RIVER then
+		if not self.is_showdown then
+			-- if it check/calls till the end
+			-- all remaining players cards will be shown for 6 seconds
+			--
+			-- TODO: this is a bit wrong because only the last raiser
+			--       should be forced to show and for the rest it is optional
+			self.is_showdown = true
+			self.ticks_till_next_showdown_card = ddnetpp.server.tick_speed() * 6
+			self.next_to_act_offset = nil
+			return
+		end
+
 		self:move_chips_to_winner()
 		if not self:check_win_game() then
 			self:new_round()
