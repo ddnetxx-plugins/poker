@@ -14,7 +14,8 @@ require(script_path() .. "player")
 ---|"'bet'"
 ---|"'call'"
 ---|"'raise'"
----|"'fold'"
+---|"'fold'" # fold when facing a raise or also used as showdown muck
+---|"'show'" # reveal cards during showdown
 
 ---@class PlayerAction
 ---@field action ActionName
@@ -64,6 +65,10 @@ Poker = {
 	-- now all the community cards will be revealed slowly
 	-- also all player cards are shown above their heads
 	-- no player can do any betting action anymore
+	-- TODO: rename this variable to is_allin_showdown
+	--       or is_board_live or is_running_board
+	--       so its not be confused with GameState.SHOWDOWN
+	--       which happens if the betting finishes on the river
 	is_showdown = false,
 	-- dramatic tick counter to slowly
 	-- reveal cards during showdown
@@ -401,6 +406,7 @@ function Poker:new_round()
 
 	for _, player in pairs(self.players) do
 		player.hole_cards = {}
+		player.show_cards = false
 		if player.chips > 0 then
 			player.hole_cards = self:deal_hole_cards()
 		end
@@ -566,6 +572,24 @@ function Poker:player_action(client_id, action)
 		return
 	end
 
+	if self.state == GameState.SHOWDOWN then
+		if action.action == "fold" then
+			player.action = action
+			player.hole_cards = {}
+			self:send_chat("'" .. ddnetpp.server.client_name(player.client_id) .. "' mucked their cards")
+		elseif action.action == "show" then
+			player.action = action
+			self:show_player_cards(player)
+		else
+			ddnetpp.send_chat_target(client_id, "During showdown you can only fold or show your cards")
+			return
+		end
+
+		self:compute_next_to_act()
+		self:check_next_state()
+		return
+	end
+
 	local diff = self.pot_per_player - player.chips_paid_into_pot
 	if action.action == "check" then
 		if diff > 0 then
@@ -573,6 +597,9 @@ function Poker:player_action(client_id, action)
 			return
 		end
 		player.action = action
+	elseif action.action == "show" then
+		ddnetpp.send_chat_target(client_id, "You can not show your cards right now")
+		return
 	elseif action.action == "call" then
 		if diff == 0 then
 			ddnetpp.send_chat_target(client_id, "Nobody raised you. You can raise or check")
@@ -675,6 +702,7 @@ function Poker:player_action(client_id, action)
 			end
 		end
 
+		-- TODO: we already have a turn check above this seems duplicated
 		if self.next_to_act_offset == player.position.offset then
 			self:compute_next_to_act()
 		end
@@ -826,7 +854,7 @@ end
 ---or the player to the left of the dealer
 ---@return PokerPlayer
 function Poker:find_last_aggressor_or_left_of_dealer()
-	assert(self.state == GameState.RIVER, "tried to look for last aggressor during state '" .. gamestate_to_str(self.state) .. "'")
+	assert(self.state == GameState.SHOWDOWN, "tried to look for last aggressor during state '" .. gamestate_to_str(self.state) .. "'")
 	if self.last_aggressor then
 		return self.last_aggressor
 	end
@@ -842,18 +870,38 @@ function Poker:find_last_aggressor_or_left_of_dealer()
 	assert(false, "failed to find last aggressor or player on the left of the dealer")
 end
 
+---@param player PokerPlayer
+function Poker:show_player_cards(player)
+	assert(player.show_cards == false, "tried to show cid=" .. player.client_id .. " cards twice")
+	player.show_cards = true
+	self:send_chat(
+		"'" .. ddnetpp.server.client_name(player.client_id) .. "' showed " .. join_str_array(player.hole_cards)
+	)
+end
+
 -- On showdown pick the first player that has
 -- to reveal their cards
 -- after that players clockwise have the decision
 -- to also show their cards or muck them
 function Poker:show_first_hand()
 	local first = self:find_last_aggressor_or_left_of_dealer()
+	self:show_player_cards(first)
+
 	-- TODO: add concept of showing cards
 	--       later there might also be a concept of lifiting cards
 	--       to show which cards formed a hand
 	--       or coloring cards
 	--       maybe its better to use tables instead of strings
 	--       to represent cards so we can store all that state
+
+	-- also reveal all "all in" players right now here
+	-- this is for split pot scenarios
+	-- they can not choose to not show anyway (i think xd, double check the rules)
+	for _, player in ipairs(self.players) do
+		if player.chips < 1 and player.show_cards == false then
+			self:show_player_cards(player)
+		end
+	end
 end
 
 function Poker:next_state()
@@ -869,6 +917,13 @@ function Poker:next_state()
 		self.last_aggressor = nil
 		self:river()
 	elseif self.state == GameState.RIVER then
+		self.state = GameState.SHOWDOWN
+
+		-- TODO: this part is not really implemented fully and correctly yet
+		self:show_first_hand()
+		self.next_to_act_offset = ButtonOffset.BUTTON
+
+	elseif self.state == GameState.SHOWDOWN then
 		if not self.is_showdown then
 			-- if it check/calls till the end
 			-- all remaining players cards will be shown for 6 seconds
@@ -907,6 +962,16 @@ function Poker:compute_next_to_act()
 	-- still waiting for same player
 	if prev.action == nil and prev.chips > 0 and #prev.hole_cards > 0 then
 		return
+	end
+
+	-- TODO: this is the wrong order i just wanted some code that works first
+	if self.state == GameState.SHOWDOWN then
+		for _, player in ipairs(self.players) do
+			if player.action == nil and player.show_cards == false and #player.hole_cards then
+				self.next_to_act_offset = player.position.offset
+			end
+		end
+		self.next_to_act_offset = nil
 	end
 
 	local num_players = self:num_players()
@@ -1312,7 +1377,7 @@ function Poker:on_snap(snapping_client)
 	end
 
 	for _, poker_player in ipairs(self.players) do
-		if poker_player.client_id == snapping_client or self.is_showdown then
+		if poker_player.client_id == snapping_client or poker_player.show_cards then
 			local chr = ddnetpp.get_character(poker_player.client_id)
 			if chr ~= nil then
 				local pos = chr:pos()

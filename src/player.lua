@@ -3,6 +3,11 @@ PokerPlayer = {
 	client_id = 0,
 	---@type string[]
 	hole_cards = {},
+	-- TODO: merge this into the hold_cards array
+	--       so we can also show only individual cards only
+	--       and players can do "/show ace" or "/show six"
+	--       or "/show spade"
+	show_cards = false,
 	chips = 0,
 	chips_paid_into_pot = 0,
 	---@type integer[]

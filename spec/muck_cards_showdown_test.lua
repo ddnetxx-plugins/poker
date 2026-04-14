@@ -18,7 +18,32 @@ t.set_hole_cards(game, 0, "🂡🂮") -- best kicker for quads
 t.set_hole_cards(game, 1, "🂢🂣")
 t.set_hole_cards(game, 2, "🂵🃅")
 t.set_hole_cards(game, 3, "🃋🃛")
-t.all_check_call_till_showdown_and_rig_board(game, "🂤🂴🃄🃔🃕")
+
+-- t.all_check_call_till_showdown_and_rig_board(game, "🂤🂴🃄🃔🃕")
+
+
+t.assert_eq(GameState.PRE_FLOP, game.state)
+t.all_check(game)
+
+t.assert_eq(GameState.FLOP, game.state)
+t.all_check(game)
+t.assert_eq(GameState.TURN, game.state)
+t.all_check(game)
+t.assert_eq(GameState.RIVER, game.state)
+t.all_check(game)
+t.assert_eq(false, game.is_showdown)
+t.assert_eq(GameState.SHOWDOWN, game.state)
+
+-- TODO: the order is probably wrong
+t.assert_eq(1, game:next_to_act().client_id)
+game:player_action(1, { action = "show" })
+t.assert_eq("'mock1' showed 🂢🂣", ddnetpp.get_chat_line(1, -1))
+
+t.assert_eq(1, game:next_to_act().client_id)
+
+
+t.assert_eq(GameState.PRE_FLOP, game.state)
+
 
 -- t.assert_eq(1, game:find_last_aggressor_or_left_of_dealer().client_id)
 
