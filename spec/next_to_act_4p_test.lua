@@ -1,4 +1,5 @@
 local assert_eq = require("simple.assert").assert_eq
+local t = require("spec.util.test_base")
 require("../src/poker")
 ddnetpp = require("spec.mock.ddnetpp")
 
@@ -77,6 +78,7 @@ game:player_action(0, { action = "check" })
 
 assert_eq(1, game:next_to_act().client_id)
 game:player_action(1, { action = "check" })
+t.next_showdown_card(game)
 
 -- pre flop (button moved)
 -- before:

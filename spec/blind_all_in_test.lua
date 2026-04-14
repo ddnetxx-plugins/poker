@@ -51,4 +51,5 @@ t.all_check(game)
 t.assert_eq(GameState.RIVER, game.state)
 
 t.all_check(game)
+t.next_showdown_card(game)
 t.assert_eq(GameState.PRE_FLOP, game.state)

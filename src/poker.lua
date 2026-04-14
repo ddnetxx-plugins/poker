@@ -390,6 +390,7 @@ end
 function Poker:new_round()
 	self.state = GameState.PRE_FLOP
 	self.is_showdown = false
+	self.ticks_till_next_showdown_card = 0
 	self.community_cards = {}
 	self.deck = self:shuffled_deck()
 	self.pot = 0

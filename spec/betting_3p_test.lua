@@ -1,4 +1,5 @@
 local assert_eq = require("simple.assert").assert_eq
+local t = require("spec.util.test_base")
 require("../src/poker")
 ddnetpp = require("spec.mock.ddnetpp")
 
@@ -56,6 +57,7 @@ game:player_action(0, { action = "raise", amount = 20 })
 game:player_action(1, { action = "call" })
 assert_eq(GameState.RIVER, game.state) -- still river because, sb got reraised
 game:player_action(2, { action = "call" })
+t.next_showdown_card(game)
 
 -- some player won, new round
 assert_eq(GameState.PRE_FLOP, game.state)

@@ -44,6 +44,7 @@ t.assert_eq(true, game:find_player(1).is_button)
 
 game:player_action(0, { action = "check" })
 game:player_action(1, { action = "check" })
+t.next_showdown_card(game)
 
 -- both players checked on the river the round is over
 -- we are pre flop in the next round
@@ -71,6 +72,7 @@ game:player_action(1, { action = "check" })
 
 t.assert_eq(0, game:next_to_act().client_id)
 game:player_action(0, { action = "check" })
+t.next_showdown_card(game)
 
 -- t.assert_eq("", ddnetpp.get_chat_line(0, -1))
 

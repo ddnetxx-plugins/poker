@@ -29,9 +29,10 @@ end
 ---so this helper simulates a time progress of exactly one showdown stage.
 ---@param game Poker
 local function next_showdown_card(game)
-	assert_eq(true, game.is_showdown)
+	assert(game.is_showdown == true, "tried to show next showdown card but there is no showdown")
 	local old_state = game.state
-	for _ = 1, math.ceil(game.showdown_speed * ddnetpp.server.tick_speed()) do
+	local ticks = game.ticks_till_next_showdown_card
+	for _ = 1, ticks do
 		game:on_tick()
 	end
 	if old_state == GameState.RIVER then
@@ -68,6 +69,9 @@ local function all_check_call_till_showdown_and_rig_board(game, board_str)
 	assert_eq(GameState.RIVER, game.state)
 	rig_board(game, board_str)
 	all_check(game)
+	if game.is_showdown then
+		next_showdown_card(game)
+	end
 	assert_eq(GameState.PRE_FLOP, game.state)
 end
 

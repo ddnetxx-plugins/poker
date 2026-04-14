@@ -1,9 +1,6 @@
 local assert_eq = require("simple.assert").assert_eq
+local t = require("spec.util.test_base")
 require("../src/poker")
-ddnetpp = require("spec.mock.ddnetpp")
-
-ddnetpp.chat.silent = true
-ddnetpp.verbosity = 0
 
 local game = Poker:new(nil, { x = 33, y = 30 }, 5)
 game:join_table(0) -- co
@@ -72,6 +69,7 @@ game:player_action(3, { action = "check" })
 game:player_action(4, { action = "check" })
 game:player_action(0, { action = "check" })
 game:player_action(1, { action = "check" })
+t.next_showdown_card(game)
 
 -- pre flop (button moved)
 -- before:
