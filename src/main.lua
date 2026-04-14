@@ -77,6 +77,19 @@ ddnetpp.register_rcon("poker_state", "", "show current game state as motd", func
    ddnetpp.send_motd_target(client_id, test_game:state_to_str())
 end)
 
+
+ddnetpp.register_chat("fold", "", "muck your cards in poker", function (client_id, args)
+   for _, game in pairs(games) do
+      if game:is_at_table(client_id) then
+         game:player_action(client_id, { action = "fold" })
+
+          -- no multi table support yet -.-
+         return
+      end
+   end
+   ddnetpp.send_chat_target(client_id, "You are not at any poker table")
+end)
+
 ddnetpp.register_chat("check", "", "check to next player in poker", function (client_id, args)
    for _, game in pairs(games) do
       if game:is_at_table(client_id) then
