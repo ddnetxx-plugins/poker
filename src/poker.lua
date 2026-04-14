@@ -75,6 +75,10 @@ Poker = {
 	---@type integer[]
 	community_card_snap_ids = {},
 	num_players_needed_to_start = 4,
+
+	---last aggressor during the most recent betting round
+	---@type PokerPlayer|nil
+	last_aggressor = nil,
 }
 
 function Poker:is_game_running()
@@ -623,6 +627,8 @@ function Poker:player_action(client_id, action)
 			ddnetpp.send_chat_target(client_id, "This raise made you go all in!")
 		end
 
+		self.last_aggressor = player
+
 		-- we have to call print_betting_actions()
 		-- here even tho it is called at the very end of the method too
 		-- that is because clear_all_actions_on_raise_or_bet()
@@ -814,14 +820,53 @@ function Poker:check_win_by_fold()
 	return false
 end
 
+---The player that has to show their cards first during showdown
+---and has no choice.
+---Is the most recent aggressor on the river (last to bet/raise)
+---or the player to the left of the dealer
+---@return PokerPlayer
+function Poker:find_last_aggressor_or_left_of_dealer()
+	assert(self.state == GameState.RIVER, "tried to look for last aggressor during state '" .. gamestate_to_str(self.state) .. "'")
+	if self.last_aggressor then
+		return self.last_aggressor
+	end
+	-- TODO: i feel like this code is uselessly slow
+	--       also conceptually wrong possibly
+	--       and i dont even know the rules for heads up
+	--       so this has to be checked once the unit tests are there
+	for _, player in ipairs(self:sort_players_by_position()) do
+		if player.position.offset ~= ButtonOffset.BUTTON then
+			return player
+		end
+	end
+	assert(false, "failed to find last aggressor or player on the left of the dealer")
+end
+
+-- On showdown pick the first player that has
+-- to reveal their cards
+-- after that players clockwise have the decision
+-- to also show their cards or muck them
+function Poker:show_first_hand()
+	local first = self:find_last_aggressor_or_left_of_dealer()
+	-- TODO: add concept of showing cards
+	--       later there might also be a concept of lifiting cards
+	--       to show which cards formed a hand
+	--       or coloring cards
+	--       maybe its better to use tables instead of strings
+	--       to represent cards so we can store all that state
+end
+
 function Poker:next_state()
 	self:clear_player_actions()
 
 	if self.state == GameState.PRE_FLOP then
+		self.last_aggressor = nil
 		self:flop()
 	elseif self.state == GameState.FLOP then
+		self.last_aggressor = nil
 		self:turn()
 	elseif self.state == GameState.TURN then
+		self.last_aggressor = nil
 		self:river()
 	elseif self.state == GameState.RIVER then
 		if not self.is_showdown then

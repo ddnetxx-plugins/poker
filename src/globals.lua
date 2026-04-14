@@ -33,6 +33,9 @@ GameState = {
 	FLOP = 2,
 	TURN = 3,
 	RIVER = 4,
+	-- here players can choose to show
+	-- or muck their cards
+	SHOWDOWN = 5,
 }
 
 function gamestate_to_str(state)
@@ -50,6 +53,8 @@ function gamestate_to_str(state)
 		return "TURN"
 	elseif state == GameState.RIVER then
 		return "RIVER"
+	elseif state == GameState.SHOWDOWN then
+		return "SHOWDOWN"
 	end
 	return "(unknown)"
 end
