@@ -14,6 +14,28 @@ as unicode strings using nameplates like 🃙🃚. The controls are chat command
 
 ![poker preview](https://raw.githubusercontent.com/DDNetPP/cdn/refs/heads/master/poker.png)
 
+## installation
+
+```
+# download and build ddnet++ with lua support
+git clone git@github.com:DDNetPP/DDNetPP.git --recursive
+cd DDNetPP
+mkdir build
+cd build
+cmake .. -DLUA=ON
+make
+
+# download the plugin
+mkdir plugins
+cd plugins
+git clone git@github.com:ddnetxx-plugins/poker.git
+
+# run the server
+./DDNetPP
+
+# now type /poker into the chat
+```
+
 ## tests
 
 ```
