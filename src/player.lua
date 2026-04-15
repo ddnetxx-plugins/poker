@@ -27,6 +27,11 @@ PokerPlayer = {
 	seat = nil,
 	---@type PokerHand|nil # The best hand this player has
 	hand = nil,
+	-- if someone called /time on this player
+	-- this value will be above 0 which means a timer is running
+	-- if it hits zero the player will be folded
+	-- and zero also means no timer is running
+	clock_ticks = 0,
 }
 
 function PokerPlayer:new(client_id)

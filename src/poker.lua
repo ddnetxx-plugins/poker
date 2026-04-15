@@ -16,6 +16,7 @@ require(script_path() .. "player")
 ---|"'raise'"
 ---|"'fold'" # fold when facing a raise or also used as showdown muck
 ---|"'show'" # reveal cards during showdown
+---|"'time'" # calling time/clock on the player who has to act if you are impatient
 
 ---@class PlayerAction
 ---@field action ActionName
@@ -415,6 +416,7 @@ function Poker:new_round()
 		if player.chips > 0 then
 			player.hole_cards = self:deal_hole_cards()
 		end
+		player.clock_ticks = 0
 		player.action = nil
 		player.prev_actions = {}
 		player.chips_paid_into_pot = 0
@@ -478,6 +480,7 @@ function Poker:clear_player_actions()
 	for _, player in pairs(self.players) do
 		player.action = nil
 		player.prev_actions = {}
+		player.clock_ticks = 0
 	end
 end
 
@@ -553,7 +556,7 @@ function Poker:player_action(client_id, action)
 		ddnetpp.send_chat_target(client_id, "Please wait until the showdown is over")
 		return
 	end
-	if player.action ~= nil then
+	if player.action ~= nil and action.action ~= "time" then
 		-- Premoves can still be changed
 		-- as soon as it was announced it can not be changed anymore
 		if player.action.announced then
@@ -572,7 +575,30 @@ function Poker:player_action(client_id, action)
 		return
 	end
 	local next = self:next_to_act()
-	if next == nil or next.client_id ~= client_id then
+	if next == nil then
+		ddnetpp.send_chat_target(client_id, "It is not your turn yet, please wait")
+		return
+	end
+
+	if action.action == "time" then
+		if next.client_id == client_id then
+			ddnetpp.send_chat_target(client_id, "You can not call the clock on your self! Just do something -.-")
+		else
+			-- TODO: do not allow to instantly call time there has to be some delay
+
+			local seconds = 60
+			self:send_chat(
+				"'" .. ddnetpp.server.client_name(client_id) .. "'" ..
+				" called the clock!" ..
+				" Now '" .. ddnetpp.server.client_name(next.client_id) .. "' has " .. seconds ..
+				" seconds to act."
+			)
+			next.clock_ticks = ddnetpp.server.tick_speed() * seconds
+		end
+		return
+	end
+
+	if next.client_id ~= client_id then
 		ddnetpp.send_chat_target(client_id, "It is not your turn yet, please wait")
 		return
 	end
@@ -590,6 +616,7 @@ function Poker:player_action(client_id, action)
 			return
 		end
 
+		player.clock_ticks = 0
 		self:compute_next_to_act()
 		self:check_next_state()
 		return
@@ -694,6 +721,7 @@ function Poker:player_action(client_id, action)
 		assert(false, "Invalid betting action")
 	end
 
+	player.clock_ticks = 0
 	self:print_betting_actions()
 	if not self:check_win_by_fold() then
 		-- checking can never cause a dramatic showdown
@@ -1400,6 +1428,15 @@ function Poker:force_fold_players()
 	end
 	if #player.hole_cards < 1 then
 		return
+	end
+
+	if player.clock_ticks > 0 then
+		player.clock_ticks = player.clock_ticks - 1
+		if player.clock_ticks == 0 then
+			self:send_chat("'" .. ddnetpp.server.client_name(player.client_id) .. "' was force folded by clock")
+			self:player_action(player.client_id, { action = "fold" })
+			return
+		end
 	end
 
 	local tw_player = ddnetpp.get_player(player.client_id)
