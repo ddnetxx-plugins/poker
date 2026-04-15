@@ -31,6 +31,7 @@ cd plugins
 git clone git@github.com:ddnetxx-plugins/poker.git
 
 # run the server
+cd ..
 ./DDNetPP
 
 # now type /poker into the chat
