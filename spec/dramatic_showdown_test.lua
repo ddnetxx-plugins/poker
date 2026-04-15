@@ -34,8 +34,9 @@ t.assert_eq(false, game.is_showdown)
 
 t.assert_eq(3, game:next_to_act().client_id)
 game:player_action(3, { action = "call" }) -- bb call
-t.assert_eq("'mock3' called", ddnetpp.get_chat_line(3, -2))
-t.assert_eq("'mock2' showed 🂵🃅", ddnetpp.get_chat_line(3, -1))
+t.assert_eq("'mock3' called", ddnetpp.get_chat_line(3, -3))
+t.assert_eq("'mock2' showed 🂵🃅", ddnetpp.get_chat_line(3, -2))
+t.assert_eq("'mock3' showed 🃋🃛", ddnetpp.get_chat_line(3, -1))
 
 t.assert_eq(true, game.is_showdown)
 

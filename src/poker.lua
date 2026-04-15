@@ -129,7 +129,7 @@ function Poker:check_showdown()
 		self.ticks_till_next_showdown_card = math.ceil(self.showdown_speed * ddnetpp.server.tick_speed())
 		self.next_to_act_offset = nil
 		for _, player in ipairs(self.players) do
-			if player.chips < 1 and player.show_cards == false and #player.hole_cards > 0 then
+			if player.show_cards == false and #player.hole_cards > 0 then
 				self:show_player_cards(player)
 			end
 		end
@@ -1553,6 +1553,17 @@ function Poker:players_with_chips()
 	local players = {}
 	for _, player in ipairs(self.players) do
 		if player.chips > 0 then
+			table.insert(players, player)
+		end
+	end
+	return players
+end
+
+---@return PokerPlayer[] players
+function Poker:players_with_cards()
+	local players = {}
+	for _, player in ipairs(self.players) do
+		if #player.hole_cards > 0 then
 			table.insert(players, player)
 		end
 	end
