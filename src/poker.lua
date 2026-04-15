@@ -1383,6 +1383,35 @@ function Poker:render_broadcast_hud()
 	end
 end
 
+-- there are two scenarios where players get force folded:
+-- - them being full afk then they get folded instantly
+-- - if someone called /time on them and the timer expired
+function Poker:force_fold_players()
+	-- TODO: check a bit state here
+	--       during which states do we even fold?
+
+	if self.is_showdown then
+		return
+	end
+
+	local player = self:next_to_act()
+	if not player then
+		return
+	end
+	if #player.hole_cards < 1 then
+		return
+	end
+
+	local tw_player = ddnetpp.get_player(player.client_id)
+	-- TODO: nil check?
+	if tw_player:is_afk() then
+		self:send_chat("'" .. tw_player:name() .. "' was force folded due to being afk")
+		self:player_action(player.client_id, { action = "fold" })
+	end
+
+	-- TODO: also implement /time here
+end
+
 function Poker:on_tick()
 	if ddnetpp.server.tick() % 10 == 0 then
 		self:render_broadcast_hud()
@@ -1409,6 +1438,7 @@ function Poker:on_tick()
 		end
 	end
 
+	self:force_fold_players()
 	self:print_betting_actions()
 end
 
