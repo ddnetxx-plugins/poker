@@ -30,7 +30,7 @@ game:player_action(1, { action = "raise", amount = 6 })
 assert_eq("You do not have that many chips!", ddnetpp.get_chat_line(1, -1))
 
 game:player_action(1, { action = "raise", amount = 2 })
-assert_eq("'mock1' did a raise", ddnetpp.get_chat_line(1, -1))
+assert_eq("'mock1' raised by 2 chips", ddnetpp.get_chat_line(1, -1))
 assert_eq(3, game:find_player(1).chips)
 
 -- fold the blinds

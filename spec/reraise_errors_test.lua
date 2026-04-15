@@ -33,7 +33,7 @@ game:player_action(1, { action = "check"  })
 t.assert_eq("You can not check. You need to pay at least 10 chips to call.", ddnetpp.get_chat_line(1, -1))
 
 game:player_action(1, { action = "call"  })
-t.assert_eq("'mock1' did a call", ddnetpp.get_chat_line(1, -1))
+t.assert_eq("'mock1' called", ddnetpp.get_chat_line(1, -1))
 
 -- the call put the player all in
 t.assert_eq(0, game:find_player(1).chips)

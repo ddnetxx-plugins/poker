@@ -1246,6 +1246,24 @@ function Poker:sort_players_by_position()
 	return players
 end
 
+---@param name string # Name of the player that did the action
+---@param action PlayerAction # The betting action that was performed
+---@return string message # Message that announces the message which can be shown in chat
+function Poker:action_to_message(name, action)
+	if action.action == "check" then
+		return "'" .. name .. "' checked"
+	elseif action.action == "raise" or action.action == "bet" then
+		return "'" .. name .. "' raised by " .. action.amount .. " chips"
+	elseif action.action == "call" then
+		return "'" .. name .. "' called"
+	elseif action.action == "fold" then
+		return "'" .. name .. "' folded"
+	elseif action.action == "show" then
+		return "'" .. name .. "' showed their cards"
+	end
+	return "'" .. name .. "' did a " .. action.action
+end
+
 function Poker:print_betting_actions()
 	-- print all betting actions only once in order until there is a gap
 	-- this ensures premoves get announced as soon as possible
@@ -1273,9 +1291,7 @@ function Poker:print_betting_actions()
 
 			local tw_player = ddnetpp.get_player(player.client_id)
 			if tw_player then
-				self:send_chat(
-					"'" .. tw_player:name() .. "' did a " .. player.action.action
-				)
+				self:send_chat(self:action_to_message(tw_player:name(), player.action))
 			end
 			player.action.announced = true
 		end

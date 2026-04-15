@@ -42,8 +42,8 @@ game:player_action(1, { action = "call" })
 -- premove failed so try again
 game:player_action(0, { action = "check" })
 
-t.assert_eq("'mock1' did a call", ddnetpp.get_chat_line(1, -3))
-t.assert_eq("'mock0' did a check", ddnetpp.get_chat_line(1, -2))
+t.assert_eq("'mock1' called", ddnetpp.get_chat_line(1, -3))
+t.assert_eq("'mock0' checked", ddnetpp.get_chat_line(1, -2))
 t.assert_eq("next round!", ddnetpp.get_chat_line(1, -1))
 
 -- flop

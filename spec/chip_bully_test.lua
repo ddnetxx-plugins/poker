@@ -37,7 +37,7 @@ t.assert_eq(2, #game:find_player(3).hole_cards)
 
 game:player_action(0, { action = "call" })
 t.assert_eq("This call made you go all in!", ddnetpp.get_chat_line(0, -2))
-t.assert_eq("'mock0' did a call", ddnetpp.get_chat_line(0, -1))
+t.assert_eq("'mock0' called", ddnetpp.get_chat_line(0, -1))
 t.assert_eq(0, game:find_player(0).chips)
 t.assert_eq(2, #game:find_player(0).hole_cards)
 
