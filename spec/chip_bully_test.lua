@@ -66,7 +66,7 @@ game:next_state()
 t.assert_eq("'mock0' won with best hand four of a kind (quad fours)", ddnetpp.get_chat_line(0, -1))
 t.assert_eq(GameState.PRE_FLOP, game.state)
 
--- here is what happend we have one
+-- here is what happened we have one
 -- chip bully who raised with a size that covers everyone
 -- 2 players called and went all in
 -- one of them won the pot
