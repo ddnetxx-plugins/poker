@@ -1298,7 +1298,50 @@ function Poker:print_betting_actions()
 	end
 end
 
-function Poker:render_broadcast_hud()
+---@param player PokerPlayer # player that will receive this hud string
+---@return string broadcast_hud_line
+function Poker:hud_offer_player_action(player)
+	if self.state == GameState.SHOWDOWN then
+		return "you can /fold or /show your cards"
+	end
+	local diff = self.pot_per_player - player.chips_paid_into_pot
+	if diff == 0 then
+		return "you can /check or /raise"
+	else
+		return "you can /fold, /call or /raise (" .. diff .. " to call)"
+	end
+end
+
+---@param player PokerPlayer # player that will receive this hud string
+---@return string broadcast_hud_line
+function Poker:hud_prev_player_action(player)
+	if player.action.action == "check" then
+		return "You checked"
+	elseif player.action.action == "raise" then
+		return "You raised by " .. player.action.amount
+	end
+	return "Your last action was a " .. player.action.action
+end
+
+---@param player PokerPlayer # player that will receive this hud string
+---@return string broadcast_hud_lines
+function Poker:build_player_hud(player)
+	local hud = "your stack: " .. player.chips .. "\n" ..
+		"paid into pod: " .. player.chips_paid_into_pot .. "\n"
+	if player.action == nil then
+		hud = hud .. self:hud_offer_player_action(player)
+	else
+		hud = hud .. self:hud_prev_player_action(player)
+	end
+	return hud
+end
+
+---This will be shown as broadcast to all players
+---the first part of the broadcast is generic
+---and the same for all players this part is generated
+---by this method
+---@return string base_hud_message
+function Poker:build_base_hud()
 	local players_w_cards = 0
 	for _, player in pairs(self.players) do
 		if #player.hole_cards > 0 then
@@ -1322,13 +1365,17 @@ function Poker:render_broadcast_hud()
 	elseif self.state == GameState.WAITING_FOR_PLAYERS then
 		hud = "waiting for players ... (" .. self:num_players_with_chips() .. " out of " .. self.num_players_needed_to_start .. ")\n"
 	end
+	return hud
+end
 
+function Poker:render_broadcast_hud()
+	local hud = self:build_base_hud()
 	local align_left =
 		"                                                   " ..
 		"                                                   " ..
 		"                                                   "
 	for _, player in pairs(self.players) do
-		local player_hud = "your chips: " .. player.chips
+		local player_hud = self:build_player_hud(player)
 		ddnetpp.send_broadcast_target(
 			player.client_id,
 			hud .. player_hud .. align_left
