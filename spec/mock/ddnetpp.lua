@@ -17,6 +17,7 @@ local protocol = {
 local ddnetpp = {
 	strict_occupy = false,
 	verbosity = 1,
+	players = {},
 	chat = {
 		silent = false,
 		---@type string[]
@@ -170,13 +171,19 @@ function ddnetpp.send_broadcast_target(client_id, message)
 end
 
 Player = {}
+Player.__index = Player
 
 function Player:new(client_id)
 	local o = {}
 	setmetatable(o, self)
-	self.__index = self
-	self.client_id = client_id
+	o.__index = self
+	o.client_id = client_id
+	o._is_afk = false
 	return o
+end
+
+for i = 0, 127 do
+	ddnetpp.players[i] = Player:new(i)
 end
 
 function Player:name()
@@ -185,6 +192,16 @@ end
 
 function Player:money()
 	return 9000000
+end
+
+---@param afk boolean
+function Player:set_afk(afk)
+	self._is_afk = afk
+end
+
+---@return boolean afk
+function Player:is_afk()
+	return self._is_afk
 end
 
 ---@param money integer
@@ -211,7 +228,7 @@ function ddnetpp.get_character(client_id)
 end
 
 function ddnetpp.get_player(client_id)
-	return Player:new(client_id)
+	return ddnetpp.players[client_id]
 end
 
 function ddnetpp.secure_rand_below(max)
