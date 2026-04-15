@@ -1361,6 +1361,10 @@ function Poker:build_player_hud(player)
 	else
 		hud = hud .. self:hud_prev_player_action(player)
 	end
+	if player.clock_ticks > 0 then
+		local seconds = player.clock_ticks / ddnetpp.server.tick_speed()
+		hud = hud .. "\nFORCED FOLD IN " .. seconds .. " SECONDS!"
+	end
 	return hud
 end
 
