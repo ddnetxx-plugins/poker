@@ -95,6 +95,13 @@ Poker = {
 	-- local time = (ddnetpp.server.tick() - self.last_action_tick) / ddnetpp.server.tick_speed()
 	-- ```
 	last_action_tick = 0,
+
+	-- if this value is above 0
+	-- it means we are in GameState.END
+	-- and the counter is going down
+	-- until it reaches 0 which will clear the table
+	-- kick everybody out and wait for new players to buy in
+	ticks_till_new_game = 0,
 }
 Poker.__index = Poker
 
@@ -876,6 +883,7 @@ function Poker:check_win_game()
 		"won the entire game! And collected " .. self.prize_money .. " in prize money!"
 	)
 	self.state = GameState.END
+	self.ticks_till_new_game = ddnetpp.server.tick_speed() * 120
 
 	local player = ddnetpp.get_player(winner.client_id)
 	if player then
@@ -1447,6 +1455,10 @@ function Poker:build_base_hud()
 		hud = "ERROR something went wrong\n"
 	elseif self.state == GameState.END then
 		hud = "game over!\n"
+		local seconds = self.ticks_till_new_game / ddnetpp.server.tick_speed()
+		if seconds < 60 then
+			hud = hud .. "table will close in " .. seconds .. " seconds\n"
+		end
 	elseif self.state == GameState.WAITING_FOR_PLAYERS then
 		hud = "waiting for players ... (" .. self:num_players_with_chips() .. " out of " .. self.num_players_needed_to_start .. ")\n"
 	end
@@ -1506,6 +1518,16 @@ function Poker:force_fold_players()
 	-- TODO: also implement /time here
 end
 
+function Poker:leave_all_players()
+	local ids = {}
+	for _, player in ipairs(self.players) do
+		table.insert(ids, player.client_id)
+	end
+	for _, cid in ipairs(ids) do
+		self:leave_table(cid)
+	end
+end
+
 function Poker:on_tick()
 	if ddnetpp.server.tick() % 10 == 0 then
 		self:render_broadcast_hud()
@@ -1514,6 +1536,18 @@ function Poker:on_tick()
 		return
 	end
 	if self.state == GameState.END then
+		if self.ticks_till_new_game > 0 then
+			self.ticks_till_new_game = self.ticks_till_new_game - 1
+		end
+		if self.ticks_till_new_game < 1 then
+			self:leave_all_players()
+			self.state = GameState.WAITING_FOR_PLAYERS
+			self.community_cards = {}
+			self.pot = 0
+			self.prize_money = 0
+			self.pot_per_player = 0
+			ddnetpp.log_info("poker game over new buy in possible")
+		end
 		return
 	end
 	if self.state == GameState.WAITING_FOR_PLAYERS then
@@ -1798,8 +1832,10 @@ function Poker:leave_table(client_id)
 		self:send_chat(
 			"'" .. ddnetpp.server.client_name(client_id) .. "' left the table"
 		)
-		-- if someone rage quits it might cause a win
-		-- by implicitly folding
-		self:check_win_by_fold()
+		if self.state ~= GameState.ERROR and self.state ~= GameState.WAITING_FOR_PLAYERS then
+			-- if someone rage quits it might cause a win
+			-- by implicitly folding
+			self:check_win_by_fold()
+		end
 	end
 end
