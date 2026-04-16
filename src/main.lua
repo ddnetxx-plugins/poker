@@ -14,7 +14,8 @@ local main_game = Poker:new(
 )
 
 function ddnetpp.on_init()
-	-- TODO: allocate snap ids here but do not start round yet
+	-- TODO: when do they get freed?
+	main_game:allocate_snap_ids()
 end
 
 function ddnetpp.on_snap(snapping_client)

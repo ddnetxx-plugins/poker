@@ -448,17 +448,18 @@ function Poker:new_round()
 	self.last_action_tick = ddnetpp.server.tick()
 end
 
+-- TODO: remove this method?
 function Poker:new_game()
 	assert(self.state == GameState.WAITING_FOR_PLAYERS, "tried to start game but was already in state '" .. gamestate_to_str(self.state) .. "'")
-	self:new_round()
+
+	-- TODO: do not allocate here
+	self:allocate_snap_ids()
 
 	math.randomseed(ddnetpp.secure_rand_below(666999))
+	self:new_round()
+end
 
-
-	-- TODO: we allocate ids here in new_game() should that maybe happen less often?
-	--       like in the constructor?
-	--       also we have to make sure end_game() is called so these get freed
-
+function Poker:allocate_snap_ids()
 	if #self.community_card_snap_ids == 0 then
 		for _ = 1, 5, 1 do
 			local free_id = self:find_and_occupy_free_client_id()
@@ -474,16 +475,12 @@ function Poker:new_game()
 	self.button_snap_id = ddnetpp.snap.new_id()
 end
 
-function Poker:end_game()
-	self.state = GameState.END
+function Poker:free_snap_ids()
 	for _, occupied_id in ipairs(self.community_card_snap_ids) do
 		ddnetpp.server.free_occupied_client_id(occupied_id)
 	end
 	ddnetpp.snap.free_id(self.next_to_act_snap_id)
 	ddnetpp.snap.free_id(self.button_snap_id)
-	for _, player in pairs(self.players) do
-		self:leave_table(player.client_id)
-	end
 end
 
 ---@return string[] hole_cards # Table with two cards at index 1 and 2
