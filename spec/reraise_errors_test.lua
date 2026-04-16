@@ -24,7 +24,7 @@ game:player_action(0, { action = "raise", amount = 10 })
 -- so raising to 5 while facing a bet of 10
 -- is 15 which is more than the balance of this player
 game:player_action(1, { action = "raise", amount = 5 })
-t.assert_eq("You do not have that many chips!", ddnetpp.get_chat_line(1, -1))
+t.assert_eq("You do not have that many chips! You could do /allin", ddnetpp.get_chat_line(1, -1))
 
 game:player_action(1, { action = "raise", amount = 0 })
 t.assert_eq("bruder was", ddnetpp.get_chat_line(1, -1))

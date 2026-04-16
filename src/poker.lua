@@ -688,8 +688,7 @@ function Poker:player_action(client_id, action)
 		-- so raise amount is on top of the call amount
 
 		if action.amount + diff > player.chips then
-			-- TODO: offer a /allin command here
-			ddnetpp.send_chat_target(client_id, "You do not have that many chips!")
+			ddnetpp.send_chat_target(client_id, "You do not have that many chips! You could do /allin")
 			return
 		end
 		-- TODO: min bet size should be higher than 1
