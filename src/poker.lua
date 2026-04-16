@@ -92,7 +92,7 @@ Poker = {
 	-- if you want to get this players current thinking time
 	-- in seconds it can be done like this:
 	-- ```lua
-	-- local time = (ddnet.server.tick() - self.last_action_tick) / ddnet.server.tick_speed()
+	-- local time = (ddnetpp.server.tick() - self.last_action_tick) / ddnetpp.server.tick_speed()
 	-- ```
 	last_action_tick = 0,
 }
@@ -596,7 +596,18 @@ function Poker:player_action(client_id, action)
 		if next.client_id == client_id then
 			ddnetpp.send_chat_target(client_id, "You can not call the clock on your self! Just do something -.-")
 		else
-			-- TODO: do not allow to instantly call time there has to be some delay
+			local tank_time = (ddnetpp.server.tick() - self.last_action_tick) / ddnetpp.server.tick_speed()
+			-- we could make this more complex
+			-- allowing for less time preflop
+			-- and allowing for more time if the pot is big
+			if tank_time < 10 then
+				ddnetpp.send_chat_target(
+					client_id,
+					"It is '" .. ddnetpp.server.client_name(next.client_id) .. "'s turn since " ..
+					tank_time .. " seconds. You can not call the clock yet"
+				)
+				return
+			end
 
 			local seconds = 60
 			self:send_chat(

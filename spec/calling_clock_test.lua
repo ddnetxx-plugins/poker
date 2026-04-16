@@ -15,6 +15,12 @@ t.assert_eq(1, game:next_to_act().client_id)
 
 -- literally no time passed but cid 0 is already impatient and calls the clock xd
 game:player_action(0, { action = "time" })
+t.assert_eq("It is 'mock1's turn since 0.0 seconds. You can not call the clock yet", ddnetpp.get_chat_line(0, -1))
+
+-- one minute later
+t.fake_server_ticks(game, ddnetpp.server.tick_speed() * 60)
+
+game:player_action(0, { action = "time" })
 t.assert_eq("'mock0' called the clock! Now 'mock1' has 60 seconds to act.", ddnetpp.get_chat_line(0, -1))
 
 -- it is still mock1's turn
