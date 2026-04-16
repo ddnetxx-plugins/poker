@@ -452,9 +452,6 @@ end
 function Poker:new_game()
 	assert(self.state == GameState.WAITING_FOR_PLAYERS, "tried to start game but was already in state '" .. gamestate_to_str(self.state) .. "'")
 
-	-- TODO: do not allocate here
-	self:allocate_snap_ids()
-
 	math.randomseed(ddnetpp.secure_rand_below(666999))
 	self:new_round()
 end
@@ -475,6 +472,7 @@ function Poker:allocate_snap_ids()
 	self.button_snap_id = ddnetpp.snap.new_id()
 end
 
+-- FIXME: this is never called
 function Poker:free_snap_ids()
 	for _, occupied_id in ipairs(self.community_card_snap_ids) do
 		ddnetpp.server.free_occupied_client_id(occupied_id)
@@ -490,7 +488,6 @@ function Poker:deal_hole_cards()
 	table.insert(cards, table.remove(self.deck, 1))
 	return cards
 end
-
 
 function Poker:clear_player_actions()
 	for _, player in pairs(self.players) do
