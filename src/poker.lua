@@ -85,6 +85,16 @@ Poker = {
 	---last aggressor during the most recent betting round
 	---@type PokerPlayer|nil
 	last_aggressor = nil,
+
+	-- the server tick when the last player action was performed
+	-- this value can be used to determine how slow the players act
+	-- the player that currently has to act is self:next_to_act()
+	-- if you want to get this players current thinking time
+	-- in seconds it can be done like this:
+	-- ```lua
+	-- local time = (ddnet.server.tick() - self.last_action_tick) / ddnet.server.tick_speed()
+	-- ```
+	last_action_tick = 0,
 }
 Poker.__index = Poker
 
@@ -428,6 +438,7 @@ function Poker:new_round()
 
 	self:place_blinds()
 	self.next_to_act_offset = self:first_offset_to_act()
+	self.last_action_tick = ddnetpp.server.tick()
 end
 
 function Poker:new_game()
@@ -1007,6 +1018,9 @@ function Poker:compute_next_to_act()
 	if self.state == GameState.SHOWDOWN then
 		for _, player in ipairs(self.players) do
 			if player.action == nil and player.show_cards == false and #player.hole_cards then
+				if self.next_to_act_offset ~= player.position.offset then
+					self.last_action_tick = ddnetpp.server.tick()
+				end
 				self.next_to_act_offset = player.position.offset
 				return
 				-- else
@@ -1025,6 +1039,7 @@ function Poker:compute_next_to_act()
 		return
 	end
 
+	self.last_action_tick = ddnetpp.server.tick()
 	local num_players = self:num_players()
 
 	if num_players == 2 then

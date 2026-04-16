@@ -15,6 +15,8 @@ local function fake_server_ticks(game, amount)
 			game:on_snap(client_id)
 		end
 		game:on_tick()
+		-- FIXME: this breaks!
+		-- ddnetpp.ticks_passed = ddnetpp.ticks_passed + 1
 	end
 end
 
