@@ -958,6 +958,9 @@ function Poker:show_first_hand()
 			self:show_player_cards(player)
 		end
 	end
+
+	self.next_to_act_offset = first.position.offset
+	self:compute_next_to_act()
 end
 
 function Poker:next_state()
@@ -974,7 +977,6 @@ function Poker:next_state()
 		self:river()
 	elseif self.state == GameState.RIVER then
 		self.state = GameState.SHOWDOWN
-
 		if self.is_showdown then
 			-- if the board is running already
 			-- because there were enough "all ins"
@@ -983,11 +985,7 @@ function Poker:next_state()
 			self.next_to_act_offset = nil
 			return
 		end
-
-		-- TODO: this part is not really implemented fully and correctly yet
 		self:show_first_hand()
-		self.next_to_act_offset = ButtonOffset.BUTTON
-
 	elseif self.state == GameState.SHOWDOWN then
 		if not self.is_showdown then
 			-- if it check/calls till the end
@@ -1033,11 +1031,11 @@ function Poker:compute_next_to_act()
 				end
 				self.next_to_act_offset = player.position.offset
 				return
-				-- else
-				-- 	print("skipping cid=" .. player.client_id)
-				-- 	print("  action=" .. tostring(player.action))
-				-- 	print("  cards_shown=" .. tostring(player.show_cards))
-				-- 	print("  cards=" .. #player.hole_cards)
+			-- else
+			-- 	print("skipping cid=" .. player.client_id)
+			-- 	print("  action=" .. tostring(player.action))
+			-- 	print("  cards_shown=" .. tostring(player.show_cards))
+			-- 	print("  cards=" .. #player.hole_cards)
 			end
 		end
 		self.next_to_act_offset = nil

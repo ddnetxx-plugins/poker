@@ -41,14 +41,14 @@ t.assert_eq(GameState.RIVER, game.state)
 t.all_check(game)
 t.assert_eq(GameState.SHOWDOWN, game.state)
 
-t.assert_eq(1, game:next_to_act().client_id)
+t.assert_eq(3, game:next_to_act().client_id)
 
 t.assert_eq([[your stack: 49890
 paid into pot: 110
-you can /fold or /show your cards]], game:build_player_hud(game:find_player(1)))
+you can /fold or /show your cards]], game:build_player_hud(game:find_player(3)))
 
-game:player_action(1, { action = "fold" })
+game:player_action(3, { action = "fold" })
 
 t.assert_eq([[your stack: 49890
 paid into pot: 110
-Your last action was a fold]], game:build_player_hud(game:find_player(1)))
+Your last action was a fold]], game:build_player_hud(game:find_player(3)))
