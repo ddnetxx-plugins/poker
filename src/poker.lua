@@ -86,6 +86,7 @@ Poker = {
 	---@type PokerPlayer|nil
 	last_aggressor = nil,
 }
+Poker.__index = Poker
 
 function Poker:is_game_running()
 	return self.state >= GameState.PRE_FLOP
