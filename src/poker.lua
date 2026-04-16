@@ -472,7 +472,7 @@ function Poker:allocate_snap_ids()
 	self.button_snap_id = ddnetpp.snap.new_id()
 end
 
--- FIXME: this is never called
+-- TODO: this is never called
 function Poker:free_snap_ids()
 	for _, occupied_id in ipairs(self.community_card_snap_ids) do
 		ddnetpp.server.free_occupied_client_id(occupied_id)
