@@ -1022,9 +1022,8 @@ function Poker:compute_next_to_act()
 	local prev = self:next_to_act()
 	assert(prev ~= nil, "tried to compute next to act but betting round was already over")
 
-	-- TODO: this is the wrong order i just wanted some code that works first
 	if self.state == GameState.SHOWDOWN then
-		for _, player in ipairs(self:sort_players_by_position()) do
+		for _, player in ipairs(self:sort_players_by_position_shift_to_offset(prev.position.offset)) do
 			if player.action == nil and player.show_cards == false and #player.hole_cards then
 				if self.next_to_act_offset ~= player.position.offset then
 					self.last_action_tick = ddnetpp.server.tick()
@@ -1295,6 +1294,36 @@ function Poker:sort_players_by_position()
 		table.insert(players, player)
 	end
 
+	return players
+end
+
+---Sort the players by position relative to the button.
+---And then shift/rotate the array so the first element is the offset provided
+---as argument.
+---So if you provide ButtonOffset.SMALL_BLIND as argument
+---the first element in the returned array will be the player
+---that is the small blind and the second element will be the big blind.
+---@param button_offset integer # Offset to rotate to the front of the array
+---@return PokerPlayer[] players
+function Poker:sort_players_by_position_shift_to_offset(button_offset)
+	---@type PokerPlayer[]
+	local players = {}
+	local players_sorted = self:sort_players_by_position()
+	local found_first = false
+	for _, player in pairs(players_sorted) do
+		if player.position.offset == button_offset then
+			found_first = true
+		end
+		if found_first then
+			table.insert(players, player)
+		end
+	end
+	for _, player in pairs(players_sorted) do
+		if player.position.offset == button_offset then
+			break
+		end
+		table.insert(players, player)
+	end
 	return players
 end
 

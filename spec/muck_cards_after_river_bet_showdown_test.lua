@@ -30,31 +30,31 @@ t.assert_eq(GameState.TURN, game.state)
 t.all_check(game)
 t.assert_eq(GameState.RIVER, game.state)
 t.rig_board(game, "🂤🂴🃄🃔🃕")
+
+game:player_action(2, { action = "check" })
+game:player_action(3, { action = "check" })
+game:player_action(0, { action = "raise", amount = 2 }) -- utg/co bets all others call
 t.all_check(game)
+
 t.assert_eq(false, game.is_showdown)
 t.assert_eq(GameState.SHOWDOWN, game.state)
 
--- FIXME: all of this code is a copy expcept this fixme
---        let one player bet and assert that the last agressor
---        has to show cards first
-
--- the first player that is forced to show is client id 2
--- because cid 2 is the small blind
--- there was no last aggressor because all checked
--- so we just go clockwise starting with the player next to the button
-t.assert_eq("'mock2' showed 🂵🃅", ddnetpp.get_chat_line(1, -1))
-
-t.assert_eq(3, game:next_to_act().client_id)
-game:player_action(3, { action = "show" })
-t.assert_eq("'mock3' showed 🃋🃛", ddnetpp.get_chat_line(3, -1))
-
-t.assert_eq(0, game:next_to_act().client_id)
-game:player_action(0, { action = "show" })
-t.assert_eq("'mock0' showed 🂡🂮", ddnetpp.get_chat_line(0, -1))
+-- the last and only aggressor was client id 0 with the bet from utg/co
+-- so mock0 cards will be shown automatically on the showdown
+-- then we give the other players clock wise the option to show or muck
+t.assert_eq("'mock0' showed 🂡🂮", ddnetpp.get_chat_line(1, -1))
 
 t.assert_eq(1, game:next_to_act().client_id)
 game:player_action(1, { action = "show" })
-t.assert_eq("'mock1' showed 🂢🂣", ddnetpp.get_chat_line(1, -2))
+t.assert_eq("'mock1' showed 🂢🂣", ddnetpp.get_chat_line(1, -1))
+
+t.assert_eq(2, game:next_to_act().client_id)
+game:player_action(2, { action = "show" })
+t.assert_eq("'mock2' showed 🂵🃅", ddnetpp.get_chat_line(0, -1))
+
+t.assert_eq(3, game:next_to_act().client_id)
+game:player_action(3, { action = "show" })
+t.assert_eq("'mock3' showed 🃋🃛", ddnetpp.get_chat_line(3, -2))
 t.assert_eq("next round!", ddnetpp.get_chat_line(3, -1))
 
 -- all players decided if they want to show or fold
