@@ -62,6 +62,21 @@ local function next_showdown_card(game)
 	end
 end
 
+---If you want to check the hud broadcast make sure to use a
+---high enough amount. Because it only gets printed every 10
+---ticks.
+---@param game Poker
+---@param amount integer # Amount of server ticks to be simulated
+local function fake_server_ticks(game, amount)
+	for _ = 1, amount do
+		for client_id = 0, 127, 1 do
+			game:on_snap(client_id)
+		end
+		game:on_tick()
+		ddnetpp.ticks_passed = ddnetpp.ticks_passed + 1
+	end
+end
+
 ---@param game Poker
 ---@param board_str string # 5 community cards as unicode string
 local function rig_board(game, board_str)
@@ -116,6 +131,7 @@ return {
 	all_check = all_check,
 	all_show = all_show,
 	next_showdown_card = next_showdown_card,
+	fake_server_ticks = fake_server_ticks,
 	all_check_call_till_showdown_and_rig_board = all_check_call_till_showdown_and_rig_board,
 	rig_board = rig_board,
 	set_hole_cards = set_hole_cards,
