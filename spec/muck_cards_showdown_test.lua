@@ -21,9 +21,6 @@ t.set_hole_cards(game, 1, "🂢🂣")
 t.set_hole_cards(game, 2, "🂵🃅")
 t.set_hole_cards(game, 3, "🃋🃛")
 
--- t.all_check_call_till_showdown_and_rig_board(game, "🂤🂴🃄🃔🃕")
-
-
 t.assert_eq(GameState.PRE_FLOP, game.state)
 t.all_check(game)
 
@@ -37,22 +34,24 @@ t.all_check(game)
 t.assert_eq(false, game.is_showdown)
 t.assert_eq(GameState.SHOWDOWN, game.state)
 
--- TODO: the order is probably wrong
-
--- the first player that is forced to show
+-- the first player that is forced to show is client id 2
+-- because cid 2 is the small blind
+-- there was no last aggressor because all checked
+-- so we just go clockwise starting with the player next to the button
 t.assert_eq("'mock2' showed 🂵🃅", ddnetpp.get_chat_line(1, -1))
 
+-- FIXME: i expected client id 3 (the big blind here)
 t.assert_eq(1, game:next_to_act().client_id)
 game:player_action(1, { action = "show" })
 t.assert_eq("'mock1' showed 🂢🂣", ddnetpp.get_chat_line(1, -1))
 
-t.assert_eq(0, game:next_to_act().client_id)
-game:player_action(0, { action = "show" })
-t.assert_eq("'mock0' showed 🂡🂮", ddnetpp.get_chat_line(0, -1))
-
 t.assert_eq(3, game:next_to_act().client_id)
 game:player_action(3, { action = "show" })
-t.assert_eq("'mock3' showed 🃋🃛", ddnetpp.get_chat_line(3, -2))
+t.assert_eq("'mock3' showed 🃋🃛", ddnetpp.get_chat_line(3, -1))
+
+t.assert_eq(0, game:next_to_act().client_id)
+game:player_action(0, { action = "show" })
+t.assert_eq("'mock0' showed 🂡🂮", ddnetpp.get_chat_line(0, -2))
 t.assert_eq("next round!", ddnetpp.get_chat_line(3, -1))
 
 -- all players decided if they want to show or fold

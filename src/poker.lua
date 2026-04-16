@@ -1026,7 +1026,7 @@ function Poker:compute_next_to_act()
 
 	-- TODO: this is the wrong order i just wanted some code that works first
 	if self.state == GameState.SHOWDOWN then
-		for _, player in ipairs(self.players) do
+		for _, player in ipairs(self:sort_players_by_position()) do
 			if player.action == nil and player.show_cards == false and #player.hole_cards then
 				if self.next_to_act_offset ~= player.position.offset then
 					self.last_action_tick = ddnetpp.server.tick()
