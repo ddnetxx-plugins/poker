@@ -33,6 +33,7 @@ PokerPlayer = {
 	-- and zero also means no timer is running
 	clock_ticks = 0,
 }
+PokerPlayer.__index = PokerPlayer
 
 function PokerPlayer:new(client_id)
 	local o = {}
