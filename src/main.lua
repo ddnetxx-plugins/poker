@@ -77,6 +77,19 @@ ddnetpp.register_rcon("poker_state", "", "show current game state as motd", func
    ddnetpp.send_motd_target(client_id, test_game:state_to_str())
 end)
 
+ddnetpp.register_rcon("poker_start", "", "force start the game when waiting for players", function (client_id, args)
+   if test_game.state == GameState.WAITING_FOR_PLAYERS then
+      if test_game:num_players() < 2 then
+         ddnetpp.log_error("need at least 2 players to start a game")
+         return
+      end
+      ddnetpp.log_info("force starting game...")
+      test_game:new_game()
+   else
+      ddnetpp.log_error("failed to force start game that is in state '" .. gamestate_to_str(test_game.state) .. "'")
+   end
+end)
+
 ddnetpp.register_chat("allin", "", "bet ALL your chips in poker", function (client_id, args)
    for _, game in pairs(games) do
       local player = game:find_player(client_id)
