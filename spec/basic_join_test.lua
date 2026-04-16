@@ -31,7 +31,7 @@ t.assert_eq(GameState.WAITING_FOR_PLAYERS, game.state)
 
 t.assert_eq([[waiting for players ... (2 out of 4)
 your stack: 50000
-paid into pod: 0
+paid into pot: 0
 you can /check or /raise]], trim(ddnetpp.get_broadcast_line(0, -1)))
 
 game:leave_table(1)
@@ -40,7 +40,7 @@ t.assert_eq(GameState.WAITING_FOR_PLAYERS, game.state)
 
 t.assert_eq([[waiting for players ... (1 out of 4)
 your stack: 50000
-paid into pod: 0
+paid into pot: 0
 you can /check or /raise]], trim(ddnetpp.get_broadcast_line(0, -1)))
 
 -- last player left the table is empty
@@ -59,7 +59,7 @@ t.fake_server_ticks(game, 20)
 
 t.assert_eq([[waiting for players ... (3 out of 4)
 your stack: 50000
-paid into pod: 0
+paid into pot: 0
 you can /check or /raise]], trim(ddnetpp.get_broadcast_line(0, -1)))
 
 -- enough players now!
@@ -70,7 +70,7 @@ t.fake_server_ticks(game, 20)
 t.assert_eq([[pot: 150
 players with cards: 4
 your stack: 50000
-paid into pod: 0
+paid into pot: 0
 you can /fold, /call or /raise (100 to call)]], trim(ddnetpp.get_broadcast_line(0, -1)))
 
 -- first rage quit preflop xd

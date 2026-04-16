@@ -1382,7 +1382,7 @@ end
 ---@return string broadcast_hud_lines
 function Poker:build_player_hud(player)
 	local hud = "your stack: " .. player.chips .. "\n" ..
-		"paid into pod: " .. player.chips_paid_into_pot .. "\n"
+		"paid into pot: " .. player.chips_paid_into_pot .. "\n"
 	if player.action == nil then
 		hud = hud .. self:hud_offer_player_action(player)
 	else
