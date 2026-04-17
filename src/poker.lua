@@ -1832,4 +1832,9 @@ function Poker:leave_table(client_id)
 			self:check_win_by_fold()
 		end
 	end
+	if self.state == GameState.ERROR or self.state == GameState.WAITING_FOR_PLAYERS then
+		local server_player = ddnetpp.get_player(client_id)
+		assert(server_player ~= nil, "player with id " .. client_id .. " tried to leave table but does not exist")
+		server_player:money_transaction(self.buy_in, "refund poker buy in")
+	end
 end

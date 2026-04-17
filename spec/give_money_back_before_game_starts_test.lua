@@ -22,4 +22,5 @@ t.assert_eq(4999990, ddnetpp.get_player(0):money())
 game:leave_table(0)
 t.fake_server_ticks(game, 20)
 
-t.assert_eq(4999990, ddnetpp.get_player(0):money())
+t.assert_eq("+10 (refund poker buy in)", ddnetpp.get_money_transaction_line(0, -1))
+t.assert_eq(5000000, ddnetpp.get_player(0):money())
