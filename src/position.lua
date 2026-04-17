@@ -63,10 +63,24 @@ local function offset_to_name(button_offset, num_players)
 end
 
 ---@param offset_name_long string # Something like "Button"
----@param string offset_name_short # Something like "BTN"
+---@return string offset_name_short # Something like "BTN"
 local function offset_long_to_short(offset_name_long)
 	if offset_name_long == "Button" then
 		return "BTN"
+	elseif offset_name_long == "Small Blind" then
+		return "SB"
+	elseif offset_name_long == "Big Blind" then
+		return "BB"
+	elseif offset_name_long == "Hijack" then
+		return "HJ"
+	elseif offset_name_long == "Lojack" then
+		return "LJ"
+	elseif offset_name_long == "Under the Gun" then
+		return "UTG"
+	elseif offset_name_long == "Cutoff" then
+		return "CO"
+	elseif string.match(offset_name_long, "^UTG%+") then
+		return string.sub(offset_name_long, 4)
 	end
 	return offset_name_long
 end

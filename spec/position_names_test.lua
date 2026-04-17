@@ -1,6 +1,16 @@
 local t = require("spec.util.test_base")
 local position = require("../src/position")
 
+t.assert_eq("BTN", position.offset_long_to_short("Button"))
+t.assert_eq("SB", position.offset_long_to_short("Small Blind"))
+t.assert_eq("BB", position.offset_long_to_short("Big Blind"))
+t.assert_eq("HJ", position.offset_long_to_short("Hijack"))
+t.assert_eq("LJ", position.offset_long_to_short("Lojack"))
+t.assert_eq("UTG", position.offset_long_to_short("Under the Gun"))
+t.assert_eq("+1", position.offset_long_to_short("UTG+1"))
+t.assert_eq("+2", position.offset_long_to_short("UTG+2"))
+t.assert_eq("CO", position.offset_long_to_short("Cutoff"))
+
 t.assert_eq("Button", position.offset_to_name(0, 2))
 t.assert_eq("Big Blind", position.offset_to_name(1, 2))
 
