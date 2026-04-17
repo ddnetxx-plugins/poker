@@ -1,6 +1,7 @@
 local simp_ass = require("simple.assert")
 local assert_eq = simp_ass.assert_eq
 local assert_ne = simp_ass.assert_ne
+local assert_str_match = simp_ass.assert_str_match
 
 ddnetpp = require("spec.mock.ddnetpp")
 
@@ -127,6 +128,7 @@ end
 return {
 	assert_eq = assert_eq,
 	assert_ne = assert_ne,
+	assert_str_match = assert_str_match,
 
 	all_check = all_check,
 	all_show = all_show,

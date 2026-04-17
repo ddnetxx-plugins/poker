@@ -105,6 +105,32 @@ Poker = {
 }
 Poker.__index = Poker
 
+---Similar to lua's native assert() but it will refund all buy ins
+---before we crash the plugin. This should be used instead of assert() at all times
+---to avoid players losing money because of a programming error.
+---
+---@param condition boolean # True for success and crash the plugin if it is false
+---@param message string # Error message to display in case of error
+function Poker:assert(condition, message)
+	if condition then
+		return
+	end
+
+	-- i am a bit scared of recursion here
+	-- if we hit an assert in leave_all_players() we are cooked xd
+	-- so lets try to catch that case with the following if statement
+	if self.state == GameState.ERROR then
+		ddnetpp.log_error("ASSERT RECURSION HIT!!!!!!!!!!")
+		error(message, 2)
+	end
+
+	-- leave during error state causes a refund
+	self.state = GameState.ERROR
+	self:leave_all_players()
+
+	error(message, 2)
+end
+
 function Poker:is_game_running()
 	return self.state >= GameState.PRE_FLOP
 end
@@ -450,7 +476,7 @@ end
 
 -- TODO: remove this method?
 function Poker:new_game()
-	assert(self.state == GameState.WAITING_FOR_PLAYERS, "tried to start game but was already in state '" .. gamestate_to_str(self.state) .. "'")
+	self:assert(self.state == GameState.WAITING_FOR_PLAYERS, "tried to start game but was already in state '" .. gamestate_to_str(self.state) .. "'")
 
 	math.randomseed(ddnetpp.secure_rand_below(666999))
 	self:new_round()
@@ -498,8 +524,8 @@ function Poker:clear_player_actions()
 end
 
 function Poker:flop()
-	assert(self.state == GameState.PRE_FLOP, "tried to flop while in gamestate '" .. gamestate_to_str(self.state) .. "'")
-	assert(#self.community_cards == 0, "tried to flop but there were already " .. #self.community_cards .. " cards on the board")
+	self:assert(self.state == GameState.PRE_FLOP, "tried to flop while in gamestate '" .. gamestate_to_str(self.state) .. "'")
+	self:assert(#self.community_cards == 0, "tried to flop but there were already " .. #self.community_cards .. " cards on the board")
 	self.state = GameState.FLOP
 
 	if not self.is_showdown then
@@ -513,8 +539,8 @@ function Poker:flop()
 end
 
 function Poker:turn()
-	assert(self.state == GameState.FLOP, "tried to turn while in gamestate '" .. gamestate_to_str(self.state) .. "'")
-	assert(#self.community_cards == 3, "tried to turn but there were already " .. #self.community_cards .. " cards on the board")
+	self:assert(self.state == GameState.FLOP, "tried to turn while in gamestate '" .. gamestate_to_str(self.state) .. "'")
+	self:assert(#self.community_cards == 3, "tried to turn but there were already " .. #self.community_cards .. " cards on the board")
 	self.state = GameState.TURN
 
 	if not self.is_showdown then
@@ -526,8 +552,8 @@ function Poker:turn()
 end
 
 function Poker:river()
-	assert(self.state == GameState.TURN, "tried to river while in gamestate '" .. gamestate_to_str(self.state) .. "'")
-	assert(#self.community_cards == 4, "tried to river but there were already " .. #self.community_cards .. " cards on the board")
+	self:assert(self.state == GameState.TURN, "tried to river while in gamestate '" .. gamestate_to_str(self.state) .. "'")
+	self:assert(#self.community_cards == 4, "tried to river but there were already " .. #self.community_cards .. " cards on the board")
 	self.state = GameState.RIVER
 
 	if not self.is_showdown then
@@ -559,7 +585,7 @@ function Poker:player_action(client_id, action)
 	local player = self:find_player(client_id)
 
 	-- this assert is just here for my sanity because the linter is annoying xd
-	assert(player ~= nil, "cid=" .. client_id .. " tried to do a betting action but is not at the table")
+	self:assert(player ~= nil, "cid=" .. client_id .. " tried to do a betting action but is not at the table")
 
 	if not self:is_game_running() then
 		ddnetpp.send_chat_target(client_id, "The game is not running yet")
@@ -704,7 +730,7 @@ function Poker:player_action(client_id, action)
 		self.pot = self.pot + (action.amount + diff)
 		self.pot_per_player = self.pot_per_player + action.amount
 
-		assert(player.chips >= 0, "cid=" .. player.client_id .. " chip count went negative to " .. player.chips)
+		self:assert(player.chips >= 0, "cid=" .. player.client_id .. " chip count went negative to " .. player.chips)
 		if player.chips == 0 then
 			ddnetpp.send_chat_target(client_id, "This raise made you go all in!")
 		end
@@ -741,7 +767,7 @@ function Poker:player_action(client_id, action)
 		player.action = action
 		player.hole_cards = {}
 	else
-		assert(false, "Invalid betting action")
+		self:assert(false, "Invalid betting action")
 	end
 
 	player.clock_ticks = 0
@@ -819,10 +845,10 @@ end
 
 function Poker:move_chips_to_winner()
 	local win_type, winners = self:find_winners()
-	assert(#winners > 0, "nobody won???")
+	self:assert(#winners > 0, "nobody won???")
 
 	if #winners > 1 then
-		assert(win_type == 'showdown', "there are " .. #winners .. " but the win type is '" .. win_type .. "' (expected 'showdown')")
+		self:assert(win_type == 'showdown', "there are " .. #winners .. " but the win type is '" .. win_type .. "' (expected 'showdown')")
 		self:send_chat(#winners .. " players share the best hand there is a split pot!")
 
 		-- negative rake casino poggers
@@ -860,11 +886,11 @@ end
 
 ---@return boolean someone_won # True if one player won the entire game
 function Poker:check_win_game()
-	assert(self.state ~= GameState.END, "tried to check for win in a game that already ended")
+	self:assert(self.state ~= GameState.END, "tried to check for win in a game that already ended")
 	local chip_holders = self:players_with_chips()
 	if #chip_holders < 1 then
 		ddnetpp.log_error("no chip holders left? no idea what to do.. exploding!")
-		assert(false, "no chip holders")
+		self:assert(false, "no chip holders")
 		return false
 	end
 	if #chip_holders > 1 then
@@ -911,7 +937,7 @@ end
 ---or the player to the left of the dealer
 ---@return PokerPlayer
 function Poker:find_last_aggressor_or_left_of_dealer()
-	assert(self.state == GameState.SHOWDOWN, "tried to look for last aggressor during state '" .. gamestate_to_str(self.state) .. "'")
+	self:assert(self.state == GameState.SHOWDOWN, "tried to look for last aggressor during state '" .. gamestate_to_str(self.state) .. "'")
 	if self.last_aggressor then
 		return self.last_aggressor
 	end
@@ -924,13 +950,13 @@ function Poker:find_last_aggressor_or_left_of_dealer()
 			return player
 		end
 	end
-	assert(false, "failed to find last aggressor or player on the left of the dealer")
+	self:assert(false, "failed to find last aggressor or player on the left of the dealer")
 end
 
 ---@param player PokerPlayer
 function Poker:show_player_cards(player)
-	assert(player.show_cards == false, "tried to show cid=" .. player.client_id .. " cards twice")
-	assert(#player.hole_cards > 0, "tried to show cid=" .. player.client_id .. " cards but that player has no cards")
+	self:assert(player.show_cards == false, "tried to show cid=" .. player.client_id .. " cards twice")
+	self:assert(#player.hole_cards > 0, "tried to show cid=" .. player.client_id .. " cards but that player has no cards")
 	player.show_cards = true
 	self:send_chat(
 		"'" .. ddnetpp.server.client_name(player.client_id) .. "' showed " .. join_str_array(player.hole_cards)
@@ -1022,7 +1048,7 @@ end
 
 function Poker:compute_next_to_act()
 	local prev = self:next_to_act()
-	assert(prev ~= nil, "tried to compute next to act but betting round was already over")
+	self:assert(prev ~= nil, "tried to compute next to act but betting round was already over")
 
 	if self.state == GameState.SHOWDOWN then
 		for _, player in ipairs(self:sort_players_by_position_shift_to_offset(prev.position.offset)) do
@@ -1055,7 +1081,7 @@ function Poker:compute_next_to_act()
 		-- TODO: i feel like this code can be deleted
 		if self.next_to_act_offset == ButtonOffset.BUTTON then
 			local next_player = self:get_player_by_position(ButtonOffset.SMALL_BLIND)
-			assert(next_player ~= nil, "no player after button?")
+			self:assert(next_player ~= nil, "no player after button?")
 			if next_player.action == nil then
 				-- if button raised its the sb turn again
 				self.next_to_act_offset = ButtonOffset.SMALL_BLIND
@@ -1065,7 +1091,7 @@ function Poker:compute_next_to_act()
 			return
 		elseif self.next_to_act_offset == ButtonOffset.SMALL_BLIND then
 			local next_player = self:get_player_by_position(ButtonOffset.BUTTON)
-			assert(next_player ~= nil, "no player after big blind?")
+			self:assert(next_player ~= nil, "no player after big blind?")
 			if next_player.action == nil then
 				-- if someone raised which cleared
 				-- the utg action we continue after the big blind
@@ -1075,7 +1101,7 @@ function Poker:compute_next_to_act()
 			end
 			return
 		end
-		assert(false, "should be unreachable w 2 players")
+		self:assert(false, "should be unreachable w 2 players")
 	elseif num_players == 3 then
 		-- TODO: i feel like this code can be deleted or merged with above
 		--       or solved with recursion
@@ -1089,7 +1115,7 @@ function Poker:compute_next_to_act()
 			return
 		elseif self.next_to_act_offset == ButtonOffset.BIG_BLIND then
 			local next_player = self:get_player_by_position(ButtonOffset.BUTTON)
-			assert(next_player ~= nil, "no player after big blind?")
+			self:assert(next_player ~= nil, "no player after big blind?")
 			if next_player.action == nil then
 				-- if someone raised which cleared
 				-- the utg action we continue after the big blind
@@ -1099,7 +1125,7 @@ function Poker:compute_next_to_act()
 			end
 			return
 		end
-		assert(false, "not implemented")
+		self:assert(false, "not implemented")
 	end
 
 	-- special case for the blinds
@@ -1115,7 +1141,7 @@ function Poker:compute_next_to_act()
 				return
 			elseif self.next_to_act_offset == ButtonOffset.BIG_BLIND then
 				local next_player = self:get_player_by_position(ButtonOffset.UTG)
-				assert(next_player ~= nil, "no player after big blind?")
+				self:assert(next_player ~= nil, "no player after big blind?")
 				if next_player.action == nil then
 					-- if someone raised which cleared
 					-- the utg action we continue after the big blind
@@ -1150,7 +1176,7 @@ function Poker:next_to_act()
 	end
 
 	local next_player = self:get_player_by_position(self.next_to_act_offset)
-	assert(next_player ~= nil, "failed to find next to act at button_offset=" .. self.next_to_act_offset)
+	self:assert(next_player ~= nil, "failed to find next to act at button_offset=" .. self.next_to_act_offset)
 	return next_player
 end
 
@@ -1250,7 +1276,7 @@ function Poker:first_offset_to_act()
 		end
 	end
 
-	assert(false, "failed to find first to act, no players with cards or chips left")
+	self:assert(false, "failed to find first to act, no players with cards or chips left")
 	return -1
 end
 
@@ -1765,7 +1791,7 @@ function Poker:join_table(client_id)
 		return
 	end
 	local server_player = ddnetpp.get_player(client_id)
-	assert(server_player ~= nil, "player with id " .. client_id .. " tried to join table but does not exist")
+	self:assert(server_player ~= nil, "player with id " .. client_id .. " tried to join table but does not exist")
 	if server_player:money() < self.buy_in then
 		ddnetpp.send_chat_target(client_id, "You need at least " .. self.buy_in .. " money to pay the buy in")
 		return
@@ -1834,7 +1860,8 @@ function Poker:leave_table(client_id)
 	end
 	if self.state == GameState.ERROR or self.state == GameState.WAITING_FOR_PLAYERS then
 		local server_player = ddnetpp.get_player(client_id)
-		assert(server_player ~= nil, "player with id " .. client_id .. " tried to leave table but does not exist")
+		-- WARNING: this assert will cause recursion!!! but we should(tm) be able to handle that
+		self:assert(server_player ~= nil, "player with id " .. client_id .. " tried to leave table but does not exist")
 		server_player:money_transaction(self.buy_in, "refund poker buy in")
 	end
 end
