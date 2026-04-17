@@ -8,6 +8,7 @@ require(script_path() .. "card_converter")
 require(script_path() .. "hand_rankings")
 local snap = require(script_path() .. "snap")
 require(script_path() .. "player")
+local position = require(script_path() .. "position")
 
 ---@alias ActionName string
 ---|"'check'"
@@ -301,6 +302,7 @@ function Poker:state_to_str()
 		"gamestate: " .. gamestate_to_str(self.state) .. "\n" ..
 		"pot: " .. self.pot
 
+	local num_players = self:num_players()
 	for _, player in pairs(self.players) do
 
 		local current_action = "(still has to act)"
@@ -314,8 +316,9 @@ function Poker:state_to_str()
 				"  " .. action.action .. "\n"
 		end
 
+		local pos_name = position.offset_to_name(player.position.offset, num_players)
 		state = state .. "\n" ..
-			"player '" .. ddnetpp.server.client_name(player.client_id) .. "' " .. player.position.name .. "\n" ..
+			"player '" .. ddnetpp.server.client_name(player.client_id) .. "' " .. pos_name .. "\n" ..
 			" action: " .. current_action .. "\n" ..
 			" prev actions:\n" .. prev_actions
 	end
@@ -385,12 +388,10 @@ function Poker:init_player_positions()
 		if player.is_button == true then
 			after_button = true
 			player.position = {
-				name = "button",
 				offset = 0,
 			}
 		elseif after_button then
 			offset = offset + 1
-			player.position.name = "todo"
 			player.position.offset = offset
 		end
 	end
@@ -399,7 +400,6 @@ function Poker:init_player_positions()
 			break
 		end
 		offset = offset + 1
-		player.position.name = "todo"
 		player.position.offset = offset
 	end
 end

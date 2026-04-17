@@ -20,7 +20,6 @@ PokerPlayer = {
 	prev_actions = {},
 	is_button = false,
 	position = {
-		name = "small blind",
 		offset = ButtonOffset.SMALL_BLIND,
 	},
 	-- seat number at the table
