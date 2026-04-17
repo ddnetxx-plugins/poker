@@ -1673,7 +1673,15 @@ function Poker:on_snap_player(snapping_client, player, item)
 	--       based on distance to the table?
 	--       what about the scoreboard types
 
+	-- TODO: there should be a chat command to toggle this prefix
+	--       it can be a bit ugly and messes with chat commands that take
+	--       names as arguments because its fake snap name
+	--       and not the real name the server thinks this player has
+	local pos = position.offset_to_name(poker_player.position.offset, self:num_players())
+	local name_prefix = position.offset_long_to_short(pos) .. ": "
+
 	return {
+		name = name_prefix .. item.name,
 		score = poker_player.chips
 	}
 end
