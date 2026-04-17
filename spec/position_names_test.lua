@@ -11,6 +11,13 @@ t.assert_eq("+1", position.offset_long_to_short("UTG+1"))
 t.assert_eq("+2", position.offset_long_to_short("UTG+2"))
 t.assert_eq("CO", position.offset_long_to_short("Cutoff"))
 
+-- TODO: these position names are not ideal yet
+--       idk what the proper gold standard is but this is just
+--       based on a simple web and LLM search I did
+--       4p cutoff might be UTG instead
+--       and lojack might be a 8+ player thing only
+--       so this probably needs some tweaking
+
 t.assert_eq("Button", position.offset_to_name(0, 2))
 t.assert_eq("Big Blind", position.offset_to_name(1, 2))
 
