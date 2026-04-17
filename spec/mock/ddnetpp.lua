@@ -34,6 +34,14 @@ local ddnetpp = {
 		-- and value is an array of direct messages
 		lines_cid = {},
 	},
+	money_transactions = {
+		silent = true,
+		---@type string[]
+		lines = {},
+		-- key is the client id
+		-- and value is an array of direct messages
+		lines_cid = {},
+	},
 	server = {},
 	snap = {},
 	weapon = {
@@ -56,6 +64,17 @@ end
 
 function ddnetpp.get_broadcast_line(client_id, offset)
 	local lines = ddnetpp.broadcast.lines_cid[client_id]
+	if lines == nil then
+		return nil
+	end
+	if offset >= 0 then
+		return lines[offset]
+	end
+	return lines[#lines+offset+1]
+end
+
+function ddnetpp.get_money_transaction_line(client_id, offset)
+	local lines = ddnetpp.money_transactions.lines_cid[client_id]
 	if lines == nil then
 		return nil
 	end
@@ -179,6 +198,7 @@ function Player:new(client_id)
 	o.__index = self
 	o.client_id = client_id
 	o._is_afk = false
+	o._money = 5000000
 	return o
 end
 
@@ -191,7 +211,7 @@ function Player:name()
 end
 
 function Player:money()
-	return 9000000
+	return self._money
 end
 
 ---@param afk boolean
@@ -207,7 +227,23 @@ end
 ---@param money integer
 ---@param description string
 function Player:money_transaction(money, description)
-	-- TODO: we can log this so we can assert the value in the test
+	self._money = self._money + money
+
+	local client_id = self.client_id
+	local amount = ""
+	if money > 0 then
+		amount = "+" .. money
+	else
+		amount = tostring(money)
+	end
+	local msg = amount .. " (" .. description .. ")"
+	if ddnetpp.money_transactions.silent == false then
+		print("[to cid=" .. client_id .. "][money_transaction] " .. msg)
+	end
+	if ddnetpp.money_transactions.lines_cid[client_id] == nil then
+		ddnetpp.money_transactions.lines_cid[client_id] = {}
+	end
+	table.insert(ddnetpp.money_transactions.lines_cid[client_id], msg)
 end
 
 Character = {}
