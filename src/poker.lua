@@ -346,7 +346,12 @@ local function shuffle(array)
 end
 
 function Poker:shuffled_deck()
-	return shuffle(CARDS)
+	local cards = shuffle(CARDS)
+	local num_extra_shuffles = ddnetpp.secure_rand_below(3)
+	for _ = 1, num_extra_shuffles do
+		cards = shuffle(cards)
+	end
+	return cards
 end
 
 ---@return integer|nil client_id
