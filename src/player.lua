@@ -31,6 +31,13 @@ PokerPlayer = {
 	-- if it hits zero the player will be folded
 	-- and zero also means no timer is running
 	clock_ticks = 0,
+	-- if "left" is active the player did leave the table
+	-- during a hand and will be kept around just to keep the
+	-- player order code simpler
+	-- this player can not win the hand
+	-- and will be removed fully from the table as soon as
+	-- the round is over
+	left = false,
 }
 PokerPlayer.__index = PokerPlayer
 

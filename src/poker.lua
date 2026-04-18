@@ -371,16 +371,19 @@ function Poker:find_and_occupy_free_client_id()
 end
 
 function Poker:move_button()
+	local found_button = false
 	local prev_had_button = false
 	for _, player in pairs(self.players) do
 		if prev_had_button then
 			player.is_button = true
 			prev_had_button = false
 		elseif player.is_button then
+			found_button = true
 			player.is_button = false
 			prev_had_button = true
 		end
 	end
+	self:assert(found_button, "tried to move button but no player has the button!")
 	-- if the last player had the button we need to loop again to
 	-- overflow the button to the first player
 	if prev_had_button then
@@ -458,6 +461,7 @@ function Poker:place_blinds()
 end
 
 function Poker:new_round()
+	self:remove_left_players()
 	self.state = GameState.PRE_FLOP
 	self.is_showdown = false
 	self.ticks_till_next_showdown_card = 0
@@ -1506,11 +1510,13 @@ function Poker:render_broadcast_hud()
 		"                                                   " ..
 		"                                                   "
 	for _, player in pairs(self.players) do
-		local player_hud = self:build_player_hud(player)
-		ddnetpp.send_broadcast_target(
-			player.client_id,
-			hud .. player_hud .. align_left
-		)
+		if not player.left then
+			local player_hud = self:build_player_hud(player)
+			ddnetpp.send_broadcast_target(
+				player.client_id,
+				hud .. player_hud .. align_left
+			)
+		end
 	end
 end
 
@@ -1582,6 +1588,41 @@ function Poker:check_increase_blinds()
 	self:reset_blinds_timer()
 end
 
+function Poker:remove_left_players()
+	---@type PokerPlayer[]
+	local players = {}
+	for _, player in ipairs(self.players) do
+		if player.left then
+			table.insert(players, player)
+		end
+	end
+	if #players == 0 then
+		return
+	end
+	ddnetpp.log_info(#players .. " players left during this hand (recomputing positions..)")
+
+	local button_left = false
+	for _, player in ipairs(players) do
+		if player.is_button then
+			button_left = true
+		end
+		self:seat_open(player.seat)
+		self:delete_player(player.client_id)
+	end
+
+	-- TODO: how well does this assert work during waiting for players phase?
+	if self.state ~= GameState.END then
+		self:assert(#self.players > 1, "after leaving only " .. #self.players .. " are left. Expected winner to be chosen instead")
+	end
+
+	if button_left and #self.players > 0 then
+		-- TODO: move button correctly to the next player instead of just
+		--       giving a random player the button
+		ddnetpp.log_warn("button left the game randomly assigning new button...")
+		self.players[1].is_button = true
+	end
+end
+
 function Poker:on_tick()
 	if ddnetpp.server.tick() % 10 == 0 then
 		self:render_broadcast_hud()
@@ -1595,6 +1636,7 @@ function Poker:on_tick()
 		end
 		if self.ticks_till_new_game < 1 then
 			self:leave_all_players()
+			self:remove_left_players()
 			self.state = GameState.WAITING_FOR_PLAYERS
 			self.community_cards = {}
 			self.pot = 0
@@ -1873,6 +1915,12 @@ function Poker:join_table(client_id)
 			return false
 		end
 	end
+	local check_player = self:find_player(client_id)
+	if check_player then
+		self:assert(check_player.left, "cid=" .. client_id .. " tried to join table but that client id was already at that table")
+		ddnetpp.send_chat_target(client_id, "Please wait before rejoining the table")
+		return false
+	end
 
 	local player = PokerPlayer:new(client_id)
 
@@ -1926,8 +1974,9 @@ function Poker:leave_table(client_id)
 	for _, snap_id in ipairs(player.hole_card_snap_ids) do
 		ddnetpp.server.free_occupied_client_id(snap_id)
 	end
-	self:seat_open(player.seat)
-	self:delete_player(client_id)
+	player.hole_cards = {}
+	player.chips = 0
+	player.left = true
 	if self.state ~= GameState.END then
 		self:send_chat(
 			"'" .. ddnetpp.server.client_name(client_id) .. "' left the table"
@@ -1944,4 +1993,5 @@ function Poker:leave_table(client_id)
 		self:assert(server_player ~= nil, "player with id " .. client_id .. " tried to leave table but does not exist")
 		server_player:money_transaction(self.buy_in, "refund poker buy in")
 	end
+	ddnetpp.send_broadcast_target(client_id, "You left the poker table")
 end

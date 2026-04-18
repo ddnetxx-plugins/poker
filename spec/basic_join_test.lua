@@ -52,31 +52,43 @@ game:join_table(1)
 t.fake_server_ticks(game, 20)
 game:join_table(0)
 t.fake_server_ticks(game, 20)
+t.assert_eq("Please wait before rejoining the table", ddnetpp.get_chat_line(1, -1))
+t.assert_eq("Please wait before rejoining the table", ddnetpp.get_chat_line(0, -1))
+t.assert_eq("You left the poker table", trim(ddnetpp.get_broadcast_line(0, -1)))
 
 -- and a new player joins
 game:join_table(3)
 t.fake_server_ticks(game, 20)
+t.assert_eq("'mock3' joined the table", ddnetpp.get_chat_line(3, -1))
 
-t.assert_eq([[waiting for players ... (3 out of 4)
+t.assert_eq([[waiting for players ... (1 out of 4)
 your stack: 50000
 paid into pot: 0
-you can /check or /raise]], trim(ddnetpp.get_broadcast_line(0, -1)))
+you can /check or /raise]], trim(ddnetpp.get_broadcast_line(3, -1)))
 
 -- enough players now!
 game:join_table(16)
+game:join_table(17)
+game:join_table(18)
 t.fake_server_ticks(game, 20)
+t.assert_eq(4, game:num_players_with_chips())
+t.assert_eq(4, #game.players)
+t.assert_eq(3, game.players[1].client_id)
+t.assert_eq(16, game.players[2].client_id)
+t.assert_eq(17, game.players[3].client_id)
+t.assert_eq(18, game.players[4].client_id)
 
 -- game started and blinds have been placed
 t.assert_eq([[pot: 150
 players with cards: 4
 your stack: 50000
 paid into pot: 0
-you can /fold, /call or /raise (100 to call)]], trim(ddnetpp.get_broadcast_line(0, -1)))
+you can /fold, /call or /raise (100 to call)]], trim(ddnetpp.get_broadcast_line(3, -1)))
 
 -- first rage quit preflop xd
 game:leave_table(16)
 t.fake_server_ticks(game, 20)
-t.assert_eq("'mock16' left the table", ddnetpp.get_chat_line(0, -1))
+t.assert_eq("'mock16' left the table", ddnetpp.get_chat_line(3, -1))
 
 -- new player tries to join running game but fails
 game:join_table(32)
@@ -86,14 +98,14 @@ t.assert_eq("Only 3 players remaining, wait until the next game", ddnetpp.get_ch
 -- 3 players remaining and they are sorted by join order
 local players = game:players_with_chips()
 t.assert_eq(3, #players)
-t.assert_eq(1, players[1].client_id)
-t.assert_eq(0, players[2].client_id)
-t.assert_eq(3, players[3].client_id)
+t.assert_eq(3, players[1].client_id)
+t.assert_eq(17, players[2].client_id)
+t.assert_eq(18, players[3].client_id)
 
-game:leave_table(3)
+game:leave_table(17)
 t.fake_server_ticks(game, 20)
 
-game:leave_table(1)
+game:leave_table(18)
 t.fake_server_ticks(game, 20)
 
-t.assert_eq("'mock0' won the entire game! And collected 60 in prize money!", ddnetpp.get_chat_line(0, -1))
+t.assert_eq("'mock3' won the entire game! And collected 60 in prize money!", ddnetpp.get_chat_line(3, -1))
