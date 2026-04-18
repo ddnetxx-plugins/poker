@@ -137,6 +137,79 @@ function ddnetpp.send_chat(message)
 	table.insert(ddnetpp.chat.lines, message)
 end
 
+---@param client_id ClientId
+---@return integer
+local function client_id_to_integer(client_id)
+	if type(client_id) == "number" then
+		return client_id
+	end
+	-- player instance
+	if client_id.client_id then
+		return client_id.client_id
+	end
+	-- character instance
+	return client_id:id()
+end
+
+---@param client_id ClientId
+---@param message integer
+function ddnetpp.send_chat_as(client_id, message)
+	local cid = client_id_to_integer(client_id)
+	local name = ddnetpp.server.client_name(client_id)
+	if ddnetpp.chat.silent == false then
+		print("[chat] " .. name .. ": " .. message)
+	end
+	table.insert(ddnetpp.chat.lines, message)
+end
+
+---@param client_id ClientId
+---@return boolean
+function ddnetpp.is_server_tee(client_id)
+	local cid = client_id_to_integer(client_id)
+	local player = ddnetpp.get_player(cid)
+	return player._is_dummy
+end
+
+---@return integer|nil client_id
+local function find_free_cid()
+	for i = 0, 127 do
+		local occupied = false
+		for _, occupied_id in ipairs(occupied_ids) do
+			if i == occupied_id then
+				occupied = true
+				break
+			end
+		end
+
+		if not ddnetpp.get_player(i) and not occupied then
+			return i
+		end
+	end
+	return nil
+end
+
+---@param silent? boolean
+---@return integer|nil client_id
+function ddnetpp.create_tee(silent)
+	local cid = find_free_cid()
+	local player = Player:new(cid)
+	player._is_dummy = true
+	ddnetpp.players[cid] = player
+end
+
+---@param client_id integer
+---@param silent? boolean
+function ddnetpp.drop_tee(client_id, silent)
+	local player = ddnetpp.get_player(client_id)
+	assert(player._is_dummy == true, "tried to use drop tee on a human")
+	if silent == false then
+		ddnetpp.send_chat(
+			"'" .. ddnetpp.server.client_name(client_id) "' left the game"
+		)
+	end
+	ddnetpp.players[cid] = nil
+end
+
 function ddnetpp.plugin_name()
 	return "mock_plugin"
 end
@@ -199,10 +272,14 @@ function Player:new(client_id)
 	o.client_id = client_id
 	o._is_afk = false
 	o._money = 5000000
+	o._is_dummy = false
 	return o
 end
 
-for i = 0, 127 do
+-- fill server pretty full with fake players
+-- so we can let them sit on the table
+-- but also have some free client ids
+for i = 0, 47 do
 	ddnetpp.players[i] = Player:new(i)
 end
 
@@ -263,6 +340,7 @@ function ddnetpp.get_character(client_id)
 	return Character:new()
 end
 
+---@return Player|nil
 function ddnetpp.get_player(client_id)
 	return ddnetpp.players[client_id]
 end
