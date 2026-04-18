@@ -167,6 +167,9 @@ end
 function ddnetpp.is_server_tee(client_id)
 	local cid = client_id_to_integer(client_id)
 	local player = ddnetpp.get_player(cid)
+	if not player then
+		return false
+	end
 	return player._is_dummy
 end
 
