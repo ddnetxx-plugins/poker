@@ -47,6 +47,8 @@ Poker = {
 	-- thats it
 	-- keep it simple for now
 	small_blind = 50,
+	-- after how many minutes the blinds get doubled
+	double_blind_interval_minutes = 15,
 	buy_in = 10,
 	prize_money = 0,
 	pot = 0,
@@ -103,6 +105,10 @@ Poker = {
 	-- until it reaches 0 which will clear the table
 	-- kick everybody out and wait for new players to buy in
 	ticks_till_new_game = 0,
+
+	-- if the server reaches this tick the blinds will be doubled
+	-- this is a internal variable to measure time passing
+	next_blind_increase_tick = 0,
 }
 Poker.__index = Poker
 
@@ -1556,6 +1562,26 @@ function Poker:leave_all_players()
 	end
 end
 
+function Poker:reset_blinds_timer()
+	local now = ddnetpp.server.tick()
+	local minutes = ddnetpp.server.tick_speed() * 60
+	self.next_blind_increase_tick = now + minutes * self.double_blind_interval_minutes
+end
+
+function Poker:check_increase_blinds()
+	if self.next_blind_increase_tick == 0 then
+		self:reset_blinds_timer()
+		return
+	end
+	if self.next_blind_increase_tick > ddnetpp.server.tick() then
+		return
+	end
+
+	self.small_blind = self.small_blind * 2
+	self:send_chat("Blinds up! Small blind is " .. self.small_blind .. " and big blind is " .. self.small_blind * 2)
+	self:reset_blinds_timer()
+end
+
 function Poker:on_tick()
 	if ddnetpp.server.tick() % 10 == 0 then
 		self:render_broadcast_hud()
@@ -1592,6 +1618,9 @@ function Poker:on_tick()
 			self.ticks_till_next_showdown_card = math.ceil(self.showdown_speed * ddnetpp.server.tick_speed())
 			self:check_next_state()
 		end
+	else
+		-- lets not interrupt running board with blinds message
+		self:check_increase_blinds()
 	end
 
 	self:force_fold_players()
