@@ -1088,8 +1088,10 @@ function Poker:compute_next_to_act()
 	end
 
 	-- still waiting for same player
-	if prev.action == nil and prev.chips > 0 and #prev.hole_cards > 0 then
-		return
+	if not prev.left then
+		if prev.action == nil and prev.chips > 0 and #prev.hole_cards > 0 then
+			return
+		end
 	end
 
 	self.last_action_tick = ddnetpp.server.tick()
@@ -1325,19 +1327,28 @@ function Poker:sort_players_by_position()
 	local first_offset = self:_first_offset_to_act_stupid()
 
 	for _, player in pairs(self.players) do
-		if player.position.offset == first_offset then
-			found_first = true
-		end
-		if found_first then
-			table.insert(players, player)
+		if not player.left then
+			if player.position.offset == first_offset then
+				found_first = true
+			end
+			if found_first then
+				table.insert(players, player)
+			end
 		end
 	end
+	-- FIXME: i feel like this assert can be hit
+	--        by players in player.left = true state
+	--        if they are the first offset
+	--        this case needs to be added as a unit test
+	self:assert(found_first, "failed to find first player")
 
 	for _, player in pairs(self.players) do
-		if player.position.offset == first_offset then
-			break
+		if not player.left then
+			if player.position.offset == first_offset then
+				break
+			end
+			table.insert(players, player)
 		end
-		table.insert(players, player)
 	end
 
 	return players
@@ -1984,7 +1995,14 @@ function Poker:leave_table(client_id)
 		if self.state ~= GameState.ERROR and self.state ~= GameState.WAITING_FOR_PLAYERS then
 			-- if someone rage quits it might cause a win
 			-- by implicitly folding
-			self:check_win_by_fold()
+			if not self:check_win_by_fold() then
+				local next = self:next_to_act()
+				if next and next.client_id == client_id then
+					-- the player that had to act left!
+					-- pick new player that has to act
+					self:compute_next_to_act()
+				end
+			end
 		end
 	end
 	if self.state == GameState.ERROR or self.state == GameState.WAITING_FOR_PLAYERS then
