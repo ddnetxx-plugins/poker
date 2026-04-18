@@ -1327,26 +1327,20 @@ function Poker:sort_players_by_position()
 	local first_offset = self:_first_offset_to_act_stupid()
 
 	for _, player in pairs(self.players) do
-		if not player.left then
-			if player.position.offset == first_offset then
-				found_first = true
-			end
-			if found_first then
-				table.insert(players, player)
-			end
+		if player.position.offset == first_offset then
+			found_first = true
+		end
+		if found_first and not player.left then
+			table.insert(players, player)
 		end
 	end
-	-- FIXME: i feel like this assert can be hit
-	--        by players in player.left = true state
-	--        if they are the first offset
-	--        this case needs to be added as a unit test
 	self:assert(found_first, "failed to find first player")
 
 	for _, player in pairs(self.players) do
+		if player.position.offset == first_offset then
+			break
+		end
 		if not player.left then
-			if player.position.offset == first_offset then
-				break
-			end
 			table.insert(players, player)
 		end
 	end
