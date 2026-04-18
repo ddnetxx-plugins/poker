@@ -192,9 +192,13 @@ end
 ---@return integer|nil client_id
 function ddnetpp.create_tee(silent)
 	local cid = find_free_cid()
+	if cid == nil then
+		return nil
+	end
 	local player = Player:new(cid)
 	player._is_dummy = true
 	ddnetpp.players[cid] = player
+	return cid
 end
 
 ---@param client_id integer
