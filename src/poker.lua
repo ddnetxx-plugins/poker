@@ -1572,7 +1572,12 @@ end
 function Poker:leave_all_players()
 	local ids = {}
 	for _, player in ipairs(self.players) do
-		table.insert(ids, player.client_id)
+		if not player.left then
+			-- avoid double leaves
+			-- player.left = true is only set by leave_table()
+			-- so all that state is already set
+			table.insert(ids, player.client_id)
+		end
 	end
 	for _, cid in ipairs(ids) do
 		self:leave_table(cid)
