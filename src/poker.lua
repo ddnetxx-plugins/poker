@@ -504,6 +504,9 @@ function Poker:allocate_snap_ids()
 end
 
 -- TODO: this is never called
+--       but its not super bad because all plugin allocated client
+--       or snap ids get freed by the server when the plugin gets destructed
+--       including reloads
 function Poker:free_snap_ids()
 	for _, occupied_id in ipairs(self.community_card_snap_ids) do
 		ddnetpp.server.free_occupied_client_id(occupied_id)
