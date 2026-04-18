@@ -40,6 +40,10 @@ ddnetpp.register_rcon("poker_state", "", "show current game state as motd", func
 	ddnetpp.send_motd_target(client_id, main_game:state_to_str())
 end)
 
+ddnetpp.register_rcon("poker_bot", "", "connect bot player to current poker game", function (client_id, args)
+	main_game:add_bot()
+end)
+
 ddnetpp.register_rcon("poker_start", "", "force start the game when waiting for players", function (client_id, args)
 	if main_game.state == GameState.WAITING_FOR_PLAYERS then
 		if main_game:num_players() < 2 then

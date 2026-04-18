@@ -1623,8 +1623,37 @@ function Poker:on_tick()
 		self:check_increase_blinds()
 	end
 
+	local next = self:next_to_act()
+	if next and ddnetpp.is_server_tee(next.client_id) then
+		self:bot_tick(next)
+	end
+
 	self:force_fold_players()
 	self:print_betting_actions()
+end
+
+---@param player PokerPlayer
+function Poker:bot_tick(player)
+	ddnetpp.send_chat_as(player.client_id, "I can't play this trash hand!")
+	self:player_action(player.client_id, { action = "fold" })
+end
+
+---Connect a full server controlled tee to the server which occupies
+---a client slot. That tee will then also sit down at this poker
+---table and play hands automatically.
+---@return boolean success # If we reach for example slot limit this will abort and return false
+function Poker:add_bot()
+	local client_id = ddnetpp.create_tee()
+	if client_id == nil then
+		ddnetpp.log_error("failed to connect poker bot (probably server full)")
+		return false
+	end
+
+	if not self:join_table(client_id) then
+		ddnetpp.drop_tee(client_id)
+		return false
+	end
+	return true
 end
 
 function Poker:on_snap(snapping_client)
@@ -1825,22 +1854,23 @@ function Poker:add_player(player)
 end
 
 ---@param client_id integer
+---@return boolean success
 function Poker:join_table(client_id)
 	if self.state == GameState.ERROR then
 		ddnetpp.send_chat_target(client_id, "The game is in a failed state")
-		return
+		return false
 	end
 	local can_join, join_err = self:can_still_join()
 	if not can_join then
 		ddnetpp.send_chat_target(client_id, join_err)
-		return
+		return false
 	end
 	local server_player = ddnetpp.get_player(client_id)
 	self:assert(server_player ~= nil, "player with id " .. client_id .. " tried to join table but does not exist")
 	if server_player:money() < self.buy_in then
 		if not ddnetpp.is_server_tee(client_id) then
 			ddnetpp.send_chat_target(client_id, "You need at least " .. self.buy_in .. " money to pay the buy in")
-			return
+			return false
 		end
 	end
 
@@ -1849,7 +1879,7 @@ function Poker:join_table(client_id)
 	local seat = self:find_free_seat()
 	if seat == nil then
 		ddnetpp.send_chat_target(client_id, "This poker table is already full")
-		return
+		return false
 	end
 	seat.client_id = client_id
 	player.seat = seat.number
@@ -1863,7 +1893,7 @@ function Poker:join_table(client_id)
 				ddnetpp.log_info("table join failed, freeing cid=" .. allocated_id .. " of the partially allocated hole card ids")
 				ddnetpp.server.free_occupied_client_id(allocated_id)
 			end
-			return
+			return false
 		end
 		table.insert(player.hole_card_snap_ids, snap_id)
 	end
@@ -1883,6 +1913,7 @@ function Poker:join_table(client_id)
 	self:send_chat(
 		"'" .. ddnetpp.server.client_name(client_id) .. "' joined the table"
 	)
+	return true
 end
 
 ---@param client_id integer
