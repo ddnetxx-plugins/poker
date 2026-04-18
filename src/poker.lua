@@ -1838,8 +1838,10 @@ function Poker:join_table(client_id)
 	local server_player = ddnetpp.get_player(client_id)
 	self:assert(server_player ~= nil, "player with id " .. client_id .. " tried to join table but does not exist")
 	if server_player:money() < self.buy_in then
-		ddnetpp.send_chat_target(client_id, "You need at least " .. self.buy_in .. " money to pay the buy in")
-		return
+		if not ddnetpp.is_server_tee(client_id) then
+			ddnetpp.send_chat_target(client_id, "You need at least " .. self.buy_in .. " money to pay the buy in")
+			return
+		end
 	end
 
 	local player = PokerPlayer:new(client_id)
@@ -1874,7 +1876,9 @@ function Poker:join_table(client_id)
 	player.chips = self.start_stack
 	self:add_player(player)
 	ddnetpp.set_client_score_type(client_id, 'points')
-	server_player:money_transaction(-self.buy_in, "poker buy in")
+	if not ddnetpp.is_server_tee(client_id) then
+		server_player:money_transaction(-self.buy_in, "poker buy in")
+	end
 	self.prize_money = self.prize_money + self.buy_in
 	self:send_chat(
 		"'" .. ddnetpp.server.client_name(client_id) .. "' joined the table"
