@@ -70,7 +70,12 @@ t.assert_eq(GameState.SHOWDOWN, game.state)
 t.assert_eq(1, game:next_to_act().client_id)
 game:player_action(1, { action = "show" })
 
--- bro why does 48 have to act now??? that player folded
--- preflop?????
+-- all done
 t.assert_eq(GameState.SHOWDOWN, game.state)
-t.assert_eq(48, game:next_to_act().client_id)
+t.assert_eq(nil, game:next_to_act())
+
+-- wait 10 seconds for showdown to finish
+t.fake_server_ticks(game, ddnetpp.server.tick_speed() * 10)
+
+-- next flop
+t.assert_eq(GameState.PRE_FLOP, game.state)

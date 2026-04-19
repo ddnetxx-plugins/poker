@@ -1072,7 +1072,7 @@ function Poker:compute_next_to_act()
 
 	if self.state == GameState.SHOWDOWN then
 		for _, player in ipairs(self:sort_players_by_position_shift_to_offset(prev.position.offset)) do
-			if player.action == nil and player.show_cards == false and #player.hole_cards and player.left == false then
+			if player.action == nil and player.show_cards == false and #player.hole_cards > 0 and player.left == false then
 				if self.next_to_act_offset ~= player.position.offset then
 					self.last_action_tick = ddnetpp.server.tick()
 				end
