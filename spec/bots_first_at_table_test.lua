@@ -30,3 +30,47 @@ t.assert_eq(ButtonOffset.BIG_BLIND, game:find_player(1).position.offset)
 t.assert_eq(ButtonOffset.UTG, game:find_player(48).position.offset)
 
 t.assert_eq(48, game:next_to_act().client_id)
+t.fake_server_ticks(game, 1)
+t.assert_eq(49, game:next_to_act().client_id)
+t.fake_server_ticks(game, 1)
+t.assert_eq(0, game:next_to_act().client_id)
+game:player_action(0, { action = "call" })
+t.assert_eq(1, game:next_to_act().client_id)
+game:player_action(1, { action = "check" })
+
+t.assert_eq(GameState.FLOP, game.state)
+
+t.assert_eq(0, game:next_to_act().client_id)
+game:player_action(0, { action = "check" })
+t.fake_server_ticks(game, 1)
+t.assert_eq(1, game:next_to_act().client_id)
+game:player_action(1, { action = "check" })
+t.fake_server_ticks(game, 1)
+
+t.assert_eq(GameState.TURN, game.state)
+
+t.assert_eq(0, game:next_to_act().client_id)
+game:player_action(0, { action = "check" })
+t.fake_server_ticks(game, 1)
+t.assert_eq(1, game:next_to_act().client_id)
+game:player_action(1, { action = "check" })
+t.fake_server_ticks(game, 1)
+
+t.assert_eq(GameState.RIVER, game.state)
+
+t.assert_eq(0, game:next_to_act().client_id)
+game:player_action(0, { action = "check" })
+t.fake_server_ticks(game, 1)
+t.assert_eq(1, game:next_to_act().client_id)
+game:player_action(1, { action = "check" })
+t.fake_server_ticks(game, 1)
+
+t.assert_eq(GameState.SHOWDOWN, game.state)
+
+t.assert_eq(1, game:next_to_act().client_id)
+game:player_action(1, { action = "show" })
+
+-- bro why does 48 have to act now??? that player folded
+-- preflop?????
+t.assert_eq(GameState.SHOWDOWN, game.state)
+t.assert_eq(48, game:next_to_act().client_id)
