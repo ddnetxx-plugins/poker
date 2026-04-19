@@ -876,6 +876,8 @@ function Poker:move_chips_to_winner()
 	local win_type, winners = self:find_winners()
 	self:assert(#winners > 0, "nobody won???")
 
+	self:send_chat("round ended with board " .. join_str_array(self.community_cards))
+
 	if #winners > 1 then
 		self:assert(win_type == 'showdown', "there are " .. #winners .. " but the win type is '" .. win_type .. "' (expected 'showdown')")
 		self:send_chat(#winners .. " players share the best hand there is a split pot!")
@@ -889,7 +891,7 @@ function Poker:move_chips_to_winner()
 			winner.chips = winner.chips + split
 			ddnetpp.send_chat_target(winner.client_id, "You won a split pot with " .. split .. " chips in it!")
 			self:send_chat(
-				"'" .. ddnetpp.server.client_name(winner.client_id) .. "' won the split pot with " .. winner.hand.name .. " (" .. winner.hand.description .. ")"
+				"'" .. ddnetpp.server.client_name(winner.client_id) .. "' won the split pot with " .. winner.hand.cards .. " " .. winner.hand.name .. " (" .. winner.hand.description .. ")"
 			)
 		end
 		return
@@ -904,7 +906,7 @@ function Poker:move_chips_to_winner()
 
 	if win_type == "showdown" then
 		self:send_chat(
-			"'" .. ddnetpp.server.client_name(winner.client_id) .. "' won with best hand " .. winner.hand.name .. " (" .. winner.hand.description .. ")"
+			"'" .. ddnetpp.server.client_name(winner.client_id) .. "' won with best hand " .. winner.hand.cards .. " " .. winner.hand.name .. " (" .. winner.hand.description .. ")"
 		)
 	else
 		self:send_chat(
