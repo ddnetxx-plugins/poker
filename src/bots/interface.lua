@@ -1,0 +1,3 @@
+---@class PokerBot
+---@field new fun(game: Poker)
+---@field on_turn fun()

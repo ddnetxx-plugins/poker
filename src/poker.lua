@@ -6,6 +6,7 @@ end
 require(script_path() .. "globals")
 require(script_path() .. "card_converter")
 require(script_path() .. "hand_rankings")
+require(script_path() .. "bots/calling_machine")
 local snap = require(script_path() .. "snap")
 require(script_path() .. "player")
 local position = require(script_path() .. "position")
@@ -109,6 +110,12 @@ Poker = {
 	-- if the server reaches this tick the blinds will be doubled
 	-- this is a internal variable to measure time passing
 	next_blind_increase_tick = 0,
+
+	---The key is the client id
+	---and the value is a bots/interface.lua implementation
+	---that will decide how to play the hands
+	---@type table<integer, PokerBot>
+	bots = {},
 }
 Poker.__index = Poker
 
@@ -1690,8 +1697,9 @@ end
 
 ---@param player PokerPlayer
 function Poker:bot_tick(player)
-	ddnetpp.send_chat_as(player.client_id, "I can't play this trash hand!")
-	self:player_action(player.client_id, { action = "fold" })
+	local bot = self.bots[player.client_id]
+	self:assert(bot ~= nil, "missing bot instance for cid=" .. player.client_id)
+	bot:on_turn()
 end
 
 ---Connect a full server controlled tee to the server which occupies
@@ -1709,6 +1717,7 @@ function Poker:add_bot()
 		ddnetpp.drop_tee(client_id)
 		return false
 	end
+	self.bots[client_id] = CallingMachine:new(client_id, self)
 	return true
 end
 
