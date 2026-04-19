@@ -64,14 +64,11 @@ t.assert_eq(49800, game:find_player(49).chips)
 -- minus the now placed big blind of 200
 t.assert_eq(50100, game:find_player(0).chips)
 
+-- let the humans disconnect
+game:leave_table(0)
+ddnetpp.players[0] = nil
+t.fake_server_ticks(game, 1)
 
--- FIXME: uncomment this as soon as we can let players disconnect during their turn without crash
-
--- -- let the humans disconnect
--- game:leave_table(0)
--- ddnetpp.players[0] = nil
--- t.fake_server_ticks(game, 1)
--- 
--- game:leave_table(1)
--- ddnetpp.players[1] = nil
--- t.fake_server_ticks(game, 1)
+game:leave_table(1)
+ddnetpp.players[1] = nil
+t.fake_server_ticks(game, 1)
