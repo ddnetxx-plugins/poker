@@ -1330,7 +1330,7 @@ function Poker:sort_players_by_position()
 		if player.position.offset == first_offset then
 			found_first = true
 		end
-		if found_first and not player.left then
+		if found_first then
 			table.insert(players, player)
 		end
 	end
@@ -1340,9 +1340,7 @@ function Poker:sort_players_by_position()
 		if player.position.offset == first_offset then
 			break
 		end
-		if not player.left then
-			table.insert(players, player)
-		end
+		table.insert(players, player)
 	end
 
 	return players
@@ -1401,31 +1399,35 @@ function Poker:print_betting_actions()
 	-- this ensures premoves get announced as soon as possible
 	-- but never leaked if it was not the players turn yet
 	for _, player in ipairs(self:sort_players_by_position()) do
-		if player.action == nil then
-			-- print("waiting for " .. player.client_id)
-			-- print(self:state_to_str())
-			-- stop here to not leak pre moves
-			return
-		end
-
-		if player.action.announced == false or player.action.announced == nil then
-			-- TODO: also do some laser text above their had
-			--       so external spectators who do not receive the chat message know what is happening too
-			--       or send the chat message also to close by players
-
-			local chr = ddnetpp.get_character(player.client_id)
-			if chr then
-				local text_pos = chr:pos()
-				text_pos.x = text_pos.x - 8
-				text_pos.y = text_pos.y - 8
-				ddnetpp.laser_text(text_pos, player.action.action)
+		-- do not create gaps in the announcements
+		-- when someone leaves the table mid hand
+		if not player.left then
+			if player.action == nil then
+				-- print("waiting for " .. player.client_id)
+				-- print(self:state_to_str())
+				-- stop here to not leak pre moves
+				return
 			end
 
-			local tw_player = ddnetpp.get_player(player.client_id)
-			if tw_player then
-				self:send_chat(self:action_to_message(tw_player:name(), player.action))
+			if player.action.announced == false or player.action.announced == nil then
+				-- TODO: also do some laser text above their had
+				--       so external spectators who do not receive the chat message know what is happening too
+				--       or send the chat message also to close by players
+
+				local chr = ddnetpp.get_character(player.client_id)
+				if chr then
+					local text_pos = chr:pos()
+					text_pos.x = text_pos.x - 8
+					text_pos.y = text_pos.y - 8
+					ddnetpp.laser_text(text_pos, player.action.action)
+				end
+
+				local tw_player = ddnetpp.get_player(player.client_id)
+				if tw_player then
+					self:send_chat(self:action_to_message(tw_player:name(), player.action))
+				end
+				player.action.announced = true
 			end
-			player.action.announced = true
 		end
 	end
 end
