@@ -1,6 +1,7 @@
 ---@alias BotName string
 ---|"'calling_machine'"
 ---|"'folding_machine'"
+---|"'goof'"
 
 ---@class PokerBot
 ---

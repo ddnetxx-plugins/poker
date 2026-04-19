@@ -156,10 +156,19 @@ end
 function ddnetpp.send_chat_as(client_id, message)
 	local cid = client_id_to_integer(client_id)
 	local name = ddnetpp.server.client_name(client_id)
+	local msg_with_name = name .. ": " .. message
 	if ddnetpp.chat.silent == false then
-		print("[chat] " .. name .. ": " .. message)
+		print("[chat] " .. msg_with_name)
 	end
-	table.insert(ddnetpp.chat.lines, message)
+	table.insert(ddnetpp.chat.lines, msg_with_name)
+
+	-- store in EVERYONES direct chat lol
+	for i = 0, 127 do
+		if ddnetpp.chat.lines_cid[i] == nil then
+			ddnetpp.chat.lines_cid[i] = {}
+		end
+		table.insert(ddnetpp.chat.lines_cid[i], msg_with_name)
+	end
 end
 
 ---@param client_id ClientId

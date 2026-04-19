@@ -8,6 +8,7 @@ require(script_path() .. "card_converter")
 require(script_path() .. "hand_rankings")
 require(script_path() .. "bots/calling_machine")
 require(script_path() .. "bots/folding_machine")
+require(script_path() .. "bots/goof")
 local snap = require(script_path() .. "snap")
 require(script_path() .. "player")
 local position = require(script_path() .. "position")
@@ -1720,6 +1721,8 @@ function Poker:add_bot(bot_name)
 		bot = CallingMachine:new(client_id, self)
 	elseif bot_name == "folding_machine" then
 		bot = FoldingMachine:new(client_id, self)
+	elseif bot_name == "goof" then
+		bot = Goof:new(client_id, self)
 	end
 
 	if bot == nil then
