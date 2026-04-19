@@ -24,5 +24,10 @@ t.assert_eq(49, game.players[2].client_id)
 t.fake_server_ticks(game, 20)
 t.assert_eq(GameState.PRE_FLOP, game.state)
 
--- expect utg to be first to act???
+t.assert_eq(true, game:find_player(49).is_button)
+t.assert_eq(ButtonOffset.SMALL_BLIND, game:find_player(0).position.offset)
+t.assert_eq(ButtonOffset.BIG_BLIND, game:find_player(1).position.offset)
+t.assert_eq(ButtonOffset.UTG, game:find_player(48).position.offset)
+
+-- expect utg to be first to act
 t.assert_eq(48, game:next_to_act().client_id)
