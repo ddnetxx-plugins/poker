@@ -25,12 +25,21 @@ end
 local function all_show(game)
 	assert(game.state == GameState.SHOWDOWN, "tried to show player cards during state '" .. gamestate_to_str(game.state) .. "' expected showdown")
 
+	local prev_to_act_id = nil
+
 	-- TODO: this order is wrong but so is the actual code order xd
 	for _ = 1, 100 do
 		local player = game:next_to_act()
 		if player == nil then
 			return
 		end
+		if prev_to_act_id == player.client_id then
+			local msg = ddnetpp.get_chat_line(player.client_id, -1)
+			print("[test][card show error][chat] *** " .. msg)
+			assert(false, "tried to show cid=" .. player.client_id .. " card but next to act did not change")
+			return
+		end
+		prev_to_act_id = player.client_id
 		game:player_action(player.client_id, { action = "show" })
 	end
 	assert(false, "failed to show all players cards during showdown")
