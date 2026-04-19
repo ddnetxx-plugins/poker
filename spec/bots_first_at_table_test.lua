@@ -10,8 +10,8 @@ game.small_blind = 50
 game.double_blind_interval_minutes = 15
 game.buy_in = 10
 
-t.assert_eq(true, game:add_bot()) -- utg
-t.assert_eq(true, game:add_bot()) -- btn
+t.assert_eq(true, game:add_bot('folding_machine')) -- utg
+t.assert_eq(true, game:add_bot('folding_machine')) -- btn
 game:join_table(0) -- sb
 game:join_table(1) -- bb
 

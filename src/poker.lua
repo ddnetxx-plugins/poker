@@ -7,6 +7,7 @@ require(script_path() .. "globals")
 require(script_path() .. "card_converter")
 require(script_path() .. "hand_rankings")
 require(script_path() .. "bots/calling_machine")
+require(script_path() .. "bots/folding_machine")
 local snap = require(script_path() .. "snap")
 require(script_path() .. "player")
 local position = require(script_path() .. "position")
@@ -1705,8 +1706,9 @@ end
 ---Connect a full server controlled tee to the server which occupies
 ---a client slot. That tee will then also sit down at this poker
 ---table and play hands automatically.
+---@param bot_name BotName
 ---@return boolean success # If we reach for example slot limit this will abort and return false
-function Poker:add_bot()
+function Poker:add_bot(bot_name)
 	local client_id = ddnetpp.create_tee()
 	if client_id == nil then
 		ddnetpp.log_error("failed to connect poker bot (probably server full)")
@@ -1717,7 +1719,11 @@ function Poker:add_bot()
 		ddnetpp.drop_tee(client_id)
 		return false
 	end
-	self.bots[client_id] = CallingMachine:new(client_id, self)
+	if bot_name == "calling_machine" then
+		self.bots[client_id] = CallingMachine:new(client_id, self)
+	else
+		self.bots[client_id] = FoldingMachine:new(client_id, self)
+	end
 	return true
 end
 

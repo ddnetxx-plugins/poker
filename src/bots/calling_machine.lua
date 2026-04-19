@@ -1,4 +1,6 @@
 CallingMachine = {
+	---@type BotName
+	name = "calling_machine"
 }
 CallingMachine.__index = CallingMachine
 
@@ -15,6 +17,6 @@ function CallingMachine:new(client_id, game)
 end
 
 function CallingMachine:on_turn()
-	ddnetpp.send_chat_as(self.client_id, "I can't play this trash hand!")
-	self.game:player_action(self.client_id, { action = "fold" })
+	ddnetpp.send_chat_as(self.client_id, "I can't fold this hand")
+	self.game:player_action(self.client_id, { action = "call" })
 end

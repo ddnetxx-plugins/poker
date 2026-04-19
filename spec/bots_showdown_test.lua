@@ -12,8 +12,8 @@ game.buy_in = 10
 
 game:join_table(0) -- utg
 game:join_table(1) -- btn
-t.assert_eq(true, game:add_bot()) -- sb
-t.assert_eq(true, game:add_bot()) -- bb
+t.assert_eq(true, game:add_bot('folding_machine')) -- sb
+t.assert_eq(true, game:add_bot('folding_machine')) -- bb
 
 -- the bots get pretty high client ids
 -- because there are a bunch of fake humans connected
