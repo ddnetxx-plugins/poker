@@ -123,6 +123,8 @@ function Poker:assert(condition, message)
 		return
 	end
 
+	self:send_chat("An internal poker plugin error occurred. Closing table..")
+
 	-- i am a bit scared of recursion here
 	-- if we hit an assert in leave_all_players() we are cooked xd
 	-- so lets try to catch that case with the following if statement

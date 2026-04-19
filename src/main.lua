@@ -9,7 +9,7 @@ local main_game = Poker:new(
 	nil,
 	{
 		x = 33,
-		y = 30,
+		y = 3,
 	}
 )
 
