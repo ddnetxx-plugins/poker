@@ -966,7 +966,7 @@ function Poker:find_last_aggressor_or_left_of_dealer()
 	--       and i dont even know the rules for heads up
 	--       so this has to be checked once the unit tests are there
 	for _, player in ipairs(self:sort_players_by_position()) do
-		if player.position.offset ~= ButtonOffset.BUTTON then
+		if player.position.offset ~= ButtonOffset.BUTTON and #player.hole_cards > 0 then
 			return player
 		end
 	end
