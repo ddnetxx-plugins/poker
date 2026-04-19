@@ -1737,7 +1737,10 @@ function Poker:add_bot(bot_name)
 		return false
 	end
 
+	bot.player = self:find_player(client_id)
+	self:assert(bot.player ~= nil, "failed to find bot for player")
 	self.bots[client_id] = bot
+	self.bots[client_id].foo = 2
 	return true
 end
 

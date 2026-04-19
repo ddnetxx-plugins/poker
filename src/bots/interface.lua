@@ -6,5 +6,6 @@
 ---@class PokerBot
 ---
 ---@field name BotName
+---@field player PokerPlayer
 ---@field new fun(game: Poker)
 ---@field on_turn fun() # This is not the "turn" game state its the turn to act for the but
