@@ -40,8 +40,8 @@ ddnetpp.register_rcon("poker_state", "", "show current game state as motd", func
 	ddnetpp.send_motd_target(client_id, main_game:state_to_str())
 end)
 
-ddnetpp.register_rcon("poker_bot", "", "connect bot player to current poker game", function (client_id, args)
-	main_game:add_bot()
+ddnetpp.register_rcon("poker_bot", "s[name]", "connect bot player to current poker game", function (client_id, args)
+	main_game:add_bot(args.name)
 end)
 
 ddnetpp.register_rcon("poker_start", "", "force start the game when waiting for players", function (client_id, args)

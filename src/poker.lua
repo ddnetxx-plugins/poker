@@ -1715,15 +1715,26 @@ function Poker:add_bot(bot_name)
 		return false
 	end
 
-	if not self:join_table(client_id) then
+	local bot = nil
+	if bot_name == "calling_machine" then
+		bot = CallingMachine:new(client_id, self)
+	elseif bot_name == "folding_machine" then
+		bot = FoldingMachine:new(client_id, self)
+	end
+
+	if bot == nil then
+		ddnetpp.log_error("invalid bot name '" .. bot_name .. "' expected one of these:")
+		ddnetpp.log_error("- calling_machine, folding_machine")
 		ddnetpp.drop_tee(client_id)
 		return false
 	end
-	if bot_name == "calling_machine" then
-		self.bots[client_id] = CallingMachine:new(client_id, self)
-	else
-		self.bots[client_id] = FoldingMachine:new(client_id, self)
+	if not self:join_table(client_id) then
+		ddnetpp.log_error("failed to place bot at the poker table")
+		ddnetpp.drop_tee(client_id)
+		return false
 	end
+
+	self.bots[client_id] = bot
 	return true
 end
 
