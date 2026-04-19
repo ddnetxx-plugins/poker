@@ -54,17 +54,13 @@ function Goof:check_or_call()
 end
 
 function Goof:on_turn()
-	print("self: " .. tostring(self))
-	print("self.foo: " .. tostring(self.foo))
-	print("self.game: " .. tostring(self.game))
-	print("self.player: " .. tostring(self.player))
 	if self.game.state == GameState.SHOWDOWN then
 		ddnetpp.send_chat_as(self.client_id, "You are good")
 		self.game:player_action(self.client_id, { action = "fold" })
 		return
 	end
 
-	if Goof:has_good_cards() then
+	if self:has_good_cards() then
 		self:check_or_call()
 	else
 		-- checking is not an option xd

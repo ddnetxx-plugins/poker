@@ -33,5 +33,5 @@ t.set_hole_cards(game, 48, "🃞🃑")
 t.assert_eq(48, game:next_to_act().client_id)
 t.fake_server_ticks(game, 1)
 
-t.assert_eq("mock48: I can't play this trash hand!", ddnetpp.get_chat_line(0, -2))
-t.assert_eq("'mock48' folded", ddnetpp.get_chat_line(0, -1))
+t.assert_eq("mock48: I can't fold this monster of a hand", ddnetpp.get_chat_line(0, -2))
+t.assert_eq("'mock48' called", ddnetpp.get_chat_line(0, -1))
