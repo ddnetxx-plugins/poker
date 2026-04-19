@@ -1731,7 +1731,7 @@ function Poker:on_snap(snapping_client)
 			card)
 	end
 
-	if self.state >= GameState.PRE_FLOP and self.state <= GameState.RIVER then
+	if self.state >= GameState.PRE_FLOP and self.state <= GameState.SHOWDOWN then
 		local next_to_act = self:next_to_act()
 		if next_to_act ~= nil then
 			local chr_next = ddnetpp.get_character(next_to_act.client_id)
