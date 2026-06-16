@@ -1815,9 +1815,9 @@ end
 
 ---@param snapping_client integer
 ---@param player Player
----@param item SnapItemPlayer
----@return SnapItemPlayerOptional|nil
-function Poker:on_snap_player(snapping_client, player, item)
+---@param item SnapItemClientInfo
+---@return SnapItemClientInfo|nil
+function Poker:on_snap_client_info(snapping_client, player, item)
 	local poker_player = self:find_player(player:id())
 	if poker_player == nil then
 		return nil

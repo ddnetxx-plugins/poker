@@ -22,8 +22,8 @@ function ddnetpp.on_snap(snapping_client)
 	main_game:on_snap(snapping_client)
 end
 
-function ddnetpp.on_snap_player(snapping_client, player, item)
-	return main_game:on_snap_player(snapping_client, player, item)
+function ddnetpp.on_snap_client_info(snapping_client, player, item)
+	return main_game:on_snap_client_info(snapping_client, player, item)
 end
 
 function ddnetpp.on_tick()
