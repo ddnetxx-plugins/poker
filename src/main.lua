@@ -8,8 +8,8 @@ require(script_path() .. "poker")
 local main_game = Poker:new(
 	nil,
 	{
-		x = 33,
-		y = 3,
+		x = 114,
+		y = 10,
 	}
 )
 
